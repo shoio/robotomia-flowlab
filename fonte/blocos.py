@@ -1,0 +1,397 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""Opera o editor de comportamentos do Flowlab: abre categoria, solta bloco na
+   tela e LIGA fio entre dois pinos — conferindo cada gesto.
+
+   Medido no editor de verdade (27-09-2026):
+   - a palheta da esquerda e TEXTO: da para achar 'Always', 'Impulse',
+     'Collision' por OCR, e arrastar dali para a tela funciona;
+   - o bloco nasce com o canto de cima-esquerda quase no ponto onde eu solto;
+   - cada pino tem um ROTULO ('out', 'x', 'y', 'hit') e a bolinha fica ~26 px
+     (na imagem 2x) para fora da borda, na mesma altura do rotulo;
+   - arrastar de bolinha a bolinha cria o fio.
+"""
+import os, sys, time
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import rs, nav
+from PIL import Image
+
+PALHETA = (0, 0, 0.115, 1.0)          # a coluna da esquerda, em fracao da tela
+TELA = (0.12, 0.0, 1.0, 0.95)          # a area de trabalho dos blocos
+
+# quanto a bolinha do pino fica fora da borda do bloco, em pixels da imagem 2x
+FORA_ESQ, FORA_DIR = 27, 25
+
+CATEGORIAS = ["Triggers", "Logic & Math", "Components", "Properties",
+              "Text & Lists", "GUI", "Game Flow", "Mobile Device",
+              "Multiplayer", "Behavior Bundles"]
+
+
+class Bloco:
+    def __init__(self, nome, x, y):
+        self.nome = nome
+        self.x, self.y = x, y          # onde eu soltei (canto de cima-esquerda)
+
+    def __repr__(self):
+        return f"<{self.nome} em ({self.x},{self.y})>"
+
+    def regiao(self, folga_esq=360, folga_dir=420, folga_cima=200, folga_baixo=300):
+        """A caixa em volta do bloco, em fracao da imagem — para OCR local.
+
+           Generosa de proposito: o bloco nasce CENTRADO no ponto onde eu solto,
+           nao pelo canto. Com a caixa estreita eu procurava o titulo 'Destroyer'
+           40 px a direita de onde ele estava e concluia que o bloco nao existia
+           — e o retry soltava outro. Tres Destroyers empilhados."""
+        J = nav.janela(nav.titulo())
+        L, A = J["w"] * 2, J["h"] * 2
+        return (max(0, self.x - folga_esq) / L, max(0, self.y - folga_cima) / A,
+                min(1.0, (self.x + folga_dir) / L), min(1.0, (self.y + folga_baixo) / A))
+
+    def pino(self, rotulo, lado, arquivo=None):
+        """(x, y) da BOLINHA do pino, em pixels da imagem.
+           lado='dir' para saida, 'esq' para entrada."""
+        a = arquivo or nav.captura("/tmp/_bl_pino.png")[0]
+        alvo = rotulo.lower()
+        cands, lidos = [], []
+        # o rotulo do pino e texto PEQUENO e claro sobre escuro: leio ampliado e
+        # binarizado, e aceito leitura truncada ('out' volta como 'ou')
+        for esc, lim in ((3, 90), (3, None), (4, 110), (2, 90)):
+            itens = rs.ocr(a, regiao=self.regiao(), psm="6", escala=esc, limiar=lim)
+            lidos += [i[0] for i in itens]
+            for t, x, y, w, h in itens:
+                cru = t.strip().lower()
+                # o OCR cola a BOLINHA no rotulo: 'start' volta como '@/start',
+                # 'reset' como '@jreset'. Comparo so as letras, e anoto se veio
+                # sujeira na frente — porque ai a caixa ja inclui a bolinha e o
+                # deslocamento para fora seria para o lugar errado.
+                so_letras = "".join(c for c in cru if c.isalpha())
+                sujo = bool(cru) and not cru[0].isalpha()
+                if not so_letras:
+                    continue
+                if so_letras == alvo or (len(so_letras) >= 2 and alvo.startswith(so_letras)) \
+                        or (len(alvo) >= 2 and so_letras.startswith(alvo)):
+                    cands.append((so_letras, x, y, w, h, sujo))
+            if cands:
+                break
+        if not cands:
+            raise RuntimeError(f"nao achei o pino '{rotulo}' no bloco {self.nome} "
+                               f"(li {lidos[:14]})")
+        # com pinos repetidos (o Impulse tem tres 'out'), o de cima e o primeiro
+        cands.sort(key=lambda c: c[2])
+        t, x, y, w, h, sujo = cands[0]
+        if lado == "dir":
+            return (x + w + (6 if sujo else FORA_DIR), y + h // 2)
+        return (x + 8 if sujo else x - FORA_ESQ, y + h // 2)
+
+
+def abre_categoria(nome):
+    """Abre a categoria da palheta, se ela ja nao estiver aberta."""
+    p = nav.acha_texto(nome.lower(), regiao=PALHETA)
+    if not p:
+        raise RuntimeError(f"nao achei a categoria '{nome}' na palheta")
+    J = nav.janela(nav.titulo())
+    rs.clique_img(p[0], p[1], escala=2.0, janela=J)
+    time.sleep(1.2)
+    return True
+
+
+def item_palheta(nome, tentativas=3):
+    """(x, y) do item da palheta, abrindo categoria se precisar."""
+    for k in range(tentativas):
+        p = nav.acha_texto(nome.lower(), regiao=PALHETA)
+        if p:
+            return p
+        if k == 0:
+            # a palheta e sanfona: abrir uma categoria fecha a outra. Entao
+            # percorro TODAS, nao um punhado escolhido a dedo — foi assim que
+            # 'Timer' (que mora em Triggers) sumiu de uma lista com cinco nomes.
+            for cat in CATEGORIAS:
+                try:
+                    abre_categoria(cat)
+                except RuntimeError:
+                    continue
+                p = nav.acha_texto(nome.lower(), regiao=PALHETA)
+                if p:
+                    return p
+        time.sleep(0.8)
+    raise RuntimeError(f"o bloco '{nome}' nao aparece na palheta")
+
+
+def solta(nome, x, y, tentativas=3):
+    """Arrasta um bloco da palheta para (x, y) e CONFERE que ele nasceu ali.
+       Sem conferir, um arrasto que nao pegou deixa a tela igual e o resto da
+       aula e capturado em cima de um bloco que nao existe."""
+    J = nav.janela(nav.titulo())
+    for k in range(tentativas):
+        p = item_palheta(nome)
+        rs.arrasta_img(p[0], p[1], x, y, escala=2.0, janela=J)
+        time.sleep(1.4)
+        b = Bloco(nome, x, y)
+        a, _ = nav.captura("/tmp/_bl_solta.png")
+        lido = " ".join(t for t, *_ in rs.ocr_forte(a, regiao=b.regiao(), psm="6")).lower()
+        if nome.split()[0].lower()[:6] in lido:
+            return b
+        # DESFAZ antes de tentar de novo: repetir sem desfazer empilha blocos
+        # invisiveis para mim e visiveis para a crianca na foto da aula
+        rs.tecla(6, cmd=True)          # 6 = Z
+        time.sleep(1.0)
+    raise RuntimeError(f"soltei '{nome}' em ({x},{y}) e ele nao apareceu ali")
+
+
+def liga(origem, pino_saida, destino, pino_entrada):
+    """Liga saida -> entrada e CONFERE que o fio existe.
+       A prova e a propria imagem: comparo o caminho entre os dois pinos antes
+       e depois; um fio branco muda pixels no meio do caminho."""
+    J = nav.janela(nav.titulo())
+    a_antes, _ = nav.captura("/tmp/_bl_antes.png")
+    p1 = pino_por_nome(origem, pino_saida, "dir")
+    p2 = pino_por_nome(destino, pino_entrada, "esq")
+    # duas tentativas: saida->entrada e, se nao pegar, entrada->saida
+    for ida, (a, b) in enumerate(((p1, p2), (p2, p1))):
+        arrasta_devagar(a[0], a[1], b[0], b[1])
+        time.sleep(0.8)
+        a_dep, _ = nav.captura("/tmp/_bl_depois.png")
+        if _mudou_no_caminho(a_antes, a_dep, p1, p2) or _mudou_perto(a_antes, a_dep, p2):
+            return True
+    raise RuntimeError(f"liguei {origem.nome}.{pino_saida} -> "
+                       f"{destino.nome}.{pino_entrada} e nenhum fio apareceu")
+
+
+def _mudou_no_caminho(antes, depois, p1, p2, raio=70, minimo=25):
+    """Mudou alguma coisa no meio do caminho entre os dois pinos?"""
+    A = Image.open(antes).convert("L")
+    B = Image.open(depois).convert("L")
+    mx, my = (p1[0] + p2[0]) // 2, (p1[1] + p2[1]) // 2
+    cx0, cy0 = max(0, mx - raio), max(0, my - raio)
+    caixa = (cx0, cy0, min(A.width, mx + raio), min(A.height, my + raio))
+    a, b = A.crop(caixa), B.crop(caixa)
+    dif = sum(1 for x, y in zip(a.getdata(), b.getdata()) if abs(x - y) > 30)
+    return dif >= minimo
+
+
+def ok():
+    """Fecha o editor de comportamentos pelo botao OK (canto de baixo-esquerda)."""
+    J = nav.janela(nav.titulo())
+    rs.clique_img(160, 1560, escala=2.0, janela=J)
+    time.sleep(2.0)
+    nav.espera_parar(limite=15)
+    return True
+
+
+def acha_bloco(nome, regiao=TELA, tentativas=3):
+    """Acha um bloco JA na tela pelo titulo e devolve um Bloco posicionado.
+
+       Guardar a coordenada onde eu soltei nao serve: qualquer zoom, rolagem ou
+       arrasto move tudo, e eu continuaria procurando o pino no lugar velho.
+       O titulo do bloco e o endereco estavel."""
+    for k in range(tentativas):
+        a, _ = nav.captura("/tmp/_bl_acha.png")
+        achado = rs.procura_forte(nome, a, regiao=regiao, psm="6", exato=True)
+        if achado:
+            t, x, y, w, h = achado
+            return Bloco(nome, x, y + h // 2)
+        time.sleep(0.8)
+    raise RuntimeError(f"nao achei o bloco '{nome}' na tela")
+
+
+# A ORDEM dos pinos de cada bloco, de cima para baixo. Lida uma vez na tela e
+# guardada aqui: o rotulo e texto minusculo e o OCR erra: 'start' virava
+# '@/start', 'reset' virava '@jreset' e as vezes sumia. A bolinha, essa e um
+# circulo claro — geometria, nao leitura.
+PORTAS = {
+    "Always":    {"esq": [],                       "dir": ["out"]},
+    "Once":      {"esq": [],                       "dir": ["out"]},
+    "Timer":     {"esq": ["delay", "reset", "start"], "dir": ["out", "done"]},
+    "Impulse":   {"esq": ["x", "y", "forward"],    "dir": ["out", "out2", "out3"]},
+    "Destroyer": {"esq": ["in"],                   "dir": ["out"]},
+    "Collision": {"esq": [],                       "dir": ["hit"]},
+    "Keyboard":  {"esq": [],                       "dir": ["up", "down"]},
+    "Number":    {"esq": ["in"],                   "dir": ["out"]},
+    "Label":     {"esq": ["text", "show", "hide"], "dir": ["out"]},
+    "Mailbox":   {"esq": [],                       "dir": ["out"]},
+    "Message":   {"esq": ["send"],                 "dir": ["out"]},
+    "Spawn":     {"esq": ["spawn"],                "dir": ["out"]},
+    "Sound":     {"esq": ["play", "stop"],         "dir": ["done"]},
+}
+
+
+def bolinhas(bloco, folga=(70, 620, 60, 340), claro=185, raio=(3, 11)):
+    """As BOLINHAS dos pinos de um bloco, separadas em ('esq', 'dir').
+
+       Acha aglomerados claros e pequenos na caixa do bloco e agrupa por
+       coluna: a coluna mais a esquerda e a das entradas, a mais a direita a
+       das saidas. Devolve listas ordenadas de cima para baixo."""
+    import numpy as _np
+    a, _ = nav.captura("/tmp/_bl_dots.png")
+    im = _np.asarray(Image.open(a).convert("L"), dtype=int)
+    fe, fd, fc, fb = folga
+    x0, y0 = max(0, bloco.x - fe), max(0, bloco.y - fc)
+    x1, y1 = min(im.shape[1], bloco.x + fd), min(im.shape[0], bloco.y + fb)
+    rec = im[y0:y1, x0:x1]
+    # bolinha solta e cinza-clara; sob o cursor ela fica AZUL. As duas contam.
+    rgb = _np.asarray(Image.open(a).convert("RGB"), dtype=int)[y0:y1, x0:x1]
+    azul = (rgb[:, :, 2] - rgb[:, :, 0] >= 55) & (rgb[:, :, 2] >= 150)
+    mask = (rec >= claro) | azul
+    vistos = _np.zeros_like(mask)
+    achados = []
+    ys, xs = _np.nonzero(mask)
+    for yy, xx in zip(ys, xs):
+        if vistos[yy, xx]:
+            continue
+        pilha, pontos = [(yy, xx)], []
+        vistos[yy, xx] = True
+        while pilha and len(pontos) < 400:
+            cy, cx = pilha.pop()
+            pontos.append((cy, cx))
+            for dy in (-1, 0, 1):
+                for dx in (-1, 0, 1):
+                    ny, nx = cy + dy, cx + dx
+                    if 0 <= ny < mask.shape[0] and 0 <= nx < mask.shape[1] \
+                            and mask[ny, nx] and not vistos[ny, nx]:
+                        vistos[ny, nx] = True
+                        pilha.append((ny, nx))
+        if not pontos:
+            continue
+        pys = [p[0] for p in pontos]; pxs = [p[1] for p in pontos]
+        alt, larg = max(pys) - min(pys) + 1, max(pxs) - min(pxs) + 1
+        cheio = len(pontos) / float(alt * larg)
+        if raio[0] * 2 <= alt <= raio[1] * 2 and raio[0] * 2 <= larg <= raio[1] * 2 \
+                and abs(alt - larg) <= 5 and len(pontos) >= 12 and cheio >= 0.55:
+            achados.append((int(sum(pxs) / len(pxs)) + x0, int(sum(pys) / len(pys)) + y0))
+    # a bolinha fica FORA da borda; o que cai dentro do bloco e icone ou letra
+    achados = [p for p in achados if p[0] <= bloco.x - 8 or p[0] >= bloco.x + 60]
+    if not achados:
+        return {"esq": [], "dir": []}
+    menor = min(p[0] for p in achados); maior = max(p[0] for p in achados)
+    esq = sorted([p for p in achados if p[0] - menor <= 30 and p[0] <= bloco.x - 8],
+                 key=lambda p: p[1])
+    dir_ = sorted([p for p in achados if maior - p[0] <= 30 and p[0] >= bloco.x + 60],
+                  key=lambda p: p[1])
+    return {"esq": esq, "dir": dir_}
+
+
+def pino_por_nome(bloco, rotulo, lado):
+    """A bolinha do pino, pela ORDEM conhecida do bloco — sem ler texto."""
+    ordem = PORTAS.get(bloco.nome, {}).get(lado)
+    if not ordem or rotulo not in ordem:
+        raise RuntimeError(f"nao sei a ordem dos pinos de '{bloco.nome}' "
+                           f"({lado}) — acrescente em blocos.PORTAS")
+    pts = bolinhas(bloco)[lado]
+    i = ordem.index(rotulo)
+    if i >= len(pts):
+        raise RuntimeError(f"o bloco {bloco.nome} mostrou {len(pts)} bolinhas de "
+                           f"{lado}, e eu queria a {i+1}a ('{rotulo}')")
+    return pts[i]
+
+
+def arrasta_devagar(x0, y0, x1, y1, passos=45, segura=0.45):
+    """Arrasto lento, com pausa antes e depois e um tremor no fim.
+       O editor do Flowlab e canvas: arrasto rapido demais entre bolinhas
+       acende o pino de destino e nao cria fio nenhum."""
+    import Quartz
+    J = nav.janela(nav.titulo())
+    tx0, ty0 = J["x"] + x0 / 2.0, J["y"] + y0 / 2.0
+    tx1, ty1 = J["x"] + x1 / 2.0, J["y"] + y1 / 2.0
+    rs._evento_mouse(Quartz.kCGEventMouseMoved, tx0, ty0); time.sleep(0.35)
+    rs._evento_mouse(Quartz.kCGEventLeftMouseDown, tx0, ty0); time.sleep(segura)
+    for k in range(1, passos + 1):
+        x = tx0 + (tx1 - tx0) * k / passos
+        y = ty0 + (ty1 - ty0) * k / passos
+        e = Quartz.CGEventCreateMouseEvent(None, Quartz.kCGEventLeftMouseDragged,
+                                           (x, y), Quartz.kCGMouseButtonLeft)
+        Quartz.CGEventPost(Quartz.kCGHIDEventTap, e)
+        time.sleep(0.03)
+    for dx, dy in ((2, 0), (-2, 1), (0, 0)):      # tremor: o canvas percebe o alvo
+        e = Quartz.CGEventCreateMouseEvent(None, Quartz.kCGEventLeftMouseDragged,
+                                           (tx1 + dx, ty1 + dy), Quartz.kCGMouseButtonLeft)
+        Quartz.CGEventPost(Quartz.kCGHIDEventTap, e)
+        time.sleep(0.12)
+    time.sleep(segura)
+    rs._evento_mouse(Quartz.kCGEventLeftMouseUp, tx1, ty1)
+    time.sleep(0.6)
+
+
+def _mudou_perto(antes, depois, ponto, raio=26, minimo=12):
+    A = Image.open(antes).convert("L"); B = Image.open(depois).convert("L")
+    x, y = ponto
+    caixa = (max(0, x - raio), max(0, y - raio),
+             min(A.width, x + raio), min(A.height, y + raio))
+    a, b = A.crop(caixa), B.crop(caixa)
+    return sum(1 for p, q in zip(a.getdata(), b.getdata()) if abs(p - q) > 30) >= minimo
+
+
+CORPO = (61, 66, 80)        # cor do corpo de um bloco
+FUNDO = (32, 41, 56)        # cor do canvas atras dos blocos
+
+
+def caixa_do_bloco(bloco, tol=14):
+    """(x0, y0, x1, y1) do RETANGULO do bloco, medido na imagem.
+
+       Herdado do que deu errado: caixa por folga fixa muda de tamanho com o
+       zoom da pagina e passa a abracar o bloco vizinho, e ai as 'bolinhas' do
+       bloco de baixo entram na conta do bloco de cima. O corpo do bloco tem
+       cor propria (61,66,80) contra o fundo (32,41,56): da para medir."""
+    import numpy as _np
+    a, _ = nav.captura("/tmp/_bl_caixa.png")
+    im = _np.asarray(Image.open(a).convert("RGB"), dtype=int)
+    corpo = (_np.abs(im - _np.array(CORPO)) <= tol).all(axis=2)
+    sx, sy = bloco.x + 12, bloco.y + 22          # semente dentro do corpo
+    if not (0 <= sy < corpo.shape[0] and 0 <= sx < corpo.shape[1]) or not corpo[sy, sx]:
+        for dy in (14, 30, 8, 40):
+            if 0 <= bloco.y + dy < corpo.shape[0] and corpo[bloco.y + dy, sx]:
+                sy = bloco.y + dy
+                break
+        else:
+            raise RuntimeError(f"nao achei o corpo do bloco {bloco.nome} perto do titulo")
+    x0 = x1 = sx
+    while x0 > 0 and corpo[sy, x0 - 1]:
+        x0 -= 1
+    while x1 < corpo.shape[1] - 1 and corpo[sy, x1 + 1]:
+        x1 += 1
+    meio = (x0 + x1) // 2
+    y0 = y1 = sy
+    while y0 > 0 and corpo[y0 - 1, meio]:
+        y0 -= 1
+    while y1 < corpo.shape[0] - 1 and corpo[y1 + 1, meio]:
+        y1 += 1
+    return (x0, y0, x1, y1)
+
+
+def bolinhas2(bloco, margem=34, claro=180):
+    """As bolinhas dos pinos, procuradas SO nas faixas do lado de fora das
+       bordas do bloco — nada de caixa por folga."""
+    import numpy as _np
+    x0, y0, x1, y1 = caixa_do_bloco(bloco)
+    a, _ = nav.captura("/tmp/_bl_dots2.png")
+    im = _np.asarray(Image.open(a).convert("RGB"), dtype=int)
+    L = _np.asarray(Image.open(a).convert("L"), dtype=int)
+    azul = (im[:, :, 2] - im[:, :, 0] >= 55) & (im[:, :, 2] >= 150)
+    mask = (L >= claro) | azul
+
+    def na_faixa(fx0, fx1):
+        pts = []
+        sub = mask[max(0, y0 - 6):y1 + 7, max(0, fx0):fx1]
+        vistos = _np.zeros_like(sub)
+        ys, xs = _np.nonzero(sub)
+        for yy, xx in zip(ys, xs):
+            if vistos[yy, xx]:
+                continue
+            pilha, pontos = [(yy, xx)], []
+            vistos[yy, xx] = True
+            while pilha and len(pontos) < 500:
+                cy, cx = pilha.pop(); pontos.append((cy, cx))
+                for dy in (-1, 0, 1):
+                    for dx in (-1, 0, 1):
+                        ny, nx = cy + dy, cx + dx
+                        if 0 <= ny < sub.shape[0] and 0 <= nx < sub.shape[1] \
+                                and sub[ny, nx] and not vistos[ny, nx]:
+                            vistos[ny, nx] = True; pilha.append((ny, nx))
+            pys = [p[0] for p in pontos]; pxs = [p[1] for p in pontos]
+            alt, larg = max(pys) - min(pys) + 1, max(pxs) - min(pxs) + 1
+            if 5 <= alt <= 26 and 5 <= larg <= 26 and abs(alt - larg) <= 6 \
+                    and len(pontos) / float(alt * larg) >= 0.55:
+                pts.append((int(sum(pxs) / len(pxs)) + max(0, fx0),
+                            int(sum(pys) / len(pys)) + max(0, y0 - 6)))
+        return sorted(pts, key=lambda p: p[1])
+
+    return {"esq": na_faixa(x0 - margem, x0), "dir": na_faixa(x1 + 1, x1 + margem)}

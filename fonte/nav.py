@@ -151,7 +151,7 @@ def espera_parar(limite=25.0, quieto=1.2, passo=0.4):
 
 def texto_da_tela(regiao=None, limiar=None, psm="6"):
     a, _ = captura("/tmp/_nav_ocr.png")
-    return " ".join(t for t, *_ in rs.ocr(a, regiao=regiao, psm=psm, escala=2, limiar=limiar))
+    return " ".join(t for t, *_ in rs.ocr_forte(a, regiao=regiao, psm=psm))
 
 
 def acha_texto(alvo, regiao=None, limiar=None, psm="6", arquivo=None):
@@ -160,7 +160,8 @@ def acha_texto(alvo, regiao=None, limiar=None, psm="6", arquivo=None):
        'My Games' em duas."""
     a = arquivo or captura("/tmp/_nav_ocr.png")[0]
     alvo = alvo.lower()
-    itens = rs.ocr(a, regiao=regiao, psm=psm, escala=2, limiar=limiar)
+    itens = (rs.ocr(a, regiao=regiao, psm=psm, escala=2, limiar=limiar)
+             if limiar is not None else rs.ocr_forte(a, regiao=regiao, psm=psm))
     linhas = {}
     for t, x, y, w, h in itens:
         linhas.setdefault(round(y / 14), []).append((x, t, y, w, h))
@@ -174,6 +175,11 @@ def acha_texto(alvo, regiao=None, limiar=None, psm="6", arquivo=None):
                     return (x + w // 2, y + h // 2)
             x, t, y, w, h = palavras[0]
             return (x + w // 2, y + h // 2)
+    # a leitura por linhas usa UMA escala; se nao achou, percorro a escada
+    achado = rs.procura_forte(alvo, a, regiao=regiao, psm=psm)
+    if achado:
+        t, x, y, w, h = achado
+        return (x + w // 2, y + h // 2)
     return None
 
 

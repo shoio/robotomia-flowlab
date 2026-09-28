@@ -628,3 +628,40 @@ def linha_da_saida(janela, alvo, arquivo="/tmp/_saidal.png"):
         if alvo.lower() in linha.lower():
             return linha
     return None
+
+
+ESCADA = ((1, None), (1, 90), (2, None), (2, 90), (3, 90), (1, 150))
+
+
+def ocr_forte(arquivo=None, regiao=None, psm="6", idioma="por+eng", escada=ESCADA):
+    """OCR que tenta uma ESCADA de (escala, limiar) e devolve a primeira leitura
+       com conteudo.
+
+       Existe porque ampliar nem sempre ajuda: com a pagina em 150% e a tela
+       Retina, o titulo de um bloco do Flowlab ja chega com 40 px de altura, e
+       em escala=2 o tesseract devolve LISTA VAZIA para um texto que eu leio a
+       olho nu. Em escala=1, le na hora. O contrario acontece com o rotulo de
+       pino, minusculo, que so aparece ampliado. Entao: escada, nao um numero."""
+    for escala, limiar in escada:
+        itens = ocr(arquivo, regiao=regiao, psm=psm, idioma=idioma,
+                    escala=escala, limiar=limiar)
+        if itens:
+            return itens
+    return []
+
+
+def procura_forte(alvo, arquivo=None, regiao=None, psm="6", escada=ESCADA, exato=False):
+    """Procura UM texto percorrendo a escada inteira, e para quando ACHA ELE —
+       nao quando a leitura tem qualquer coisa.
+
+       A diferenca importa: numa area grande e quase vazia, a primeira escala
+       devolve dois nomes que estao ali e nao o que eu procuro, e parar na
+       primeira leitura com conteudo e o mesmo que nao procurar."""
+    alvo_l = alvo.lower()
+    for escala, limiar in escada:
+        itens = ocr(arquivo, regiao=regiao, psm=psm, escala=escala, limiar=limiar)
+        for t, x, y, w, h in itens:
+            lido = t.strip().lower().strip("[]|.,:")
+            if (lido == alvo_l) if exato else (alvo_l in lido or lido in alvo_l and len(lido) >= 3):
+                return (t, x, y, w, h)
+    return None
