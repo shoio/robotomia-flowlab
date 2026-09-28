@@ -26,15 +26,17 @@ import rs
 APP = "Google Chrome"
 ALVO = "flowlab.io"
 
-ACHA_JANELA = '''tell application "Google Chrome"
+LISTA_JANELAS = '''tell application "Google Chrome"
+ set saida to ""
  repeat with i from 1 to (count of windows)
-  if URL of active tab of window i contains "%s" then
-   set index of window i to 1
-   return "ok"
-  end if
+  set b to bounds of window i
+  set saida to saida & i & "\t" & (URL of active tab of window i) & "\t" & ¬
+   ((item 3 of b) - (item 1 of b)) & "x" & ((item 4 of b) - (item 2 of b)) & linefeed
  end repeat
- return "nao"
+ return saida
 end tell'''
+
+LEVANTA = '''tell application "Google Chrome" to set index of window %d to 1'''
 
 
 def osa(*linhas):
@@ -46,9 +48,28 @@ def osa(*linhas):
 
 
 def foca():
-    """Traz a janela do Flowlab para a frente e devolve o TITULO da aba."""
+    """Traz a janela do Flowlab para a frente e devolve o TITULO da aba.
+
+       Escolhe a MAIOR janela com o Flowlab, nao a primeira: havia uma janela
+       pequena (825x418) com o flowlab.io aberto que o sistema nem consegue
+       fotografar. Eu dirigia ela pelo AppleScript e fotografava a grande —
+       o URL dizia uma coisa e a imagem mostrava outra."""
     osa('tell application "Google Chrome" to activate')
-    achou, _ = osa(ACHA_JANELA % ALVO)
+    lista, _ = osa(LISTA_JANELAS)
+    melhor, area = None, 0
+    for linha in lista.splitlines():
+        partes = linha.split("\t")
+        if len(partes) < 3 or ALVO not in partes[1]:
+            continue
+        try:
+            larg, alt = (int(v) for v in partes[2].lower().split("x"))
+        except ValueError:
+            continue
+        if larg * alt > area and larg >= 900 and alt >= 500:
+            melhor, area = int(partes[0]), larg * alt
+    achou = "ok" if melhor else "nao"
+    if melhor:
+        osa(LEVANTA % melhor)
     if achou != "ok":
         osa('tell application "Google Chrome" to make new window',
             f'tell application "Google Chrome" to set URL of active tab of front window to "https://{ALVO}/"')
@@ -58,20 +79,49 @@ def foca():
     return t
 
 
-def janela(titulo_esperado=None):
-    """A janela do Flowlab, casada pelo titulo da aba."""
-    t = titulo_esperado or foca()
+def janela(titulo_esperado=None, tentativas=6):
+    """A janela do Flowlab, casada pelo titulo da aba.
+       Enquanto a pagina troca, o titulo fica VAZIO por um instante e duas
+       janelas passam a ter o mesmo titulo vazio: ai eu espero, em vez de
+       chutar qual delas e — chutar seria clicar na janela errada."""
+    for k in range(tentativas):
+        try:
+            return _janela1(titulo_esperado)
+        except RuntimeError as e:
+            if k == tentativas - 1:
+                raise
+            time.sleep(1.0)
+            titulo_esperado = None
+
+
+def _janela1(titulo_esperado=None):
+    """Casa pelo TITULO quando ha titulo; quando nao ha, usa a ordem do sistema
+       DEPOIS de levantar a janela.
+
+       Paginas do Flowlab as vezes ficam com o titulo vazio (o /games/mine fica).
+       Regra: foca() levanta a janela certa, e a lista do sistema vem da frente
+       para o fundo — entao a primeira janela grande do Chrome e ela. O titulo,
+       quando existe, continua valendo como conferencia."""
+    t = titulo_esperado
+    if t is None:
+        t = foca()
     c = [j for j in rs.janelas(APP) if j["camada"] == 0 and j["w"] > 600 and j["h"] > 400]
     if not c:
         raise RuntimeError("nenhuma janela de conteudo do Chrome")
-    iguais = [j for j in c if j["nome"].strip() == t.strip()]
-    if len(iguais) == 1:
-        return iguais[0]
-    if not iguais:
-        raise RuntimeError(f"nenhuma janela do Chrome com o titulo {t!r} "
-                           f"(vi {[j['nome'][:30] for j in c]})")
-    raise RuntimeError(f"{len(iguais)} janelas do Chrome com o titulo {t!r} — "
-                       "nao da para saber qual eu estaria clicando")
+    if t and t.strip():
+        iguais = [j for j in c if j["nome"].strip() == t.strip()]
+        if len(iguais) == 1:
+            return iguais[0]
+        if len(iguais) > 1:
+            raise RuntimeError(f"{len(iguais)} janelas do Chrome com o titulo {t!r} — "
+                               "nao da para saber qual eu estaria clicando")
+    # sem titulo: a da frente, depois de foca(). Confiro que o Chrome esta na
+    # frente — senao 'a primeira' seria a janela de outro app.
+    frente, _ = osa('tell application "System Events" to get name of first '
+                    'process whose frontmost is true')
+    if frente.strip() != "Google Chrome":
+        raise RuntimeError(f"o app na frente e {frente!r}, nao o Chrome")
+    return c[0]
 
 
 def cap_bruta(J, arquivo, tentativas=8):
@@ -117,10 +167,17 @@ def vai(url, espera=2.0):
 
 
 def captura(arquivo, wid=None):
+    """Captura o que esta NA TELA na area da janela — inclui dialogo do Chrome."""
     J = janela(titulo())
     if wid:
         return rs.captura(wid, arquivo)
-    return cap_bruta(J, arquivo)
+    for k in range(6):
+        try:
+            return cap_tela(J, arquivo)
+        except rs.TelaCega:
+            osa('tell application "Google Chrome" to activate')
+            time.sleep(0.6 + 0.3 * k)
+    return cap_tela(J, arquivo)
 
 
 def espera_parar(limite=25.0, quieto=1.2, passo=0.4):
@@ -252,3 +309,48 @@ def clica_cor(rgb, tol=26, regiao=None, espera=1.5, minimo=400):
     time.sleep(espera)
     espera_parar()
     return p
+
+
+def cap_tela(J=None, arquivo="/tmp/_nav_tela.png"):
+    """Captura o RETANGULO da tela onde a janela esta — nao a janela.
+
+       Por que: o Chrome desenha os dialogos ('Sair do site? As alteracoes
+       podem nao ser salvas') em cima da pagina, numa camada que a captura POR
+       JANELA nao enxerga. Eu passei quase uma hora vendo a tela 'congelada'
+       enquanto um dialogo invisivel para mim segurava a navegacao."""
+    import Quartz
+    J = J or janela()
+    rect = Quartz.CGRectMake(J["x"], J["y"], J["w"], J["h"])
+    img = Quartz.CGWindowListCreateImage(rect, Quartz.kCGWindowListOptionOnScreenOnly,
+                                         Quartz.kCGNullWindowID, Quartz.kCGWindowImageDefault)
+    if img is None:
+        raise RuntimeError("nao consegui capturar a area da janela")
+    W, H = Quartz.CGImageGetWidth(img), Quartz.CGImageGetHeight(img)
+    dados = bytes(Quartz.CGDataProviderCopyData(Quartz.CGImageGetDataProvider(img)))
+    im = Image.frombuffer("RGBA", (W, H), dados, "raw", "BGRA",
+                          Quartz.CGImageGetBytesPerRow(img), 1).convert("RGB")
+    motivo = rs._quadro_cego(im)
+    if motivo:
+        raise rs.TelaCega(f"area da janela: {motivo}")
+    im.save(arquivo)
+    return arquivo, (W / J["w"]) if J["w"] else 2.0
+
+
+DIALOGOS = [("sair do site", "sair"), ("leave site", "leave"),
+            ("sair da pagina", "sair"), ("reload site", "reload")]
+
+
+def fecha_dialogo(espera=1.5):
+    """Se houver um dialogo do Chrome na frente, clica no botao que segue em
+       frente e devolve qual era. Devolve None se nao havia nenhum."""
+    J = janela()
+    a, _ = cap_tela(J, "/tmp/_nav_dlg.png")
+    texto = " ".join(t for t, *_ in rs.ocr_forte(a, psm="6")).lower()
+    for pergunta, botao in DIALOGOS:
+        if pergunta in texto:
+            p = acha_texto(botao, arquivo=a)
+            if p:
+                rs.clique_img(p[0], p[1], escala=2.0, janela=J)
+                time.sleep(espera)
+                return pergunta
+    return None

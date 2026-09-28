@@ -395,3 +395,46 @@ def bolinhas2(bloco, margem=34, claro=180):
         return sorted(pts, key=lambda p: p[1])
 
     return {"esq": na_faixa(x0 - margem, x0), "dir": na_faixa(x1 + 1, x1 + margem)}
+
+
+def caixa2(bloco, limite=(700, 420)):
+    """O retangulo do bloco, por CRESCIMENTO a partir de uma semente.
+
+       A varredura por linha parava cedo: o miolo do bloco tem tom diferente do
+       corpo (icone, barra de titulo). Aqui a regra e 'nao e o fundo do canvas',
+       com uma erosao antes — senao o crescimento escapa pelo FIO, que encosta
+       na borda, e engole o bloco vizinho."""
+    import numpy as _np
+    a, _ = nav.captura("/tmp/_bl_caixa2.png")
+    im = _np.asarray(Image.open(a).convert("RGB"), dtype=int)
+    fundo = (_np.abs(im - _np.array(FUNDO)) <= 12).all(axis=2)
+    cheio = ~fundo
+    # erosao 3x3: tira fio fino e deixa o corpo do bloco
+    e = cheio.copy()
+    for dy in (-1, 0, 1):
+        for dx in (-1, 0, 1):
+            e &= _np.roll(_np.roll(cheio, dy, axis=0), dx, axis=1)
+    sx, sy = bloco.x + 12, bloco.y + 4
+    if not e[sy, sx]:
+        for dy in range(-6, 40, 4):
+            if 0 <= bloco.y + dy < e.shape[0] and e[bloco.y + dy, sx]:
+                sy = bloco.y + dy; break
+        else:
+            raise RuntimeError(f"nao achei o corpo de {bloco.nome} perto do titulo")
+    x0 = x1 = sx; y0 = y1 = sy
+    pilha = [(sy, sx)]
+    vistos = set()
+    while pilha:
+        cy, cx = pilha.pop()
+        if (cy, cx) in vistos:
+            continue
+        vistos.add((cy, cx))
+        if abs(cx - sx) > limite[0] or abs(cy - sy) > limite[1]:
+            continue
+        x0, x1 = min(x0, cx), max(x1, cx)
+        y0, y1 = min(y0, cy), max(y1, cy)
+        for ny, nx in ((cy+1, cx), (cy-1, cx), (cy, cx+1), (cy, cx-1)):
+            if 0 <= ny < e.shape[0] and 0 <= nx < e.shape[1] and e[ny, nx] \
+                    and (ny, nx) not in vistos:
+                pilha.append((ny, nx))
+    return (x0 - 1, y0 - 1, x1 + 1, y1 + 1)
