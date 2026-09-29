@@ -26,6 +26,24 @@ publicada**: falta o jogo fazer o que promete.
 O jogo de teste existe e e jogavel: `flowlab.io/game/view/3146055`
 ("Pega-moedas"), com o jogador azul e a moeda amarela.
 
+## O jogo de teste (Pega-moedas) — onde parou
+
+`flowlab.io/game/view/3146055`. Tem jogador azul, moeda amarela, chao verde,
+`Run & Jump` no jogador, `Collision -> Destroyer` na moeda e Gravity 45.
+
+**O jogador cai por um VAO do chao.** As pecas de chao que eu clonei ficaram
+espacadas: na foto `aula1/p31_jogo_fim.png` da para ver os dentes separados.
+Duas medidas para a proxima sessao:
+
+- a celula da grade tem **~147 px na tela** (o jogador em x=1502 e a moeda em
+  x=1821 estao a duas celulas: 319 px);
+- a moeda esta FLUTUANDO acima do chao: ela tem de ficar na mesma linha por
+  onde o jogador anda, senao ele passa por baixo e nunca encosta.
+
+Ou seja: o chao precisa de pecas COLADAS (passo de 147 px, sem pular), e a
+moeda na linha do jogador. Isso e desenho de fase, nao maquina — a maquina ja
+fez tudo o que a aula pede.
+
 ## O que falta, e e pouco
 
 **O jogador quase nao anda.** Usei o pacote `Ship Controls` e o boneco se

@@ -65,7 +65,8 @@ def escreve_nome(nome):
     return True
 
 
-OK_PAINEL = (1772, 1200)          # o OK azul do painel do objeto, medido
+OK_PAINEL = (1772, 1200)          # plano B: a posicao medida
+AZUL_OK = (126, 168, 224)         # a cor do botao OK do painel
 
 
 def fecha_painel_objeto():
@@ -73,7 +74,11 @@ def fecha_painel_objeto():
        o OCR nao le uma letra dele. Confiro pelo efeito — o painel some."""
     J = nav.janela()
     for tentativa in range(3):
-        rs.clique_img(*OK_PAINEL, escala=2.0, janela=J)
+        # o OK e BRANCO SOBRE AZUL: o OCR nao le, e a posicao MUDA de altura
+        # conforme o painel (com 'Physics' aberto ele desce 130 px). A cor fica.
+        p = nav.acha_cor(AZUL_OK, tol=40, regiao=(0.45, 0.45, 0.9, 0.98), minimo=800)
+        alvo = (p[0], p[1]) if p else OK_PAINEL
+        rs.clique_img(alvo[0], alvo[1], escala=2.0, janela=J)
         time.sleep(1.8); nav.espera_parar(limite=12)
         a, _ = nav.captura("/tmp/_c1_ok.png")
         txt = " ".join(t for t, *_ in rs.ocr_forte(a, psm="6")).lower()
