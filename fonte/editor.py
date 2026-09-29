@@ -7,7 +7,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import rs, nav
 
 VERDE = (99, 173, 97)              # o botao "+ New Game"
-CENTRO_CANVAS = (1470, 800)        # meio da grade branca do nivel
+CENTRO_CANVAS = (1502, 831)        # meio da grade branca do nivel
 
 
 def na_tela(*palavras, regiao=None):
@@ -112,3 +112,23 @@ def fecha_comportamentos():
     rs.clique_img(160, 1560, escala=2.0, janela=J)
     time.sleep(2); nav.espera_parar(limite=15)
     return True
+
+
+def objeto_ou_abre(x=None, y=None):
+    """Clica na celula: se estiver vazia escolhe Create, se ja tiver objeto
+       escolhe Edit. Serve para retomar uma etapa sem criar objeto duplicado."""
+    J = nav.janela()
+    px, py = x or CENTRO_CANVAS[0], y or CENTRO_CANVAS[1]
+    rs.clique_img(px, py, escala=2.0, janela=J)
+    time.sleep(1.5)
+    a, _ = nav.captura("/tmp/_ed_radial3.png")
+    texto = " ".join(t for t, *_ in rs.ocr_forte(a, psm="6")).lower()
+    escolha = "edit" if "edit" in texto and "create" not in texto else "create"
+    p = nav.acha_texto(escolha, arquivo=a)
+    if not p:
+        raise RuntimeError(f"o menu radial nao abriu (nao vi '{escolha}')")
+    rs.clique_img(p[0], p[1], escala=2.0, janela=J)
+    time.sleep(3); nav.espera_parar(limite=20)
+    recupera()
+    espera_tela("behaviors", limite=20)
+    return escolha

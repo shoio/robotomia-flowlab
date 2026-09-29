@@ -1,8 +1,52 @@
-# Estado do curso de Flowlab — 28-09-2026, 04h
+# Estado do curso de Flowlab — 29-09-2026, 04h40
 
-**Nenhuma aula esta pronta.** O que existe e o plano, a maquina de captura e o
-caminho de cliques do editor ja percorrido e medido. Escrito para quem retomar
-— inclusive eu.
+**A maquina constroi jogo no Flowlab.** Nesta segunda noite o robo criou um
+jogo do zero, criou dois objetos, pintou os dois, ligou um fio entre blocos,
+mexeu na fisica e nas configuracoes, e jogou — tudo sozinho, com foto de cada
+passo (`fonte/aula1/`, 24 fotos). **A Aula 1 ainda nao esta escrita nem
+publicada**: falta o jogo fazer o que promete.
+
+## O que ficou provado nesta noite
+
+- `editor.jogo_novo()` → jogo novo + Empty Project;
+- `editor.objeto_ou_abre(x, y)` → cria objeto na celula, ou abre o que ja
+  existe (Create/Edit no menu radial);
+- escrever o **Name** do objeto (com **Tab**, nunca Enter: o Enter FECHA o
+  painel);
+- `edit sprite` + balde + cor da paleta → objeto pintado (o sprite padrao tem
+  TRES partes, entao sao tres cliques de balde);
+- `editor.abre_comportamentos()` → editor de blocos;
+- `blocos.solta(nome, x, y)` → bloco na tela, conferido, com **desfazer** se
+  nao aparecer;
+- `blocos.liga_fixo(a, "hit", b, "in")` → **fio ligado e conferido**;
+- `Settings` → nome do jogo e **Gravity**;
+- `Physics >` → caixinha **movable**;
+- **Play** → o jogo abre na pagina publica e roda.
+
+O jogo de teste existe e e jogavel: `flowlab.io/game/view/3146055`
+("Pega-moedas"), com o jogador azul e a moeda amarela.
+
+## O que falta, e e pouco
+
+**O jogador quase nao anda.** Usei o pacote `Ship Controls` e o boneco se
+mexeu 10 px e parou. Provavel: esse pacote e de nave (gira e impulsiona), nao
+de andar. O caminho certo para a Aula 1, a testar primeiro:
+
+1. **`Run & Jump`** (o pacote de plataforma) + um **chao** (um terceiro objeto
+   largo embaixo) + Gravity de volta em 45. E o jogo que o Flowlab espera.
+2. Ou manter visto de cima (Gravity 0) e mover com `Keyboard` → `Impulse`,
+   montado a mao — mais blocos, mais aula.
+
+Provado isso, a captura da Aula 1 roda inteira e a aula se escreve a partir
+das fotos.
+
+## Duas armadilhas novas desta noite
+
+- **O Enter no campo Name fecha o painel do objeto** (perdi uma etapa assim).
+- **`movable` ligado com gravidade derruba o objeto para fora do mundo**: a
+  foto do jogo fica sem o jogador e parece que ele "sumiu". O Flowlab ate
+  avisa o contrario quando falta fisica ("This object is not movable, so
+  Impulse will have no effect") — os dois avisos viram material de aula.
 
 ---
 

@@ -130,7 +130,12 @@ def solta(nome, x, y, tentativas=3):
         a, _ = nav.captura("/tmp/_bl_solta.png")
         lido = " ".join(t for t, *_ in rs.ocr_forte(a, regiao=b.regiao(), psm="6")).lower()
         if nome.split()[0].lower()[:6] in lido:
-            return b
+            # devolvo o bloco localizado pelo TITULO: os deslocamentos dos
+            # pinos sao medidos dali, e nao do ponto onde eu soltei
+            try:
+                return acha_bloco(nome)
+            except RuntimeError:
+                return b
         # DESFAZ antes de tentar de novo: repetir sem desfazer empilha blocos
         # invisiveis para mim e visiveis para a crianca na foto da aula
         rs.tecla(6, cmd=True)          # 6 = Z
