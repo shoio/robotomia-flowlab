@@ -438,3 +438,232 @@ def caixa2(bloco, limite=(700, 420)):
                     and (ny, nx) not in vistos:
                 pilha.append((ny, nx))
     return (x0 - 1, y0 - 1, x1 + 1, y1 + 1)
+
+
+def caixa3(bloco, tol=12, limite=900):
+    """O retangulo do bloco. Terceira tentativa, e a que funciona.
+
+       As duas anteriores estao acima, com o defeito de cada uma: varredura no
+       MEIO do bloco para cedo (o miolo tem outro tom por causa do icone), e
+       crescimento de regiao VAZA pelo fio ate o bloco vizinho.
+
+       Aqui: acho as bordas esquerda e direita na LINHA DO TITULO (que so tem
+       corpo e letra), e a altura numa COLUNA a 3 px de dentro da borda
+       esquerda, onde nao ha icone nem texto."""
+    import numpy as _np
+    a, _ = nav.captura("/tmp/_bl_caixa3.png")
+    im = _np.asarray(Image.open(a).convert("RGB"), dtype=int)
+    fundo = (_np.abs(im - _np.array(FUNDO)) <= tol).all(axis=2)
+    A, L = fundo.shape
+    ty = min(max(bloco.y, 0), A - 1)
+    tx = min(max(bloco.x, 0), L - 1)
+    if fundo[ty, tx]:                       # o titulo pode cair no vao da letra
+        for dx in (4, 8, -4, 12):
+            if 0 <= tx + dx < L and not fundo[ty, tx + dx]:
+                tx += dx; break
+    x0 = tx
+    while x0 > 0 and not fundo[ty, x0 - 1] and tx - x0 < limite:
+        x0 -= 1
+    x1 = tx
+    while x1 < L - 1 and not fundo[ty, x1 + 1] and x1 - tx < limite:
+        x1 += 1
+    col = min(x0 + 3, L - 1)
+    y0 = ty
+    while y0 > 0 and not fundo[y0 - 1, col] and ty - y0 < limite:
+        y0 -= 1
+    y1 = ty
+    while y1 < A - 1 and not fundo[y1 + 1, col] and y1 - ty < limite:
+        y1 += 1
+    return (x0, y0, x1, y1)
+
+
+def pinos(bloco, margem=22, claro=175, folga=4):
+    """As bolinhas dos pinos, nas faixas de fora das bordas medidas por caixa3.
+       Confere a CONTAGEM contra a tabela PORTAS — se o bloco devia ter tres
+       entradas e eu achei duas, eu digo, em vez de ligar no pino errado."""
+    import numpy as _np
+    x0, y0, x1, y1 = caixa4(bloco)
+    a, _ = nav.captura("/tmp/_bl_pinos.png")
+    rgb = _np.asarray(Image.open(a).convert("RGB"), dtype=int)
+    lum = _np.asarray(Image.open(a).convert("L"), dtype=int)
+    azul = (rgb[:, :, 2] - rgb[:, :, 0] >= 55) & (rgb[:, :, 2] >= 150)
+    mask = (lum >= claro) | azul
+
+    def faixa(fx0, fx1):
+        fx0, fx1 = max(0, fx0), max(0, fx1)
+        sub = mask[max(0, y0 - 4):y1 + 5, fx0:fx1]
+        if sub.size == 0:
+            return []
+        vistos = _np.zeros_like(sub); pts = []
+        ys, xs = _np.nonzero(sub)
+        for yy, xx in zip(ys, xs):
+            if vistos[yy, xx]:
+                continue
+            pilha, pontos = [(yy, xx)], []
+            vistos[yy, xx] = True
+            while pilha and len(pontos) < 600:
+                cy, cx = pilha.pop(); pontos.append((cy, cx))
+                for dy in (-1, 0, 1):
+                    for dx in (-1, 0, 1):
+                        ny, nx = cy + dy, cx + dx
+                        if 0 <= ny < sub.shape[0] and 0 <= nx < sub.shape[1] \
+                                and sub[ny, nx] and not vistos[ny, nx]:
+                            vistos[ny, nx] = True; pilha.append((ny, nx))
+            pys = [p[0] for p in pontos]; pxs = [p[1] for p in pontos]
+            alt, larg = max(pys) - min(pys) + 1, max(pxs) - min(pxs) + 1
+            if 5 <= alt <= 24 and 5 <= larg <= 24 and abs(alt - larg) <= 5 \
+                    and len(pontos) / float(alt * larg) >= 0.5:
+                pts.append((int(sum(pxs) / len(pxs)) + fx0,
+                            int(sum(pys) / len(pys)) + max(0, y0 - 4)))
+        return sorted(pts, key=lambda p: p[1])
+
+    # a bolinha encosta na borda (medido: 16 px de distancia). Faixa estreita,
+    # senao eu pego a bolinha do bloco VIZINHO e ligo no lugar errado.
+    # procuro numa faixa LARGA (senao o disco sai cortado e perde a redondeza)
+    # e aceito pelo CENTRO, que e o que diz de quem e a bolinha
+    largo = margem + 16
+    esq = [p for p in faixa(x0 - largo, x0) if x0 - margem <= p[0] <= x0 - folga]
+    dire = [p for p in faixa(x1, x1 + largo) if x1 + folga <= p[0] <= x1 + margem]
+    achados = {"esq": esq, "dir": dire}
+    esperado = PORTAS.get(bloco.nome)
+    if esperado:
+        for lado in ("esq", "dir"):
+            if len(achados[lado]) != len(esperado[lado]):
+                raise RuntimeError(
+                    f"{bloco.nome}: achei {len(achados[lado])} bolinhas de "
+                    f"{lado} e a tabela diz {len(esperado[lado])} "
+                    f"({esperado[lado]}) — nao ligo no escuro")
+    return achados
+
+
+def caixa4(bloco, tol=14, claro=150, limite=700):
+    """O retangulo do bloco — versao que aguenta o bloco em cima do retangulo
+       de previsao do nivel.
+
+       'Nao e o fundo' nao serve: a previsao do nivel tambem nao e o fundo, e a
+       caixa crescia ate abracar o mundo inteiro (medi 1023x767 para um bloco
+       de ~240x170). A regra que fecha: o pixel e CORPO DO BLOCO (61,66,80) ou
+       e CLARO (letra, borda, icone). A previsao do nivel nao e nem um nem
+       outro, entao a varredura para exatamente na borda."""
+    import numpy as _np
+    a, _ = nav.captura("/tmp/_bl_caixa4.png")
+    rgb = _np.asarray(Image.open(a).convert("RGB"), dtype=int)
+    lum = _np.asarray(Image.open(a).convert("L"), dtype=int)
+    dentro = ((_np.abs(rgb - _np.array(CORPO)) <= tol).all(axis=2)) | (lum >= claro)
+    A, L = dentro.shape
+    ty, tx = min(max(bloco.y, 0), A - 1), min(max(bloco.x, 0), L - 1)
+    if not dentro[ty, tx]:
+        for dx in (4, 8, 12, -4):
+            if 0 <= tx + dx < L and dentro[ty, tx + dx]:
+                tx += dx; break
+    x0 = tx
+    while x0 > 0 and dentro[ty, x0 - 1] and tx - x0 < limite:
+        x0 -= 1
+    x1 = tx
+    while x1 < L - 1 and dentro[ty, x1 + 1] and x1 - tx < limite:
+        x1 += 1
+    col = min(x0 + 4, L - 1)
+    y0 = ty
+    while y0 > 0 and dentro[y0 - 1, col] and ty - y0 < limite:
+        y0 -= 1
+    y1 = ty
+    while y1 < A - 1 and dentro[y1 + 1, col] and y1 - ty < limite:
+        y1 += 1
+    return (x0, y0, x1, y1)
+
+
+def discos(bloco, esq=45, dir_=430, cima=25, baixo=250, claro=175):
+    """Os discos claros em volta do titulo de um bloco, separados em colunas.
+
+       Depois de quatro tentativas de medir o retangulo do bloco pela cor
+       (linha do titulo, crescimento de regiao, corpo-ou-claro), o que fecha e
+       aceitar que a MEDIDA do retangulo e fragil — o antialias entre as letras
+       tem a cor da previsao do nivel — e usar o que eu CONTROLO: a aula
+       coloca os blocos longe uns dos outros, entao uma caixa generosa em volta
+       do titulo so contem os pinos deste bloco. A contagem esperada confere."""
+    import numpy as _np
+    a, _ = nav.captura("/tmp/_bl_discos.png")
+    rgb = _np.asarray(Image.open(a).convert("RGB"), dtype=int)
+    lum = _np.asarray(Image.open(a).convert("L"), dtype=int)
+    azul = (rgb[:, :, 2] - rgb[:, :, 0] >= 55) & (rgb[:, :, 2] >= 150)
+    mask = (lum >= claro) | azul
+    A, L = mask.shape
+    x0, x1 = max(0, bloco.x - esq), min(L, bloco.x + dir_)
+    y0, y1 = max(0, bloco.y - cima), min(A, bloco.y + baixo)
+    sub = mask[y0:y1, x0:x1]
+    vistos = _np.zeros_like(sub); pts = []
+    ys, xs = _np.nonzero(sub)
+    for yy, xx in zip(ys, xs):
+        if vistos[yy, xx]:
+            continue
+        pilha, pontos = [(yy, xx)], []
+        vistos[yy, xx] = True
+        while pilha and len(pontos) < 600:
+            cy, cx = pilha.pop(); pontos.append((cy, cx))
+            for dy in (-1, 0, 1):
+                for dx in (-1, 0, 1):
+                    ny, nx = cy + dy, cx + dx
+                    if 0 <= ny < sub.shape[0] and 0 <= nx < sub.shape[1] \
+                            and sub[ny, nx] and not vistos[ny, nx]:
+                        vistos[ny, nx] = True; pilha.append((ny, nx))
+        pys = [p[0] for p in pontos]; pxs = [p[1] for p in pontos]
+        alt, larg = max(pys) - min(pys) + 1, max(pxs) - min(pxs) + 1
+        if 7 <= alt <= 22 and 7 <= larg <= 22 and abs(alt - larg) <= 4 \
+                and len(pontos) / float(alt * larg) >= 0.62:
+            pts.append((int(sum(pxs) / len(pxs)) + x0, int(sum(pys) / len(pys)) + y0))
+    if not pts:
+        return {"esq": [], "dir": []}
+    # duas colunas: a da esquerda e a mais a esquerda de todas
+    menor, maior = min(p[0] for p in pts), max(p[0] for p in pts)
+    coluna_esq = [p for p in pts if p[0] - menor <= 24 and p[0] < bloco.x]
+    coluna_dir = [p for p in pts if maior - p[0] <= 24 and p[0] > bloco.x + 60]
+    return {"esq": sorted(coluna_esq, key=lambda p: p[1]),
+            "dir": sorted(coluna_dir, key=lambda p: p[1])}
+
+
+def pino(bloco, rotulo, lado):
+    """A bolinha de um pino, pela ordem conhecida, com a contagem conferida."""
+    ordem = PORTAS.get(bloco.nome, {}).get(lado)
+    if ordem is None:
+        raise RuntimeError(f"nao sei a ordem dos pinos de '{bloco.nome}' ({lado})")
+    achados = discos(bloco)[lado]
+    if len(achados) != len(ordem):
+        raise RuntimeError(f"{bloco.nome}: achei {len(achados)} bolinhas de {lado} "
+                           f"e a tabela diz {len(ordem)} ({ordem})")
+    return achados[ordem.index(rotulo)]
+
+
+# Deslocamento de cada pino em relacao ao TITULO do bloco, medido na tela com a
+# pagina em 100%. Medir uma vez e guardar foi o que funcionou: detectar disco
+# automaticamente falhou quatro vezes (a previsao do nivel, o antialias entre as
+# letras e o icone do bloco entram na conta).
+#   chave: nome do bloco -> lado -> rotulo -> (dx, dy)
+DESLOC = {
+    "Collision": {"esq": {}, "dir": {"hit": (247, 57)}},
+    "Destroyer": {"esq": {"in": (-28, 57)}, "dir": {"out": (248, 57)}},
+}
+
+
+def pino_fixo(bloco, rotulo, lado):
+    """(x, y) do pino pelo deslocamento medido do tipo do bloco."""
+    tab = DESLOC.get(bloco.nome, {}).get(lado, {})
+    if rotulo not in tab:
+        raise RuntimeError(f"nao tenho o deslocamento do pino '{rotulo}' ({lado}) "
+                           f"de '{bloco.nome}' — meça e acrescente em blocos.DESLOC")
+    dx, dy = tab[rotulo]
+    return (bloco.x + dx, bloco.y + dy)
+
+
+def liga_fixo(origem, pino_saida, destino, pino_entrada):
+    """Liga usando os deslocamentos medidos, e CONFERE que o fio apareceu."""
+    p1 = pino_fixo(origem, pino_saida, "dir")
+    p2 = pino_fixo(destino, pino_entrada, "esq")
+    a_antes, _ = nav.captura("/tmp/_lf_antes.png")
+    for _ in range(2):
+        arrasta_devagar(p1[0], p1[1], p2[0], p2[1])
+        time.sleep(0.8)
+        a_dep, _ = nav.captura("/tmp/_lf_depois.png")
+        if _mudou_no_caminho(a_antes, a_dep, p1, p2, raio=90, minimo=60):
+            return True
+    raise RuntimeError(f"liguei {origem.nome}.{pino_saida} -> "
+                       f"{destino.nome}.{pino_entrada} e nenhum fio apareceu")

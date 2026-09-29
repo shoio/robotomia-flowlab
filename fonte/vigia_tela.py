@@ -13,6 +13,22 @@ def rodando():
     r = subprocess.run(["pgrep", "-f", "caffeinate -disu"], capture_output=True, text=True)
     return bool(r.stdout.strip())
 
+PISO = 25          # % de bateria abaixo do qual eu nao seguro mais a tela
+
+
+def energia():
+    r = subprocess.run(["pmset", "-g", "ps"], capture_output=True, text=True).stdout
+    carga = None
+    for pedaco in r.split():
+        if pedaco.endswith("%;"):
+            try:
+                carga = int(pedaco.rstrip("%;"))
+            except ValueError:
+                pass
+            break
+    return ("AC Power" in r), carga
+
+
 def bloqueada():
     import Quartz
     d = Quartz.CGSessionCopyCurrentDictionary() or {}
@@ -27,6 +43,16 @@ def main(saida):
     anterior = None
     while True:
         try:
+            # NA BATERIA e abaixo do piso: solto a tela e deixo dormir. Uma
+            # noite ja terminou com o Mac descarregado porque eu prendi a tela
+            # acesa sem olhar de onde vinha a energia.
+            na_tomada, carga = energia()
+            if not na_tomada and carga is not None and carga <= PISO:
+                subprocess.run(["pkill", "-f", "caffeinate -disu"], capture_output=True)
+                f.write(f"{time.strftime('%d-%m %H:%M:%S')}  SOLTEI A TELA: bateria "
+                        f"em {carga}% e sem carregador\n")
+                time.sleep(60)
+                continue
             if not rodando():
                 subprocess.Popen(["caffeinate", "-disu", "-t", "43200"],
                                  stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
