@@ -35,6 +35,15 @@
   ],
   "botao": "esq"
  },
+ "abrir_physics2": {
+  "antes": "g07_a.png",
+  "depois": "g07_b.png",
+  "alvo": [
+   1930,
+   1054
+  ],
+  "botao": "esq"
+ },
  "clonar": {
   "antes": "g05_a.png",
   "depois": "g05_b.png",

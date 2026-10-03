@@ -147,10 +147,71 @@ def jogador():
     a, _ = nav.captura("/tmp/_fis.png")
     q = nav.acha_texto("physics", arquivo=a)
     A.gesto("abrir_physics", "g03", q, lambda: clique(*q), espera=2.5)
-    A.gesto("marcar_movable", "g04", (1681, 476), lambda: clique(1681, 476), espera=1.2)
+    A.gesto("marcar_movable", "g04", (1681, 476),
+            lambda: marca_caixa("movable", True), espera=1.2)
     A.cap("p06_movable")
     fecha_painel_objeto()
     A.cap("p07_jogador_pronto")
+    return True
+
+
+def marca_caixa(rotulo, quero=True):
+    """Marca/desmarca uma caixinha do painel, achando-a pelo ROTULO.
+
+       O painel do objeto MUDA de posicao na tela conforme o objeto e o que
+       esta aberto; coordenada fixa aqui ja deixou 'movable' desmarcado sem
+       ninguem notar — e com ele desmarcado a Densidade fica desabilitada, o
+       jogador corre e a moeda nao some. Conferido pela COR da caixinha."""
+    from PIL import Image
+    for tentativa in range(3):
+        a, _ = nav.captura("/tmp/_c1_caixa.png")
+        p = nav.acha_texto(rotulo.lower(), arquivo=a, regiao=(0.45, 0.1, 1.0, 0.85))
+        if not p:
+            raise RuntimeError(f"nao achei a caixinha '{rotulo}' no painel")
+        cx, cy = p[0] - 90, p[1]
+        cor = Image.open(a).convert("RGB").getpixel((cx, cy))
+        marcada = cor[2] > 150 and cor[2] - cor[0] > 40
+        if marcada == quero:
+            return True
+        clique(cx, cy)
+        time.sleep(1.0)
+    raise RuntimeError(f"nao consegui deixar '{rotulo}' como {quero}")
+
+
+def arrasta_slider(rotulo, ate_direita=True):
+    """Arrasta um controle deslizante do painel de fisica ate a ponta.
+       Acha pela ETIQUETA (Density, Friction) porque o painel MUDA de altura:
+       marcar 'movable' faz nascer uma linha nova e empurra tudo para baixo."""
+    a, _ = nav.captura("/tmp/_c1_slider.png")
+    p = nav.acha_texto(rotulo.lower(), arquivo=a, regiao=(0.45, 0.1, 1.0, 0.85))
+    if not p:
+        raise RuntimeError(f"nao achei o controle '{rotulo}' no painel de fisica")
+    # este controle fixa o valor ONDE O MOUSE DESCE — arrastar a partir da
+    # esquerda zera o valor em vez de aumentar (medi 3.0 depois de 'arrastar
+    # para a direita'). Entao: clique direto na ponta.
+    alvo = p[0] + 430 if ate_direita else p[0] + 155
+    clique(alvo, p[1])
+    time.sleep(1.0)
+    return p
+
+
+@etapa
+def peso():
+    """Deixa o jogador PESADO. Sem isto ele corre 180 px por quadro e atravessa
+       a moeda sem a fisica registrar contato: a moeda nao some e nada no
+       editor acusa. Medido: com densidade e friccao no maximo o passo cai
+       para 52 px e a colisao vale."""
+    x, y = celula(COL_JOGADOR, LINHA_ANDAR)
+    editor.objeto_ou_abre(x, y)
+    a, _ = nav.captura("/tmp/_c1_fis.png")
+    q = nav.acha_texto("physics", arquivo=a)
+    A.gesto("abrir_physics2", "g07", q, lambda: clique(*q), espera=2.5)
+    marca_caixa("movable", True)      # sem isto a Densidade fica desabilitada
+    arrasta_slider("density")
+    A.cap("p21_densidade")
+    arrasta_slider("friction")
+    A.cap("p22_friccao")
+    fecha_painel_objeto()
     return True
 
 
@@ -175,10 +236,17 @@ def movimento():
     # Aula 1 falhar tres vezes seguidas.
     editor.objeto_ou_abre(x, y)
     editor.abre_comportamentos()
-    a, _ = nav.captura("/tmp/_c1_persist.png")
-    lido = " ".join(t for t, *_ in rs.ocr_forte(a, regiao=(0.2, 0.05, 1, 0.9),
-                                                psm="6")).lower()
-    if "run" not in lido:
+    # o canvas demora a desenhar: tento algumas vezes antes de acusar sumico,
+    # senao eu reprovo um pacote que esta la e so nao foi pintado ainda
+    lido = ""
+    for tentativa in range(4):
+        time.sleep(1.5)
+        a, _ = nav.captura("/tmp/_c1_persist.png")
+        lido = " ".join(t for t, *_ in rs.ocr_forte(a, regiao=(0.2, 0.05, 1, 0.9),
+                                                    psm="6")).lower()
+        if "run" in lido or "jump" in lido:
+            break
+    if "run" not in lido and "jump" not in lido:
         raise RuntimeError("o pacote Run & Jump NAO ficou salvo no jogador "
                            f"(li {lido[:80]!r})")
     print("   pacote conferido depois de reabrir", flush=True)
