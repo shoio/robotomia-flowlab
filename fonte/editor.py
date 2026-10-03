@@ -133,3 +133,63 @@ def objeto_ou_abre(x=None, y=None):
     recupera()
     espera_tela("behaviors", limite=20)
     return escolha
+
+
+def no_jogo():
+    """Estou na PAGINA DO JOGO (nao no editor)?
+
+       O Flowlab tem duas telas parecidas. No editor a barra de baixo diz
+       'Library'; na pagina do jogo ela diz 'Editor / Details / Theme / Cover'.
+       Medir no editor achando que se mede no jogo produz numero bonito e
+       falso: as teclas vao para o editor e o objeto ANDA porque esta sendo
+       arrastado."""
+    vistas = na_tela("library", "game levels", "editor", "details")
+    if "library" in vistas or "game levels" in vistas:
+        return False
+    return ("editor" in vistas) or ("details" in vistas)
+
+
+def volta_ao_editor(limite=25):
+    """Da pagina do jogo de volta para o editor."""
+    if not no_jogo():
+        return True
+    p = nav.acha_texto("editor")
+    if not p:
+        raise RuntimeError("nao achei o botao Editor na pagina do jogo")
+    rs.clique_img(p[0], p[1], escala=2.0, janela=nav.janela())
+    time.sleep(4); nav.espera_parar(limite=20); nav.fecha_dialogo()
+    espera_tela("library", "play", limite=limite)
+    return True
+
+
+def rejoga():
+    """Reinicia o jogo: volta ao editor e aperta Play. Recarregar a pagina NAO
+       serve — o mesmo endereco serve as duas telas e a recarga cai no editor."""
+    volta_ao_editor()
+    return joga()
+
+
+def joga(limite=30):
+    """Do editor para o jogo rodando, conferindo a TROCA DE TELA."""
+    if no_jogo():
+        return True
+    p = nav.acha_texto("play")
+    if not p:
+        raise RuntimeError("nao achei o botao Play (estou mesmo no editor?)")
+    rs.clique_img(p[0], p[1], escala=2.0, janela=nav.janela())
+    time.sleep(5)
+    nav.espera_parar(limite=20)
+    nav.fecha_dialogo()
+    fim = time.time() + limite
+    while time.time() < fim:
+        if no_jogo():
+            return True
+        nav.fecha_dialogo()
+        time.sleep(1.5)
+    raise RuntimeError("cliquei no Play e continuo no editor — nao vou medir daqui")
+
+
+def exige_jogo():
+    if not no_jogo():
+        raise RuntimeError("estou no EDITOR, nao no jogo: qualquer medida daqui e mentira")
+    return True
