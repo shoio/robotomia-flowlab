@@ -38,6 +38,26 @@ repetir nenhuma descoberta.
 4. "Deseja ativar o Ditado?" (macOS, disparado pelas minhas teclas repetidas)
    → **Agora Nao**
 
+## ⚠️ A armadilha que envenenou as provas de hoje
+
+**Eu media na tela errada.** O Flowlab tem DUAS telas que se parecem:
+
+- o **editor** (`Play · Library · Game Levels · Layer · Settings` embaixo), onde
+  um clique no nivel abre o menu `Clone / Edit / Delete / Cancel`;
+- a **pagina do jogo** (`Editor · Details · Theme · Cover` embaixo), onde o jogo
+  roda de verdade.
+
+Depois de recarregar a pagina eu voltava para o EDITOR e seguia "testando o
+jogo": as teclas iam para o editor, o clique abria o menu do objeto, e o
+boneco "andava 344 px" porque eu estava ARRASTANDO o objeto, nao jogando. As
+conclusoes tiradas dali — inclusive "o jogador atravessa a moeda" — **nao
+valem**.
+
+**Regra para a proxima sessao:** antes de qualquer medida em jogo,
+`editor.na_tela("library")` tem de dar VAZIO e `na_tela("editor","details")`
+tem de dar cheio. Se houver 'library' na tela, eu estou no editor e qualquer
+prova dali e mentira.
+
 ## O que trava a Aula 1, com o que ja sei
 
 A moeda **nao some** quando o jogador passa por ela. O que esta medido:
