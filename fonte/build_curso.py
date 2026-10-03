@@ -7,49 +7,29 @@
 import os, json, shutil
 from PIL import Image
 import gera_curso as G
-import conteudo_a2, conteudo_a3, conteudo_a4, conteudo_a5, conteudo_a6, conteudo_a7, conteudo_a8, conteudo_a9
-import conteudo_a10, conteudo_a11, conteudo_a12, conteudo_a13, conteudo_a14
-import conteudo_a15, conteudo_a16, conteudo_a17, conteudo_a18
+import conteudo_a1
 
 AQUI  = os.path.dirname(os.path.abspath(__file__))     # .../fonte
 SAIDA = os.path.dirname(AQUI)                          # a raiz do repositorio
 os.chdir(AQUI)   # todos os caminhos de conteudo sao relativos a fonte/
 
 PLANO = [
-    (1, "Obby em 50 minutos", "Um percurso de obstáculos, sem uma linha de código.", True),
-    (2, "A lava que mata", "O primeiro script: uma peça que reage a quem encosta.", True),
-    (3, "Plataformas que somem", "Pisou, sumiu. O obby vira um jogo de tempo.", True),
-    (4, "Publicar o seu jogo", "Seu jogo no ar, com nome e descrição, num link que você manda.", True),
-    (5, "Moedas e placar", "Encostou, sumiu, somou — com o placar na tela.", True),
-    (6, "Botão e porta", "Um script mexendo em outra peça.", True),
-    (7, "O martelo que gira", "Obstáculo que derruba. Repetição.", True),
-    (8, "Loja: gaste as moedas", "Três moedas compram velocidade. Aqui entra o if.", True),
-    (9, "Projeto livre e mostra", "Você monta o seu jogo, com o kit de receitas do curso inteiro.", True),
-    (10, "Checkpoint: a bandeira que salva", "Morreu? Volta na bandeira, não no começo.", True),
+    (1,  "Pega-moedas", "Um boneco que corre e uma moeda que some. O primeiro jogo.", True),
+    (2,  "Pulo e plataformas", "Gravidade, pulo e um percurso para atravessar.", False),
+    (3,  "A lava que persegue", "Corrida contra um perigo que sobe. Tempo e fim de jogo.", False),
+    (4,  "Nave e tiro", "Inimigos descendo, tiro que destroi, placar na tela.", False),
+    (5,  "Um botao so", "O passaro entre os canos: acaso e dificuldade que cresce.", False),
+    (6,  "Chave e porta", "Labirinto com chave: o jogo passa a ter memoria.", False),
+    (7,  "Empurra-blocos", "Quebra-cabeca: empurrar caixas ate os alvos.", False),
+    (8,  "Contra o relogio", "Percurso cronometrado, com recorde da partida.", False),
+    (9,  "Inimigo que persegue", "IA simples, vida e barra de vida.", False),
+    (10, "Menu, fases e fim de jogo", "Tela de titulo, tres fases e tela de vitoria.", False),
+    (11, "Som, animacao e brilho", "O mesmo jogo, mas com vida.", False),
+    (12, "Projeto livre e mostra", "O jogo do aluno, publicado, com link para a familia.", False),
 ]
 
 
-def aula1():
-    """Converte a Aula 1 (ja escrita) para o formato do gerador."""
-    P = json.load(open("aula1/passos.json"))
-    passos = []
-    for p in P:
-        passos.append(dict(n=p["n"], titulo=p["titulo"], foto=p["img"],
-                           clipe=p["clipe"], corpo=p["corpo"], ck=p["ck"],
-                           sos=[tuple(s) for s in p["sos"]]))
-    return {
-        "n": 1, "slug": "aula1", "titulo": "Obby em 50 minutos",
-        "subtitulo": "Você vai construir um percurso de obstáculos no Roblox Studio e atravessar ele.",
-        "tempo": "50 minutos", "etiqueta": "Aula 1 · sem programação",
-        "fim": "Acabou a Aula 1. Você construiu e atravessou o seu percurso — sem escrever uma linha de código.",
-        "avisos": [
-          ("Os clipes", "Doze passos têm uma animação curta que mostra o gesto inteiro — o cursor saindo, clicando, e o que muda na tela. Dá para trocar para a foto com as marcações."),
-          ("Atalhos", "Este material usa <span class=ui>Ctrl</span>, do Windows. Num Mac, troque Ctrl por <span class=ui>⌘</span>."),
-          ("Travou?", "Todo passo tem um quadro laranja embaixo com o conserto dos erros mais comuns."),
-        ],
-        "passos": passos,
-        "fotos_de": "aula1/final", "clipes_de": "aula1/gifs",
-    }
+def aula1(): return _de_conteudo(conteudo_a1)
 
 
 def _de_conteudo(mod):
@@ -64,27 +44,6 @@ def _de_conteudo(mod):
     return a
 
 
-def aula2(): return _de_conteudo(conteudo_a2)
-def aula3(): return _de_conteudo(conteudo_a3)
-def aula4(): return _de_conteudo(conteudo_a4)
-def aula5(): return _de_conteudo(conteudo_a5)
-def aula6(): return _de_conteudo(conteudo_a6)
-def aula7(): return _de_conteudo(conteudo_a7)
-def aula8(): return _de_conteudo(conteudo_a8)
-def aula9(): return _de_conteudo(conteudo_a9)
-# 2o bloco. Uma aula so entra no PLANO e na tupla do laco quando as fotos
-# dela existem: enquanto nao existem, ela nao e uma aula, e um texto.
-def aula10(): return _de_conteudo(conteudo_a10)
-def aula11(): return _de_conteudo(conteudo_a11)
-def aula12(): return _de_conteudo(conteudo_a12)
-def aula13(): return _de_conteudo(conteudo_a13)
-def aula14(): return _de_conteudo(conteudo_a14)
-def aula15(): return _de_conteudo(conteudo_a15)
-def aula16(): return _de_conteudo(conteudo_a16)
-def aula17(): return _de_conteudo(conteudo_a17)
-def aula18(): return _de_conteudo(conteudo_a18)
-
-
 def indice(aulas_prontas):
     cartoes = []
     for n, tit, sub, pronta in PLANO:
@@ -94,17 +53,17 @@ def indice(aulas_prontas):
         else:
             cartoes.append(f'<div class="cartao embreve"><div class="num">Aula {n} · em breve</div>'
                            f'<h3>{tit}</h3><p>{sub}</p></div>')
-    return (G.CABECA.format(titulo="Roblox na Robotomia", css=G.CSS, corpo_attr="",
-                            desc="Curso de Roblox Studio da Robotomia: uma aula por semana, "
+    return (G.CABECA.format(titulo="Flowlab na Robotomia", css=G.CSS, corpo_attr="",
+                            desc="Curso de Flowlab da Robotomia: uma aula por semana, "
                                  "passo a passo, com animação em cada gesto.") + f'''
 <header class="barra"><div class="barra-in">
-  <div class="marca">Robotomia <span>· Roblox</span></div>
+  <div class="marca">Robotomia <span>· Flowlab</span></div>
   <div class="conta">{len(aulas_prontas)} de {len(PLANO)} aulas no ar</div>
 </div></header>
 
 <div class="capa">
   <span class="etiqueta">Curso · 10 a 14 anos</span>
-  <h1>Roblox na Robotomia</h1>
+  <h1>Flowlab na Robotomia</h1>
   <p class="linha-fina">Uma aula por semana, de 50 minutos. Cada aula começa num projeto novo
   e termina com alguma coisa que dá para jogar no mesmo dia.
   Cada passo tem uma foto da tela, e os gestos novos têm uma animação curta.</p>
@@ -122,8 +81,8 @@ o quadro laranja do próprio passo tem o conserto.</p>
 def monta():
     # o guarda roda ANTES de gerar: toda regra dele nasceu de um defeito
     # que passou pela leitura e so apareceu seguindo a aula como aluno.
-    import confere_aulas, confere_lua
-    problemas = confere_aulas.confere() + confere_lua.confere()
+    import confere_aulas
+    problemas = confere_aulas.confere()
     if problemas:
         for m in problemas:
             print("  !!", m)
@@ -140,8 +99,7 @@ def monta():
         elif os.path.exists(alvo):
             os.remove(alvo)
     prontas = []
-    for construtor in (aula1, aula2, aula3, aula4, aula5, aula6, aula7, aula8, aula9,
-                       aula10):
+    for construtor in (aula1,):
         a = construtor()
         pasta = os.path.join(SAIDA, a["slug"])
         os.makedirs(os.path.join(pasta, "fotos"), exist_ok=True)

@@ -65,9 +65,14 @@ class A:
 
     @staticmethod
     def gesto(chave, base, alvo, acao, botao="esq", espera=1.6):
-        """Captura ANTES, faz o gesto, captura DEPOIS e registra o par."""
+        """Captura ANTES, faz o gesto, captura DEPOIS e registra o par.
+           Se a acao devolver um ponto, e ELE que vale como alvo do clipe —
+           senao a seta da animacao aponta para onde eu PENSEI em clicar, e
+           nao para onde cliquei (ja aconteceu com a caixinha 'movable')."""
         a = A.cap(base + "_a")
-        acao()
+        devolvido = acao()
+        if isinstance(devolvido, (tuple, list)) and len(devolvido) == 2:
+            alvo = devolvido
         time.sleep(espera)
         nav.espera_parar(limite=15)
         b = A.cap(base + "_b")

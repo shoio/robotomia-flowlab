@@ -1,7 +1,7 @@
 {
  "criar_objeto": {
-  "antes": "g01_a.png",
-  "depois": "g01_b.png",
+  "antes": "g01_a.jpg",
+  "depois": "g01_b.jpg",
   "alvo": [
    1374,
    895
@@ -9,8 +9,8 @@
   "botao": "esq"
  },
  "escolher_create": {
-  "antes": "g02_a.png",
-  "depois": "g02_b.png",
+  "antes": "g02_a.jpg",
+  "depois": "g02_b.jpg",
   "alvo": [
    1254,
    892
@@ -18,8 +18,8 @@
   "botao": "esq"
  },
  "abrir_physics": {
-  "antes": "g03_a.png",
-  "depois": "g03_b.png",
+  "antes": "g03_a.jpg",
+  "depois": "g03_b.jpg",
   "alvo": [
    2004,
    1270
@@ -27,17 +27,17 @@
   "botao": "esq"
  },
  "marcar_movable": {
-  "antes": "g04_a.png",
-  "depois": "g04_b.png",
+  "antes": "g04_a.jpg",
+  "depois": "g04_b.jpg",
   "alvo": [
-   1681,
-   476
+   1556,
+   541
   ],
   "botao": "esq"
  },
  "abrir_physics2": {
-  "antes": "g07_a.png",
-  "depois": "g07_b.png",
+  "antes": "g07_a.jpg",
+  "depois": "g07_b.jpg",
   "alvo": [
    1930,
    1054
@@ -45,8 +45,8 @@
   "botao": "esq"
  },
  "clonar": {
-  "antes": "g05_a.png",
-  "depois": "g05_b.png",
+  "antes": "g05_a.jpg",
+  "depois": "g05_b.jpg",
   "alvo": [
    1225,
    872
@@ -54,11 +54,38 @@
   "botao": "esq"
  },
  "jogar": {
-  "antes": "g06_a.png",
-  "depois": "g06_b.png",
+  "antes": "g06_a.jpg",
+  "depois": "g06_b.jpg",
   "alvo": [
    1051,
    1584
+  ],
+  "botao": "esq"
+ },
+ "abrir_my_games": {
+  "antes": "g10_a.jpg",
+  "depois": "g10_b.jpg",
+  "alvo": [
+   2526,
+   66
+  ],
+  "botao": "esq"
+ },
+ "novo_jogo": {
+  "antes": "g11_a.jpg",
+  "depois": "g11_b.jpg",
+  "alvo": [
+   2578,
+   268
+  ],
+  "botao": "esq"
+ },
+ "empty_project": {
+  "antes": "g12_a.jpg",
+  "depois": "g12_b.jpg",
+  "alvo": [
+   1272,
+   860
   ],
   "botao": "esq"
  }

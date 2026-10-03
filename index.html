@@ -1,11 +1,16 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""Gera o site do curso: um indice e uma pagina por aula."""
-import os, json, shutil, html, re
-
-SAIDA = "curso"
-
-CSS = """
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Flowlab na Robotomia</title>
+<meta name="description" content="Curso de Flowlab da Robotomia: uma aula por semana, passo a passo, com animação em cada gesto.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='26' font-size='26'>&#129302;</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@700;800&family=Atkinson+Hyperlegible:wght@400;700&display=swap">
+<style>
 :root{
   --papel:#FBFAF7; --carta:#FFFFFF; --tinta:#14161C; --tinta2:#4E525C;
   --linha:#E3E0D8; --azul:#1B62DC; --azul-fraco:#EAF0FC;
@@ -165,151 +170,38 @@ main{max-width:1180px;margin:0 auto;padding:10px 20px 70px}
   .midia img{max-height:11cm;width:auto;margin:0 auto}
   .capa{break-after:page}
 }
-"""
-
-JS = """
-(function(){
-  var chave = "robotomia-roblox-" + (document.body.dataset.aula || "x");
-  function ler(){ try{ return JSON.parse(localStorage.getItem(chave)||"[]"); }catch(e){ return []; } }
-  function gravar(v){ try{ localStorage.setItem(chave, JSON.stringify(v)); }catch(e){} }
-  var caixas = [].slice.call(document.querySelectorAll(".risca input"));
-  var conta  = document.getElementById("conta");
-  var trilho = document.getElementById("trilho");
-  if (!caixas.length) return;
-  var feitos = ler();
-  function pinta(){
-    var n = 0;
-    caixas.forEach(function(c){
-      var p = c.closest(".passo");
-      if (c.checked){ n++; p.classList.add("feito"); } else { p.classList.remove("feito"); }
-    });
-    if (conta)  conta.textContent = n + " de " + caixas.length + " passos prontos";
-    if (trilho) trilho.style.width = (100*n/caixas.length) + "%";
-  }
-  caixas.forEach(function(c){
-    c.checked = feitos.indexOf(c.dataset.passo) >= 0;
-    c.addEventListener("change", function(){
-      var v = ler().filter(function(x){ return x !== c.dataset.passo; });
-      if (c.checked) v.push(c.dataset.passo);
-      gravar(v); pinta();
-    });
-  });
-  pinta();
-  [].slice.call(document.querySelectorAll(".abas")).forEach(function(g){
-    g.addEventListener("click", function(e){
-      var b = e.target.closest(".aba"); if(!b) return;
-      var caixa = g.parentNode;
-      [].slice.call(g.children).forEach(function(x){ x.setAttribute("aria-pressed", x===b ? "true":"false"); });
-      caixa.querySelector(".gif").hidden  = (b.dataset.ver !== "clipe");
-      caixa.querySelector(".foto").hidden = (b.dataset.ver !== "foto");
-      caixa.querySelector(".legenda").textContent = b.dataset.legenda;
-    });
-  });
-})();
-"""
-
-CABECA = """<!doctype html>
-<html lang="pt-BR">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="robots" content="noindex,nofollow">
-<title>{titulo}</title>
-<meta name="description" content="{desc}">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='26' font-size='26'>&#129302;</text></svg>">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@700;800&family=Atkinson+Hyperlegible:wght@400;700&display=swap">
-<style>{css}</style>
+</style>
 </head>
-<body{corpo_attr}>
-"""
+<body>
 
-
-def midia(p, base=""):
-    foto = f'<img class="foto" src="{base}fotos/{p["foto"]}" alt="Tela do Flowlab no passo {p["n"]}" loading="lazy">'
-    if not p.get("clipe"):
-        return (f'<figure class="midia"><div class="moldura">{foto}</div>'
-                f'<p class="legenda">Foto da tela.</p></figure>')
-    gif = f'<img class="gif" src="{base}clipes/{p["clipe"]}" alt="Animação do passo {p["n"]}" loading="lazy">'
-    return ('<figure class="midia"><div class="abas">'
-            '<button class="aba" data-ver="clipe" aria-pressed="true" '
-            'data-legenda="O clipe repete sozinho. Repare onde o cursor vai antes de clicar.">▶ Clipe</button>'
-            '<button class="aba" data-ver="foto" aria-pressed="false" '
-            'data-legenda="Foto da tela.">Foto</button></div>'
-            f'<div class="moldura">{gif}{foto.replace("<img", "<img hidden", 1)}</div>'
-            '<p class="legenda">O clipe repete sozinho. Repare onde o cursor vai antes de clicar.</p>'
-            # no papel o clipe nao roda: o @media print troca pela foto, entao
-            # a legenda do clipe tambem tem de sair
-            '<p class="legenda so-papel">Foto da tela.</p></figure>')
-
-
-def bloco_codigo(codigo, auto=()):
-    """auto = numeros de linha que o EDITOR escreve sozinho. Sao marcadas para
-       o aluno nao digitar de novo — foi o erro que apareceu no teste: quem
-       digitava tudo terminava com tres 'end)' em vez de um."""
-    saida = []
-    for i, l in enumerate(codigo.split("\n"), 1):
-        classe = ' class="auto"' if i in auto else ""
-        saida.append(f"<li{classe}>{html.escape(l) if l else ' '}</li>")
-    notas = []
-    if auto:
-        notas.append("as linhas em cinza o editor escreve sozinho — não digite elas")
-    # Teclado brasileiro: a aspa e tecla MORTA. Medido no Studio, tres vezes:
-    #   aspa + vogal  -> trema   (Instance.new("IntValue") sai Instance.new(ÏntValue")
-    #   aspa no fim da linha + Enter -> a aspa DOBRA ("leaderstats"")
-    #   aspa + barra de espaco -> uma aspa limpa, sem espaco, nos dois casos.
-    if '"' in codigo:
-        notas.append('teclado brasileiro: a aspa é <b>tecla muda</b> — ela não aparece na hora. '
-                     'Aperte a tecla da aspa e <b>logo a barra de espaço</b>: sai uma aspa '
-                     'sozinha, sem espaço nenhum. Faça isso com <b>todas</b> as aspas. Se você '
-                     'digitar a letra direto depois da aspa, ela vira trema '
-                     '(<code>&quot;I</code> sai <code>Ï</code>).')
-    rodape = ("".join(f'<div class="rodape">{n}</div>' for n in notas))
-    return ('<div class="codigo"><div class="titulo">⌨ digite você mesmo — não copie</div>'
-            f'<ol>{"".join(saida)}</ol>{rodape}</div>')
-
-
-def pagina_aula(aula, total_aulas):
-    passos = []
-    for p in aula["passos"]:
-        sos = "".join(f"<dt>{d}</dt><dd>{r}</dd>" for d, r in p["sos"])
-        cod = bloco_codigo(p["codigo"], p.get("auto", ())) if p.get("codigo") else ""
-        dep = f'<p>{p["depois"]}</p>' if p.get("depois") else ""
-        passos.append(f'''<section class="passo" id="passo{p["n"]}">
-  <div class="cab"><div class="bolha">{p["n"]}</div><h2>{p["titulo"]}</h2>
-  <label class="risca"><input type="checkbox" data-passo="{p["n"]}"> feito</label></div>
-  <div class="corpo">{midia(p)}
-    <div class="texto"><p>{p["corpo"]}</p>{cod}{dep}
-      <div class="certo"><b>Está certo se</b>{p["ck"]}</div>
-      <div class="socorro"><b>Não deu certo?</b><dl>{sos}</dl></div>
-    </div></div></section>''')
-    avisos = "".join(f'<div class="aviso"><b>{t}</b>{c}</div>' for t, c in aula["avisos"])
-    prox = aula["n"] + 1
-    nav = ['<a href="../">⌂ Todas as aulas</a>']
-    if aula["n"] > 1: nav.append(f'<a href="../aula{aula["n"]-1}/">← Aula {aula["n"]-1}</a>')
-    if prox <= total_aulas: nav.append(f'<a href="../aula{prox}/">Aula {prox} →</a>')
-    return (CABECA.format(titulo=f'{aula["titulo"]} — Robotomia', desc=aula["subtitulo"],
-                          css=CSS, corpo_attr=f' data-aula="{aula["slug"]}"') + f'''
 <header class="barra"><div class="barra-in">
-  <div class="marca"><a href="../">Robotomia</a> <span>· Flowlab · Aula {aula["n"]}</span></div>
-  <div class="conta" id="conta">0 de {len(aula["passos"])} passos prontos</div>
-</div><div class="trilho"><i id="trilho"></i></div></header>
+  <div class="marca">Robotomia <span>· Flowlab</span></div>
+  <div class="conta">1 de 12 aulas no ar</div>
+</div></header>
 
 <div class="capa">
-  <span class="etiqueta">{aula["etiqueta"]}</span>
-  <h1>{aula["titulo"]}</h1>
-  <p class="linha-fina">{aula["subtitulo"]} São {len(aula["passos"])} passos, {aula["tempo"]}.
-  Faça um de cada vez e só passe adiante depois de conferir o quadro verde.</p>
-  <div class="avisos">{avisos}</div>
-  <a class="baixar" href="aula{aula["n"]}.pdf">⤓ Baixar esta aula em PDF (para imprimir)</a>
+  <span class="etiqueta">Curso · 10 a 14 anos</span>
+  <h1>Flowlab na Robotomia</h1>
+  <p class="linha-fina">Uma aula por semana, de 50 minutos. Cada aula começa num projeto novo
+  e termina com alguma coisa que dá para jogar no mesmo dia.
+  Cada passo tem uma foto da tela, e os gestos novos têm uma animação curta.</p>
 </div>
 
-<main>
-{chr(10).join(passos)}
-</main>
+<div class="grade">
+<a class="cartao" href="aula1/"><div class="num">Aula 1</div><h3>Pega-moedas</h3><p>Um boneco que corre e uma moeda que some. O primeiro jogo.</p></a>
+<div class="cartao embreve"><div class="num">Aula 2 · em breve</div><h3>Pulo e plataformas</h3><p>Gravidade, pulo e um percurso para atravessar.</p></div>
+<div class="cartao embreve"><div class="num">Aula 3 · em breve</div><h3>A lava que persegue</h3><p>Corrida contra um perigo que sobe. Tempo e fim de jogo.</p></div>
+<div class="cartao embreve"><div class="num">Aula 4 · em breve</div><h3>Nave e tiro</h3><p>Inimigos descendo, tiro que destroi, placar na tela.</p></div>
+<div class="cartao embreve"><div class="num">Aula 5 · em breve</div><h3>Um botao so</h3><p>O passaro entre os canos: acaso e dificuldade que cresce.</p></div>
+<div class="cartao embreve"><div class="num">Aula 6 · em breve</div><h3>Chave e porta</h3><p>Labirinto com chave: o jogo passa a ter memoria.</p></div>
+<div class="cartao embreve"><div class="num">Aula 7 · em breve</div><h3>Empurra-blocos</h3><p>Quebra-cabeca: empurrar caixas ate os alvos.</p></div>
+<div class="cartao embreve"><div class="num">Aula 8 · em breve</div><h3>Contra o relogio</h3><p>Percurso cronometrado, com recorde da partida.</p></div>
+<div class="cartao embreve"><div class="num">Aula 9 · em breve</div><h3>Inimigo que persegue</h3><p>IA simples, vida e barra de vida.</p></div>
+<div class="cartao embreve"><div class="num">Aula 10 · em breve</div><h3>Menu, fases e fim de jogo</h3><p>Tela de titulo, tres fases e tela de vitoria.</p></div>
+<div class="cartao embreve"><div class="num">Aula 11 · em breve</div><h3>Som, animacao e brilho</h3><p>O mesmo jogo, mas com vida.</p></div>
+<div class="cartao embreve"><div class="num">Aula 12 · em breve</div><h3>Projeto livre e mostra</h3><p>O jogo do aluno, publicado, com link para a familia.</p></div>
+</div>
 
-<p class="fim"><strong>{aula["fim"]}</strong></p>
-<div class="navega">{"".join(nav)}</div>
-<script>{JS}</script>
-</body></html>''')
+<p class="fim">Feito para a Robotomia. Se um passo não funcionar na sua tela,
+o quadro laranja do próprio passo tem o conserto.</p>
+</body></html>

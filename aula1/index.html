@@ -1,0 +1,396 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Pega-moedas — Robotomia</title>
+<meta name="description" content="Você vai fazer um jogo de verdade: um boneco que corre e uma moeda que some quando ele encosta.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='26' font-size='26'>&#129302;</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@700;800&family=Atkinson+Hyperlegible:wght@400;700&display=swap">
+<style>
+:root{
+  --papel:#FBFAF7; --carta:#FFFFFF; --tinta:#14161C; --tinta2:#4E525C;
+  --linha:#E3E0D8; --azul:#1B62DC; --azul-fraco:#EAF0FC;
+  --verde:#147A38; --verde-fraco:#E7F4EC;
+  --laranja:#C2560A; --laranja-fraco:#FDF0E4;
+  --roxo:#5B2E9E; --roxo-fraco:#F2ECFB;
+  --codigo:#12151C; --codigo-tinta:#E8EBF0;
+  --sombra:0 1px 2px rgba(20,22,28,.05), 0 8px 24px rgba(20,22,28,.06);
+  --raio:14px;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-tema="claro"]){
+    --papel:#12141A; --carta:#1A1D25; --tinta:#ECEEF2; --tinta2:#A4AAB6;
+    --linha:#2C313C; --azul:#6C9BF0; --azul-fraco:#1B2436;
+    --verde:#5CC183; --verde-fraco:#15271C;
+    --laranja:#F0964E; --laranja-fraco:#2A1E14;
+    --roxo:#B995F0; --roxo-fraco:#221A33;
+    --codigo:#0D1016; --codigo-tinta:#E8EBF0;
+    --sombra:0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+  }
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:68px}
+body{margin:0;background:var(--papel);color:var(--tinta);
+  font-family:"Atkinson Hyperlegible","Helvetica Neue",Arial,sans-serif;
+  font-size:17px;line-height:1.6;-webkit-text-size-adjust:100%}
+h1,h2,h3{font-family:Archivo,"Helvetica Neue",Arial,sans-serif;
+  font-weight:800;letter-spacing:-.015em;text-wrap:balance}
+img{max-width:100%;display:block}
+[hidden]{display:none!important}
+a{color:var(--azul)}
+
+.barra{position:sticky;top:0;z-index:40;background:color-mix(in srgb,var(--papel) 88%,transparent);
+  backdrop-filter:blur(10px);border-bottom:1px solid var(--linha)}
+.barra-in{max-width:1180px;margin:0 auto;padding:11px 20px;display:flex;align-items:center;gap:14px}
+.marca{font-family:Archivo,sans-serif;font-weight:800;font-size:15px;white-space:nowrap}
+.marca a{color:inherit;text-decoration:none}
+.marca span{color:var(--azul)}
+.conta{margin-left:auto;font-size:13px;color:var(--tinta2);font-variant-numeric:tabular-nums;white-space:nowrap}
+.trilho{position:absolute;left:0;bottom:-1px;height:3px;width:100%;background:transparent}
+.trilho i{display:block;height:100%;width:0;background:var(--azul);transition:width .25s ease}
+
+.capa{max-width:1180px;margin:0 auto;padding:46px 20px 10px}
+.etiqueta{display:inline-block;background:var(--azul);color:#fff;font-family:Archivo,sans-serif;
+  font-weight:700;font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;
+  padding:5px 13px;border-radius:99px}
+.capa h1{font-size:clamp(34px,6.2vw,58px);margin:16px 0 10px;line-height:1.02}
+.capa .linha-fina{font-size:19px;color:var(--tinta2);max-width:62ch;margin:0}
+.avisos{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));margin:26px 0 8px}
+.aviso{background:var(--carta);border:1px solid var(--linha);border-radius:var(--raio);
+  padding:14px 16px;font-size:15px;box-shadow:var(--sombra)}
+.aviso b{font-family:Archivo,sans-serif;display:block;font-size:12px;letter-spacing:.09em;
+  text-transform:uppercase;margin-bottom:5px;color:var(--azul)}
+.baixar{display:inline-flex;align-items:center;gap:8px;margin-top:6px;font-size:14.5px;
+  text-decoration:none;border:1px solid var(--linha);background:var(--carta);
+  padding:9px 15px;border-radius:99px;color:var(--tinta);font-weight:700}
+.baixar:hover{border-color:var(--azul);color:var(--azul)}
+
+main{max-width:1180px;margin:0 auto;padding:10px 20px 70px}
+.passo{background:var(--carta);border:1px solid var(--linha);border-radius:var(--raio);
+  padding:20px;margin:22px 0;box-shadow:var(--sombra);scroll-margin-top:70px}
+.passo.feito{border-color:var(--verde)}
+.cab{display:flex;align-items:flex-start;gap:13px;padding-bottom:13px;border-bottom:2px solid var(--linha)}
+.passo.feito .cab{border-bottom-color:var(--verde)}
+.bolha{flex:none;width:40px;height:40px;border-radius:11px;background:var(--azul);color:#fff;
+  font-family:Archivo,sans-serif;font-weight:800;font-size:19px;
+  display:flex;align-items:center;justify-content:center;font-variant-numeric:tabular-nums}
+.passo.feito .bolha{background:var(--verde)}
+.cab h2{font-size:clamp(20px,2.7vw,26px);margin:3px 0 0;flex:1}
+.risca{display:flex;align-items:center;gap:7px;font-size:13.5px;color:var(--tinta2);
+  cursor:pointer;user-select:none;flex:none;padding-top:8px;white-space:nowrap}
+.risca input{width:19px;height:19px;accent-color:var(--verde);cursor:pointer}
+
+.corpo{display:grid;gap:20px;grid-template-columns:1fr;margin-top:16px}
+@media (min-width:920px){ .corpo{grid-template-columns:1.35fr 1fr;align-items:start} }
+.midia{margin:0}
+.moldura{border:1px solid var(--linha);border-radius:10px;overflow:hidden;background:var(--papel)}
+.abas{display:flex;gap:6px;margin-bottom:9px}
+.aba{font-family:Archivo,sans-serif;font-size:12.5px;font-weight:700;letter-spacing:.04em;
+  border:1px solid var(--linha);background:var(--carta);color:var(--tinta2);
+  padding:6px 13px;border-radius:99px;cursor:pointer}
+.aba[aria-pressed="true"]{background:var(--roxo-fraco);border-color:var(--roxo);color:var(--roxo)}
+.legenda{font-size:13px;color:var(--tinta2);margin:8px 2px 0}
+
+.texto>p{margin:0 0 14px}
+.ui{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:.86em;
+  background:var(--azul-fraco);border:1px solid color-mix(in srgb,var(--azul) 25%,transparent);
+  border-radius:5px;padding:1px 6px;white-space:nowrap;color:var(--tinta)}
+.certo,.socorro{border-radius:0 10px 10px 0;padding:12px 15px;margin-top:14px;font-size:15.5px}
+.certo{background:var(--verde-fraco);border-left:5px solid var(--verde)}
+.socorro{background:var(--laranja-fraco);border-left:5px solid var(--laranja)}
+.certo>b:first-child,.socorro>b:first-child{font-family:Archivo,sans-serif;display:block;
+  font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:5px}
+.certo>b:first-child{color:var(--verde)}
+.socorro>b:first-child{color:var(--laranja)}
+.socorro dl{margin:0}
+.socorro dt{font-weight:700;margin-top:10px}
+.socorro dt:first-of-type{margin-top:2px}
+.socorro dd{margin:2px 0 0;color:var(--tinta2)}
+
+.codigo{margin:14px 0;border-radius:10px;overflow:hidden;border:1px solid var(--linha)}
+.codigo .titulo{display:flex;align-items:center;gap:8px;background:var(--roxo-fraco);
+  color:var(--roxo);font-family:Archivo,sans-serif;font-weight:700;font-size:11.5px;
+  letter-spacing:.1em;text-transform:uppercase;padding:7px 13px;border-bottom:1px solid var(--linha)}
+.codigo pre{margin:0;background:var(--codigo);color:var(--codigo-tinta);padding:14px 16px;
+  overflow-x:auto;font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:14.5px;line-height:1.7}
+.codigo ol{margin:0;padding:0 0 0 46px;background:var(--codigo);color:var(--codigo-tinta);
+  font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:14.5px;line-height:1.75;
+  overflow-x:auto}
+.codigo li{border-left:1px solid color-mix(in srgb,var(--codigo-tinta) 18%,transparent);
+  padding:0 16px 0 10px;white-space:pre}
+.codigo li::marker{color:color-mix(in srgb,var(--codigo-tinta) 40%,transparent);font-size:12px}
+.codigo li.auto{color:color-mix(in srgb,var(--codigo-tinta) 42%,transparent);font-style:italic}
+.codigo .rodape{background:var(--codigo);color:color-mix(in srgb,var(--codigo-tinta) 55%,transparent);
+  font-family:"Atkinson Hyperlegible",sans-serif;font-size:12.5px;padding:8px 16px 12px;
+  border-top:1px solid color-mix(in srgb,var(--codigo-tinta) 15%,transparent)}
+.codigo .rodape b{color:color-mix(in srgb,var(--codigo-tinta) 85%,transparent)}
+.codigo .rodape code{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:13px;
+  color:color-mix(in srgb,var(--codigo-tinta) 92%,transparent);
+  background:color-mix(in srgb,var(--codigo-tinta) 12%,transparent);
+  padding:1px 5px;border-radius:4px}
+.codigo .rodape+.rodape{padding-top:10px}
+.so-papel{display:none}
+
+.fim{max-width:1180px;margin:0 auto;padding:0 20px 40px;text-align:center;color:var(--tinta2);font-size:15px}
+.fim strong{color:var(--tinta)}
+.navega{max-width:1180px;margin:0 auto;padding:0 20px 80px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.navega a{text-decoration:none;border:1px solid var(--linha);background:var(--carta);
+  padding:11px 18px;border-radius:99px;color:var(--tinta);font-weight:700;font-size:15px}
+.navega a:hover{border-color:var(--azul);color:var(--azul)}
+
+/* indice */
+.grade{display:grid;gap:16px;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));
+  max-width:1180px;margin:0 auto;padding:10px 20px 80px}
+.cartao{display:block;text-decoration:none;color:inherit;background:var(--carta);
+  border:1px solid var(--linha);border-radius:var(--raio);padding:18px 20px;box-shadow:var(--sombra)}
+.cartao:hover{border-color:var(--azul)}
+.cartao .num{font-family:Archivo,sans-serif;font-weight:800;font-size:12px;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--azul)}
+.cartao h3{margin:6px 0 6px;font-size:21px}
+.cartao p{margin:0;color:var(--tinta2);font-size:15px}
+.cartao.embreve{opacity:.55}
+.cartao.embreve .num{color:var(--tinta2)}
+
+@media print{
+  .barra,.abas,.risca,.baixar,.navega{display:none}
+  body{background:#fff}
+  .gif{display:none!important}
+  .foto{display:block!important}
+  /* quebrar DENTRO do passo e nao antes dele: com page-break-inside:avoid num
+     passo alto o Chrome pulava a folha inteira e sobravam paginas em branco. */
+  .passo{break-inside:auto;box-shadow:none;border-color:#ccc;margin:0 0 16px;padding:16px 18px}
+  .cab{break-after:avoid}
+  .midia,.certo,.socorro,.codigo{break-inside:avoid}
+  .legenda{display:none}
+  .legenda.so-papel{display:block}
+  .midia img{max-height:11cm;width:auto;margin:0 auto}
+  .capa{break-after:page}
+}
+</style>
+</head>
+<body data-aula="aula1">
+
+<header class="barra"><div class="barra-in">
+  <div class="marca"><a href="../">Robotomia</a> <span>· Flowlab · Aula 1</span></div>
+  <div class="conta" id="conta">0 de 20 passos prontos</div>
+</div><div class="trilho"><i id="trilho"></i></div></header>
+
+<div class="capa">
+  <span class="etiqueta">Aula 1 · seu primeiro jogo</span>
+  <h1>Pega-moedas</h1>
+  <p class="linha-fina">Você vai fazer um jogo de verdade: um boneco que corre e uma moeda que some quando ele encosta. São 20 passos, 50 minutos.
+  Faça um de cada vez e só passe adiante depois de conferir o quadro verde.</p>
+  <div class="avisos"><div class="aviso"><b>Tudo no navegador</b>O Flowlab roda dentro do navegador, sem instalar nada. Você precisa estar com a sua conta aberta — se aparecer <span class=ui>Log in</span> no canto de cima, entre antes de começar.</div><div class="aviso"><b>Nada de digitar código</b>Aqui a gente programa <b>encaixando blocos</b> e <b>ligando um fio</b> entre eles. Pensar é igual; teclado é que não precisa.</div><div class="aviso"><b>Os clipes</b>Os passos com animação mostram o gesto inteiro: o mouse andando, o <b>botão certo acendendo</b> e o que muda na tela. Dá para trocar para a foto nas duas abas.</div><div class="aviso"><b>Travou?</b>Todo passo tem um quadro laranja embaixo com o conserto dos erros mais comuns.</div></div>
+  <a class="baixar" href="aula1.pdf">⤓ Baixar esta aula em PDF (para imprimir)</a>
+</div>
+
+<main>
+<section class="passo" id="passo1">
+  <div class="cab"><div class="bolha">1</div><h2>Abra o Flowlab</h2>
+  <label class="risca"><input type="checkbox" data-passo="1"> feito</label></div>
+  <div class="corpo"><figure class="midia"><div class="moldura"><img class="foto" src="fotos/p00_site.jpg" alt="Tela do Flowlab no passo 1" loading="lazy"></div><p class="legenda">Foto da tela.</p></figure>
+    <div class="texto"><p>No navegador, vá para <span class=ui>flowlab.io</span>.<br><br>Esta é a página de entrada. No canto de cima à direita tem o seu nome de usuário — se estiver escrito <span class=ui>Log in</span>, clique e entre com a sua conta antes de seguir.</p>
+      <div class="certo"><b>Está certo se</b>Você está em flowlab.io e <b>não</b> aparece <span class=ui>Log in</span> no canto de cima.</div>
+      <div class="socorro"><b>Não deu certo?</b><dl><dt>Aparece Log in</dt><dd>Clique nele e entre com o e-mail e a senha da sua conta. Sem entrar, o jogo que você fizer não fica salvo.</dd><dt>A página está em inglês</dt><dd>Está certo: o Flowlab é em inglês. Esta aula diz, em cada passo, onde clicar.</dd></dl></div>
+    </div></div></section>
+<section class="passo" id="passo2">
+  <div class="cab"><div class="bolha">2</div><h2>Entre em MY GAMES</h2>
+  <label class="risca"><input type="checkbox" data-passo="2"> feito</label></div>
+  <div class="corpo"><figure class="midia"><div class="abas"><button class="aba" data-ver="clipe" aria-pressed="true" data-legenda="O clipe repete sozinho. Repare onde o cursor vai antes de clicar.">▶ Clipe</button><button class="aba" data-ver="foto" aria-pressed="false" data-legenda="Foto da tela.">Foto</button></div><div class="moldura"><img class="gif" src="clipes/abrir_my_games.gif" alt="Animação do passo 2" loading="lazy"><img hidden class="foto" src="fotos/p00b_lista.jpg" alt="Tela do Flowlab no passo 2" loading="lazy"></div><p class="legenda">O clipe repete sozinho. Repare onde o cursor vai antes de clicar.</p><p class="legenda so-papel">Foto da tela.</p></figure>
+    <div class="texto"><p>No alto à direita, clique em <span class=ui>My Games</span>.<br><br>É aqui que ficam todos os jogos que você fizer. Se esta for a sua primeira vez, a lista está vazia — e tudo bem.</p>
+      <div class="certo"><b>Está certo se</b>O título da página agora é <span class=ui>My Games</span>.</div>
+      <div class="socorro"><b>Não deu certo?</b><dl><dt>Não acho My Games</dt><dd>Ele fica na mesma linha do logotipo, bem no canto direito, ao lado da bolinha com a sua inicial.</dd><dt>Minha lista tem jogos que não sou eu que fiz</dt><dd>Então você entrou com outra conta. Clique na bolinha do canto e troque de conta.</dd></dl></div>
+    </div></div></section>
+<section class="passo" id="passo3">
+  <div class="cab"><div class="bolha">3</div><h2>Crie um jogo novo</h2>
+  <label class="risca"><input type="checkbox" data-passo="3"> feito</label></div>
+  <div class="corpo"><figure class="midia"><div class="abas"><button class="aba" data-ver="clipe" aria-pressed="true" data-legenda="O clipe repete sozinho. Repare onde o cursor vai antes de clicar.">▶ Clipe</button><button class="aba" data-ver="foto" aria-pressed="false" data-legenda="Foto da tela.">Foto</button></div><div class="moldura"><img class="gif" src="clipes/novo_jogo.gif" alt="Animação do passo 3" loading="lazy"><img hidden class="foto" src="fotos/p00c_escolher.jpg" alt="Tela do Flowlab no passo 3" loading="lazy"></div><p class="legenda">O clipe repete sozinho. Repare onde o cursor vai antes de clicar.</p><p class="legenda so-papel">Foto da tela.</p></figure>
+    <div class="texto"><p>Clique no botão verde <span class=ui>+ New Game</span>, no canto direito.<br><br>Abre uma janelinha para escolher por onde começar.</p>
+      <div class="certo"><b>Está certo se</b>Apareceram duas figuras para escolher: <span class=ui>Empty Project</span> e <span class=ui>Flowlab Tutorial</span>.</div>
+      <div class="socorro"><b>Não deu certo?</b><dl><dt>O botão verde não aparece</dt><dd>Role a página para cima. Ele fica na mesma linha do título <span class=ui>My Games</span>.</dd><dt>Abriu um jogo em vez da janelinha</dt><dd>Você clicou num jogo da lista. Volte com a seta do navegador e clique no botão verde.</dd></dl></div>
+    </div></div></section>
+<section class="passo" id="passo4">
+  <div class="cab"><div class="bolha">4</div><h2>Escolha o PROJETO VAZIO</h2>
+  <label class="risca"><input type="checkbox" data-passo="4"> feito</label></div>
+  <div class="corpo"><figure class="midia"><div class="abas"><button class="aba" data-ver="clipe" aria-pressed="true" data-legenda="O clipe repete sozinho. Repare onde o cursor vai antes de clicar.">▶ Clipe</button><button class="aba" data-ver="foto" aria-pressed="false" data-legenda="Foto da tela.">Foto</button></div><div class="moldura"><img class="gif" src="clipes/empty_project.gif" alt="Animação do passo 4" loading="lazy"><img hidden class="foto" src="fotos/p00d_editor_vazio.jpg" alt="Tela do Flowlab no passo 4" loading="lazy"></div><p class="legenda">O clipe repete sozinho. Repare onde o cursor vai antes de clicar.</p><p class="legenda so-papel">Foto da tela.</p></figure>
+    <div class="texto"><p>Clique na <b>figura</b> da esquerda, a do <b>+</b> grande, embaixo da qual está escrito <span class=ui>Empty Project</span>.<br><br>Clique na figura, não no nome — o nome não responde.</p>
+      <div class="certo"><b>Está certo se</b>A janelinha some e sobra uma folha branca no meio da tela: é o seu mundo vazio.</div>
+      <div class="socorro"><b>Não deu certo?</b><dl><dt>Cliquei no nome e não aconteceu nada</dt><dd>Quem responde é a figura de cima, não o texto embaixo dela.</dd><dt>Escolhi o Flowlab Tutorial sem querer</dt><dd>Volte para <span class=ui>My Games</span>, apague esse jogo nos três pontinhos e comece de novo.</dd></dl></div>
+    </div></div></section>
+<section class="passo" id="passo5">
+  <div class="cab"><div class="bolha">5</div><h2>Conheça a tela</h2>
+  <label class="risca"><input type="checkbox" data-passo="5"> feito</label></div>
+  <div class="corpo"><figure class="midia"><div class="moldura"><img class="foto" src="fotos/p01_vazio.jpg" alt="Tela do Flowlab no passo 5" loading="lazy"></div><p class="legenda">Foto da tela.</p></figure>
+    <div class="texto"><p>Antes de construir, repare em três coisas:<br><br><b>1.</b> A <b>folha branca</b> do meio é o seu mundo. É nela que você vai colocar as coisas.<br><b>2.</b> A <b>fileira de baixo</b> tem <span class=ui>Play</span>, <span class=ui>Library</span>, <span class=ui>Game Levels</span>, <span class=ui>Layer</span> e <span class=ui>Settings</span>.<br><b>3.</b> No canto de baixo à direita aparece <span class=ui>Saved</span>: o Flowlab salva sozinho, o tempo todo.</p>
+      <div class="certo"><b>Está certo se</b>Você consegue apontar na tela o botão <span class=ui>Play</span> e a palavra <span class=ui>Saved</span>.</div>
+      <div class="socorro"><b>Não deu certo?</b><dl><dt>Minha folha branca está num tamanho diferente</dt><dd>Não tem problema. Ela é o mundo do jogo e o tamanho pode mudar com o tamanho da janela.</dd></dl></div>
+    </div></div></section>
+<section class="passo" id="passo6">
+  <div class="cab"><div class="bolha">6</div><h2>Clique na grade para criar o jogador</h2>
+  <label class="risca"><input type="checkbox" data-passo="6"> feito</label></div>
+  <div class="corpo"><figure class="midia"><div class="abas"><button class="aba" data-ver="clipe" aria-pressed="true" data-legenda="O clipe repete sozinho. Repare onde o cursor vai antes de clicar.">▶ Clipe</button><button class="aba" data-ver="foto" aria-pressed="false" data-legenda="Foto da tela.">Foto</button></div><div class="moldura"><img class="gif" src="clipes/criar_objeto.gif" alt="Animação do passo 6" loading="lazy"><img hidden class="foto" src="fotos/g01_b.jpg" alt="Tela do Flowlab no passo 6" loading="lazy"></div><p class="legenda">O clipe repete sozinho. Repare onde o cursor vai antes de clicar.</p><p class="legenda so-papel">Foto da tela.</p></figure>
+    <div class="texto"><p>Clique uma vez <b>dentro da folha branca</b>, mais para a esquerda e no meio da altura.<br><br>Abre uma roda com duas metades: <span class=ui>Create</span> e <span class=ui>Cancel</span>.</p>
+      <div class="certo"><b>Está certo se</b>Apareceu uma roda escura com <span class=ui>Create</span> de um lado e <span class=ui>Cancel</span> do outro.</div>
+      <div class="socorro"><b>Não deu certo?</b><dl><dt>Não aparece roda nenhuma</dt><dd>Você clicou fora da folha branca. Clique dentro dela.</dd><dt>Apareceu Clone, Edit, Delete</dt><dd>Essa é a roda de um objeto que <b>já existe</b> naquela casa. Clique em <span class=ui>Cancel</span> e escolha uma casa vazia.</dd></dl></div>
+    </div></div></section>
+<section class="passo" id="passo7">
+  <div class="cab"><div class="bolha">7</div><h2>Escolha CREATE</h2>
+  <label class="risca"><input type="checkbox" data-passo="7"> feito</label></div>
+  <div class="corpo"><figure class="midia"><div class="abas"><button class="aba" data-ver="clipe" aria-pressed="true" data-legenda="O clipe repete sozinho. Repare onde o cursor vai antes de clicar.">▶ Clipe</button><button class="aba" data-ver="foto" aria-pressed="false" data-legenda="Foto da tela.">Foto</button></div><div class="moldura"><img class="gif" src="clipes/escolher_create.gif" alt="Animação do passo 7" loading="lazy"><img hidden class="foto" src="fotos/p02_painel.jpg" alt="Tela do Flowlab no passo 7" loading="lazy"></div><p class="legenda">O clipe repete sozinho. Repare onde o cursor vai antes de clicar.</p><p class="legenda so-papel">Foto da tela.</p></figure>
+    <div class="texto"><p>Clique na metade <span class=ui>Create</span>.<br><br>Abre o <b>painel do objeto</b>: é aqui que todo objeto do jogo ganha nome, desenho e comportamento.</p>
+      <div class="certo"><b>Está certo se</b>Apareceu um painel com <span class=ui>edit sprite</span>, <span class=ui>Behaviors</span>, <span class=ui>Type</span> e <span class=ui>Name</span>.</div>
+      <div class="socorro"><b>Não deu certo?</b><dl><dt>Cliquei em Cancel sem querer</dt><dd>Sem problema: clique de novo na mesma casa e escolha <span class=ui>Create</span>.</dd></dl></div>
+    </div></div></section>
+<section class="passo" id="passo8">
+  <div class="cab"><div class="bolha">8</div><h2>Dê o nome JOGADOR</h2>
+  <label class="risca"><input type="checkbox" data-passo="8"> feito</label></div>
+  <div class="corpo"><figure class="midia"><div class="moldura"><img class="foto" src="fotos/p03_nome.jpg" alt="Tela do Flowlab no passo 8" loading="lazy"></div><p class="legenda">Foto da tela.</p></figure>
+    <div class="texto"><p>No campo <span class=ui>Name</span>, apague o que está escrito e escreva <b>Jogador</b>.<br><br>Depois aperte <span class=ui>Tab</span> — <b>não</b> aperte Enter: o Enter fecha o painel antes da hora.<br><br>Este nome é levado a sério: daqui a pouco você vai procurar o Jogador na lista, e é por ele que você o encontra.</p>
+      <div class="certo"><b>Está certo se</b>O campo <span class=ui>Name</span> mostra <b>Jogador</b> e o painel continua aberto.</div>
+      <div class="socorro"><b>Não deu certo?</b><dl><dt>O painel fechou</dt><dd>Você apertou Enter. Clique na casa do objeto, escolha <span class=ui>Edit</span> e escreva o nome de novo, terminando com Tab.</dd><dt>Não consigo apagar o que estava escrito</dt><dd>Dê dois cliques dentro do campo para selecionar tudo e escreva por cima.</dd></dl></div>
+    </div></div></section>
+<section class="passo" id="passo9">
+  <div class="cab"><div class="bolha">9</div><h2>Abra o editor de desenho</h2>
+  <label class="risca"><input type="checkbox" data-passo="9"> feito</label></div>
+  <div class="corpo"><figure class="midia"><div class="moldura"><img class="foto" src="fotos/p04_sprite.jpg" alt="Tela do Flowlab no passo 9" loading="lazy"></div><p class="legenda">Foto da tela.</p></figure>
+    <div class="texto"><p>Clique em <span class=ui>edit sprite</span>, no quadradinho do alto do painel.<br><br>Abre o <b>editor de desenho</b>: uma folha quadriculada no meio, as ferramentas à esquerda e as cores à direita.</p>
+      <div class="certo"><b>Está certo se</b>A tela mudou: tem um quadrado grande no meio e uma paleta de cores do lado direito.</div>
+      <div class="socorro"><b>Não deu certo?</b><dl><dt>Abriu outra coisa</dt><dd>Volte e clique exatamente no quadradinho com o desenho, acima das palavras <span class=ui>edit sprite</span>.</dd></dl></div>
+    </div></div></section>
+<section class="passo" id="passo10">
+  <div class="cab"><div class="bolha">10</div><h2>Pinte o jogador de azul</h2>
+  <label class="risca"><input type="checkbox" data-passo="10"> feito</label></div>
+  <div class="corpo"><figure class="midia"><div class="moldura"><img class="foto" src="fotos/p05_azul.jpg" alt="Tela do Flowlab no passo 10" loading="lazy"></div><p class="legenda">Foto da tela.</p></figure>
+    <div class="texto"><p>Agora pinte:<br><br><b>1.</b> Clique na ferramenta <b>balde</b> (a terceira da primeira fileira, à esquerda).<br><b>2.</b> Clique num <b>azul</b> da paleta da direita.<br><b>3.</b> Clique dentro do desenho, nas <b>três partes</b> dele — o desenho que vem pronto tem três pedaços, e o balde pinta um de cada vez.<br><br>Quando os três estiverem azuis, clique em <span class=ui>OK</span>, no canto de baixo à esquerda.</p>
+      <div class="certo"><b>Está certo se</b>O desenho ficou um quadrado azul inteiro, sem pedaço de outra cor.</div>
+      <div class="socorro"><b>Não deu certo?</b><dl><dt>Só uma parte ficou azul</dt><dd>O balde pinta uma região por vez. Clique nas outras partes também.</dd><dt>Pintei fora e sujou tudo</dt><dd>Use o <span class=ui>undo</span>, no canto de baixo à direita do editor de desenho.</dd><dt>Quero outra cor</dt><dd>Pode. Só lembre de qual escolheu: a aula vai falar em 'o azul' para dizer o jogador.</dd></dl></div>
+    </div></div></section>
+<section class="passo" id="passo11">
+  <div class="cab"><div class="bolha">11</div><h2>Abra as regras de física</h2>
+  <label class="risca"><input type="checkbox" data-passo="11"> feito</label></div>
+  <div class="corpo"><figure class="midia"><div class="abas"><button class="aba" data-ver="clipe" aria-pressed="true" data-legenda="O clipe repete sozinho. Repare onde o cursor vai antes de clicar.">▶ Clipe</button><button class="aba" data-ver="foto" aria-pressed="false" data-legenda="Foto da tela.">Foto</button></div><div class="moldura"><img class="gif" src="clipes/abrir_physics.gif" alt="Animação do passo 11" loading="lazy"><img hidden class="foto" src="fotos/g03_b.jpg" alt="Tela do Flowlab no passo 11" loading="lazy"></div><p class="legenda">O clipe repete sozinho. Repare onde o cursor vai antes de clicar.</p><p class="legenda so-papel">Foto da tela.</p></figure>
+    <div class="texto"><p>De volta ao painel do objeto, clique em <span class=ui>Physics ></span>, no canto de baixo à direita.<br><br>Física é o que decide se uma coisa cai, se empurra as outras e se o chão a segura.</p>
+      <div class="certo"><b>Está certo se</b>O painel mudou e agora mostra <span class=ui>movable</span>, <span class=ui>is solid</span>, <span class=ui>Density</span>, <span class=ui>Bounce</span> e <span class=ui>Friction</span>.</div>
+      <div class="socorro"><b>Não deu certo?</b><dl><dt>Não acho o Physics</dt><dd>Ele é o texto azul do canto de baixo à direita do painel, ao lado do botão <span class=ui>OK</span>.</dd></dl></div>
+    </div></div></section>
+<section class="passo" id="passo12">
+  <div class="cab"><div class="bolha">12</div><h2>Marque MOVABLE</h2>
+  <label class="risca"><input type="checkbox" data-passo="12"> feito</label></div>
+  <div class="corpo"><figure class="midia"><div class="abas"><button class="aba" data-ver="clipe" aria-pressed="true" data-legenda="O clipe repete sozinho. Repare onde o cursor vai antes de clicar.">▶ Clipe</button><button class="aba" data-ver="foto" aria-pressed="false" data-legenda="Foto da tela.">Foto</button></div><div class="moldura"><img class="gif" src="clipes/marcar_movable.gif" alt="Animação do passo 12" loading="lazy"><img hidden class="foto" src="fotos/p06_movable.jpg" alt="Tela do Flowlab no passo 12" loading="lazy"></div><p class="legenda">O clipe repete sozinho. Repare onde o cursor vai antes de clicar.</p><p class="legenda so-papel">Foto da tela.</p></figure>
+    <div class="texto"><p>Clique na caixinha <span class=ui>movable</span>, a primeira do painel.<br><br><span class=ui>movable</span> quer dizer <i>pode se mexer</i>. Sem ela, o boneco fica pregado no lugar e nenhum comando faz ele andar.</p>
+      <div class="certo"><b>Está certo se</b>A caixinha <span class=ui>movable</span> ficou <b>azul</b>, e apareceu uma caixinha nova ao lado: <span class=ui>affected by gravity</span>, também marcada.</div>
+      <div class="socorro"><b>Não deu certo?</b><dl><dt>A caixinha não fica azul</dt><dd>Clique bem em cima do quadradinho, não na palavra.</dd><dt>Sumiram as opções de Density</dt><dd>Elas ficam acinzentadas enquanto <span class=ui>movable</span> está desmarcado. Marque-o primeiro.</dd></dl></div>
+    </div></div></section>
+<section class="passo" id="passo13">
+  <div class="cab"><div class="bolha">13</div><h2>Deixe o jogador PESADO</h2>
+  <label class="risca"><input type="checkbox" data-passo="13"> feito</label></div>
+  <div class="corpo"><figure class="midia"><div class="moldura"><img class="foto" src="fotos/p21_densidade.jpg" alt="Tela do Flowlab no passo 13" loading="lazy"></div><p class="legenda">Foto da tela.</p></figure>
+    <div class="texto"><p>Ainda na física, arraste dois controles até a <b>ponta direita</b>:<br><br><b>1.</b> <span class=ui>Density</span> (peso) até <b>100</b>.<br><b>2.</b> <span class=ui>Friction</span> (atrito) até <b>100</b>.<br><br>Clique na ponta direita da barrinha — ela vai para onde você clicar.<br><br>Isto não é enfeite: um boneco leve demais <b>sai voando</b> a cada toque de tecla e passa por cima da moeda sem encostar nela. Pesado, ele dá passos curtos e a moeda sente o toque.</p>
+      <div class="certo"><b>Está certo se</b><span class=ui>Density</span> mostra <b>100.0</b> e <span class=ui>Friction</span> mostra <b>100.0</b>.</div>
+      <div class="socorro"><b>Não deu certo?</b><dl><dt>O número foi para 3 em vez de 100</dt><dd>Você clicou na ponta esquerda. A barrinha marca o valor <b>onde você clica</b>: clique na ponta da direita.</dd><dt>Density está cinza e não muda</dt><dd>Volte ao passo 12: ele só funciona com <span class=ui>movable</span> marcado.</dd><dt>Meu boneco continua voando</dt><dd>Confira os dois: peso <b>e</b> atrito. Um só não resolve.</dd></dl></div>
+    </div></div></section>
+<section class="passo" id="passo14">
+  <div class="cab"><div class="bolha">14</div><h2>Dê movimento ao jogador</h2>
+  <label class="risca"><input type="checkbox" data-passo="14"> feito</label></div>
+  <div class="corpo"><figure class="midia"><div class="moldura"><img class="foto" src="fotos/p10_run_and_jump.jpg" alt="Tela do Flowlab no passo 14" loading="lazy"></div><p class="legenda">Foto da tela.</p></figure>
+    <div class="texto"><p>Feche a física no <span class=ui>OK</span> e, no painel do objeto, clique em <span class=ui>Behaviors</span>.<br><br>Abre a mesa de blocos. Na coluna da esquerda, lá embaixo, clique em <span class=ui>Behavior Bundles</span> e <b>arraste</b> <span class=ui>Run &amp; Jump</span> para o meio da mesa.<br><br>Esse pacote já vem pronto: ele é quem faz o boneco <b>correr com as setas</b> e <b>pular</b>.</p>
+      <div class="certo"><b>Está certo se</b>Um bloco escrito <span class=ui>Run &amp; Jump</span> está na mesa, no meio da tela.</div>
+      <div class="socorro"><b>Não deu certo?</b><dl><dt>Arrastei e não ficou nada</dt><dd>Puxe de novo, mais devagar, e solte no meio da área escura.</dd><dt>Não acho Behavior Bundles</dt><dd>É a última linha da coluna da esquerda. Clique nela para abrir a lista.</dd><dt>Fechei e o bloco sumiu</dt><dd>Espere uns segundos antes de fechar: o Flowlab precisa de um tempinho para guardar. Abra de novo e confira se ele está lá.</dd></dl></div>
+    </div></div></section>
+<section class="passo" id="passo15">
+  <div class="cab"><div class="bolha">15</div><h2>Volte para o mundo</h2>
+  <label class="risca"><input type="checkbox" data-passo="15"> feito</label></div>
+  <div class="corpo"><figure class="midia"><div class="moldura"><img class="foto" src="fotos/p07_jogador_pronto.jpg" alt="Tela do Flowlab no passo 15" loading="lazy"></div><p class="legenda">Foto da tela.</p></figure>
+    <div class="texto"><p>Clique em <span class=ui>OK</span> no canto de baixo à esquerda (fecha a mesa de blocos) e depois em <span class=ui>OK</span> no painel do objeto (o botão azul).<br><br>Você volta a ver a folha branca com o seu quadrado azul nela.</p>
+      <div class="certo"><b>Está certo se</b>A folha branca está à vista com o quadrado azul, e a fileira de baixo mostra <span class=ui>Play</span> de novo.</div>
+      <div class="socorro"><b>Não deu certo?</b><dl><dt>Fiquei preso numa tela de blocos</dt><dd>O <span class=ui>OK</span> da mesa de blocos é o do canto de baixo à <b>esquerda</b>, azul e comprido.</dd></dl></div>
+    </div></div></section>
+<section class="passo" id="passo16">
+  <div class="cab"><div class="bolha">16</div><h2>Faça o chão</h2>
+  <label class="risca"><input type="checkbox" data-passo="16"> feito</label></div>
+  <div class="corpo"><figure class="midia"><div class="moldura"><img class="foto" src="fotos/p11_chao_verde.jpg" alt="Tela do Flowlab no passo 16" loading="lazy"></div><p class="legenda">Foto da tela.</p></figure>
+    <div class="texto"><p>Clique numa casa <b>logo abaixo</b> do jogador e escolha <span class=ui>Create</span>.<br><br>Faça igual ao que já sabe:<br><b>1.</b> No <span class=ui>Name</span>, escreva <b>Chao</b> e aperte Tab.<br><b>2.</b> Em <span class=ui>edit sprite</span>, pinte as três partes de <b>verde</b> e clique em <span class=ui>OK</span>.<br><b>3.</b> Feche o painel no <span class=ui>OK</span> azul.<br><br>O chão <b>não</b> precisa de física: ele fica parado, e é isso que a gente quer.</p>
+      <div class="certo"><b>Está certo se</b>Embaixo do quadrado azul tem agora um quadrado verde.</div>
+      <div class="socorro"><b>Não deu certo?</b><dl><dt>Meu chão ficou longe do jogador</dt><dd>Ele tem de ficar na casa imediatamente abaixo. Clique no verde, escolha <span class=ui>Delete</span> e faça de novo na casa certa.</dd></dl></div>
+    </div></div></section>
+<section class="passo" id="passo17">
+  <div class="cab"><div class="bolha">17</div><h2>Estenda o chão com CLONE</h2>
+  <label class="risca"><input type="checkbox" data-passo="17"> feito</label></div>
+  <div class="corpo"><figure class="midia"><div class="abas"><button class="aba" data-ver="clipe" aria-pressed="true" data-legenda="O clipe repete sozinho. Repare onde o cursor vai antes de clicar.">▶ Clipe</button><button class="aba" data-ver="foto" aria-pressed="false" data-legenda="Foto da tela.">Foto</button></div><div class="moldura"><img class="gif" src="clipes/clonar.gif" alt="Animação do passo 17" loading="lazy"><img hidden class="foto" src="fotos/p12_chao.jpg" alt="Tela do Flowlab no passo 17" loading="lazy"></div><p class="legenda">O clipe repete sozinho. Repare onde o cursor vai antes de clicar.</p><p class="legenda so-papel">Foto da tela.</p></figure>
+    <div class="texto"><p>Um quadradinho de chão não segura ninguém. Vamos repeti-lo:<br><br><b>1.</b> Clique no quadrado verde e escolha <span class=ui>Clone</span>.<br><b>2.</b> A fileira de baixo muda para <span class=ui>Done Cloning</span>: enquanto ela estiver assim, <b>cada clique na folha põe outro pedaço de chão</b>.<br><b>3.</b> Clique nas casas <b>ao lado</b> da primeira, uma colada na outra, até formar uma faixa larga embaixo do jogador.<br><b>4.</b> Clique em <span class=ui>Done Cloning</span> para parar.</p>
+      <div class="certo"><b>Está certo se</b>Há uma faixa verde <b>sem buracos</b> embaixo do jogador, larga para os dois lados.</div>
+      <div class="socorro"><b>Não deu certo?</b><dl><dt>Ficaram buracos entre os pedaços</dt><dd>Clique exatamente nas casas vizinhas. Um buraco no chão faz o boneco cair pelo vão no meio do jogo.</dd><dt>Não consigo parar de clonar</dt><dd>Clique em <span class=ui>Done Cloning</span>, no mesmo lugar onde antes estava escrito Library.</dd><dt>Pus um pedaço fora da folha</dt><dd>Clique nele e escolha <span class=ui>Delete</span>.</dd></dl></div>
+    </div></div></section>
+<section class="passo" id="passo18">
+  <div class="cab"><div class="bolha">18</div><h2>Faça a moeda</h2>
+  <label class="risca"><input type="checkbox" data-passo="18"> feito</label></div>
+  <div class="corpo"><figure class="midia"><div class="moldura"><img class="foto" src="fotos/p14_moeda_amarela.jpg" alt="Tela do Flowlab no passo 18" loading="lazy"></div><p class="legenda">Foto da tela.</p></figure>
+    <div class="texto"><p>Agora a estrela do jogo. Clique numa casa <b>à direita do jogador, na mesma altura dele</b> — duas casas de distância é bom — e escolha <span class=ui>Create</span>.<br><br><b>1.</b> No <span class=ui>Name</span>, escreva <b>Moeda</b> e aperte Tab.<br><b>2.</b> Em <span class=ui>edit sprite</span>, pinte de <b>amarelo</b> e clique em <span class=ui>OK</span>.<br><br>A moeda tem de ficar <b>na mesma linha</b> do jogador. Mais alta, ele passa por baixo e nunca encosta.</p>
+      <div class="certo"><b>Está certo se</b>O quadrado amarelo está ao lado do azul, os dois em cima da faixa verde.</div>
+      <div class="socorro"><b>Não deu certo?</b><dl><dt>A moeda ficou flutuando</dt><dd>Ela precisa estar na linha por onde o boneco anda. Clique nela, escolha <span class=ui>Delete</span> e ponha na casa certa.</dd><dt>A moeda ficou muito longe</dt><dd>Duas casas bastam. Longe demais, o boneco ganha velocidade e passa direto.</dd></dl></div>
+    </div></div></section>
+<section class="passo" id="passo19">
+  <div class="cab"><div class="bolha">19</div><h2>Ensine a moeda a sumir</h2>
+  <label class="risca"><input type="checkbox" data-passo="19"> feito</label></div>
+  <div class="corpo"><figure class="midia"><div class="moldura"><img class="foto" src="fotos/p17_fio.jpg" alt="Tela do Flowlab no passo 19" loading="lazy"></div><p class="legenda">Foto da tela.</p></figure>
+    <div class="texto"><p>Aqui é a programação de hoje. Com o painel da Moeda aberto, clique em <span class=ui>Behaviors</span> e monte dois blocos:<br><br><b>1.</b> Na coluna da esquerda, em <span class=ui>Triggers</span>, arraste <span class=ui>Collision</span> para a mesa. Ele é o <b>quando</b>: <i>quando alguém encostar em mim</i>.<br><b>2.</b> Em <span class=ui>Components</span>, arraste <span class=ui>Destroyer</span>. Ele é o <b>o quê</b>: <i>suma</i>.<br><b>3.</b> Agora <b>ligue o fio</b>: arraste da bolinha <span class=ui>hit</span> do Collision até a bolinha <span class=ui>in</span> do Destroyer.<br><br>Lido em voz alta: <b>quando alguém encostar em mim, eu sumo</b>.</p><p>Agora feche as duas telas: <span class=ui>OK</span> no canto de baixo à esquerda (fecha a mesa de blocos) e <span class=ui>OK</span> azul no painel da Moeda. Você precisa voltar a ver a folha branca para poder jogar.</p>
+      <div class="certo"><b>Está certo se</b>Um fio branco liga o <span class=ui>Collision</span> ao <span class=ui>Destroyer</span>, e depois de fechar as duas telas você está vendo a folha branca de novo.</div>
+      <div class="socorro"><b>Não deu certo?</b><dl><dt>O fio não fica</dt><dd>Comece o arrasto <b>em cima da bolinha</b> e solte <b>em cima da outra bolinha</b>. Devagar.</dd><dt>Liguei no lugar errado</dt><dd>Clique no fio e aperte Delete, ou use o <span class=ui>Undo</span> do canto de baixo à direita.</dd><dt>Sumiu tudo quando fechei</dt><dd>Espere uns segundos antes de fechar e confira abrindo de novo.</dd><dt>Fechei e não acho o Play</dt><dd>Falta fechar o painel do objeto: o <span class=ui>OK</span> azul, à direita.</dd></dl></div>
+    </div></div></section>
+<section class="passo" id="passo20">
+  <div class="cab"><div class="bolha">20</div><h2>Jogue, pegue a moeda e mande o link</h2>
+  <label class="risca"><input type="checkbox" data-passo="20"> feito</label></div>
+  <div class="corpo"><figure class="midia"><div class="abas"><button class="aba" data-ver="clipe" aria-pressed="true" data-legenda="O clipe repete sozinho. Repare onde o cursor vai antes de clicar.">▶ Clipe</button><button class="aba" data-ver="foto" aria-pressed="false" data-legenda="Foto da tela.">Foto</button></div><div class="moldura"><img class="gif" src="clipes/jogar.gif" alt="Animação do passo 20" loading="lazy"><img hidden class="foto" src="fotos/p20_pegou.jpg" alt="Tela do Flowlab no passo 20" loading="lazy"></div><p class="legenda">O clipe repete sozinho. Repare onde o cursor vai antes de clicar.</p><p class="legenda so-papel">Foto da tela.</p></figure>
+    <div class="texto"><p>Clique em <span class=ui>Play</span>, na fileira de baixo.<br><br>O jogo abre numa página só dele. <b>Clique uma vez dentro do jogo</b> (para o teclado ir para lá) e use a <b>seta para a direita</b> para andar até a moeda.<br><br>Quando o boneco encostar, a moeda <b>some</b>. É o seu primeiro programa funcionando.<br><br>O endereço desta página é o link do seu jogo: dá para mandar para a sua família jogar.</p>
+      <div class="certo"><b>Está certo se</b>A moeda sumiu da tela quando o boneco encostou nela.</div>
+      <div class="socorro"><b>Não deu certo?</b><dl><dt>O boneco não anda</dt><dd>Clique uma vez dentro do jogo antes de usar as setas; o teclado precisa estar 'dentro' dele.</dd><dt>Ele cai e some</dt><dd>Tem buraco no chão, ou ele chegou ao fim da faixa verde. Volte e estenda o chão.</dd><dt>Ele passa pela moeda e ela não some</dt><dd>É velocidade: volte ao passo 13 e confira <span class=ui>Density</span> e <span class=ui>Friction</span> em 100.</dd><dt>A moeda some sozinha no começo</dt><dd>O chão está encostando nela. Suba a moeda uma casa.</dd></dl></div>
+    </div></div></section>
+</main>
+
+<p class="fim"><strong>Acabou a Aula 1. Você fez um jogo do zero — desenhou o boneco, deu movimento a ele, construiu o chão e ensinou a moeda a sumir. E ele tem um link: dá para mandar para a sua família jogar hoje mesmo.</strong></p>
+<div class="navega"><a href="../">⌂ Todas as aulas</a><a href="../aula2/">Aula 2 →</a></div>
+<script>
+(function(){
+  var chave = "robotomia-roblox-" + (document.body.dataset.aula || "x");
+  function ler(){ try{ return JSON.parse(localStorage.getItem(chave)||"[]"); }catch(e){ return []; } }
+  function gravar(v){ try{ localStorage.setItem(chave, JSON.stringify(v)); }catch(e){} }
+  var caixas = [].slice.call(document.querySelectorAll(".risca input"));
+  var conta  = document.getElementById("conta");
+  var trilho = document.getElementById("trilho");
+  if (!caixas.length) return;
+  var feitos = ler();
+  function pinta(){
+    var n = 0;
+    caixas.forEach(function(c){
+      var p = c.closest(".passo");
+      if (c.checked){ n++; p.classList.add("feito"); } else { p.classList.remove("feito"); }
+    });
+    if (conta)  conta.textContent = n + " de " + caixas.length + " passos prontos";
+    if (trilho) trilho.style.width = (100*n/caixas.length) + "%";
+  }
+  caixas.forEach(function(c){
+    c.checked = feitos.indexOf(c.dataset.passo) >= 0;
+    c.addEventListener("change", function(){
+      var v = ler().filter(function(x){ return x !== c.dataset.passo; });
+      if (c.checked) v.push(c.dataset.passo);
+      gravar(v); pinta();
+    });
+  });
+  pinta();
+  [].slice.call(document.querySelectorAll(".abas")).forEach(function(g){
+    g.addEventListener("click", function(e){
+      var b = e.target.closest(".aba"); if(!b) return;
+      var caixa = g.parentNode;
+      [].slice.call(g.children).forEach(function(x){ x.setAttribute("aria-pressed", x===b ? "true":"false"); });
+      caixa.querySelector(".gif").hidden  = (b.dataset.ver !== "clipe");
+      caixa.querySelector(".foto").hidden = (b.dataset.ver !== "foto");
+      caixa.querySelector(".legenda").textContent = b.dataset.legenda;
+    });
+  });
+})();
+</script>
+</body></html>
