@@ -34,6 +34,7 @@ def jogo_novo():
     """Cria um jogo novo e abre o projeto vazio. Devolve o endereco do jogo."""
     nav.vai("https://flowlab.io/games/mine", espera=4)
     nav.fecha_dialogo()
+    espera_tela("new game", "my games", limite=25)
     nav.clica_cor(VERDE, regiao=(0.5, 0.05, 1, 0.30), espera=5)
     espera_tela("empty project", limite=25)
     J = nav.janela()

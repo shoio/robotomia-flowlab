@@ -245,7 +245,7 @@ def clica_texto(alvo, regiao=None, limiar=None, espera=1.2, psm="6"):
     if not p:
         raise RuntimeError(f"nao achei '{alvo}' na tela")
     J = janela(titulo())
-    rs.clique_img(p[0], p[1], escala=2.0, janela=J)
+    clique_seguro(p[0], p[1], J=J)
     time.sleep(espera)
     espera_parar()
     return p
@@ -305,10 +305,46 @@ def clica_cor(rgb, tol=26, regiao=None, espera=1.5, minimo=400):
     if not p:
         raise RuntimeError(f"nao achei nada da cor {rgb} na tela")
     J = janela(titulo())
-    rs.clique_img(p[0], p[1], escala=2.0, janela=J)
+    clique_seguro(p[0], p[1], J=J)
     time.sleep(espera)
     espera_parar()
     return p
+
+
+# A janela do Chrome COMECA abaixo da barra de favoritos (medido: a janela vai
+# de y=155 a 956 em pontos de tela, e a barra de favoritos fica em ~137). Ou
+# seja, a captura por retangulo da janela ja e so a pagina. O guarda abaixo so
+# recusa clique fora da janela — e ele mesmo me corrigiu: quando bloqueou o
+# botao legitimo 'New Game' em y=268, ficou provado que o WhatsApp que apareceu
+# no meio da sessao foi o DONO usando o computador, nao um clique meu perdido.
+TOPO_PAGINA = 24
+
+
+def clique_seguro(x, y, duplo=False, J=None):
+    """Clica, mas NUNCA no cromo do navegador.
+
+       A captura e do RETANGULO DA JANELA, entao a barra de abas, o endereco e
+       os FAVORITOS entram na imagem. Um clique meu caiu num favorito e abriu o
+       WhatsApp no meio de uma captura — a aula seguiu sendo fotografada no
+       site errado. Acima de TOPO_PAGINA eu recuso."""
+    if y < TOPO_PAGINA:
+        raise RuntimeError(f"clique em y={y} cairia na barra do Chrome "
+                           f"(favoritos/endereco), nao na pagina — RECUSADO")
+    rs.clique_img(x, y, escala=2.0, janela=J or janela(), duplo=duplo)
+    return True
+
+
+def esta_no_flowlab():
+    return ALVO in (endereco() or "")
+
+
+def garante_flowlab(url="https://flowlab.io/games/mine"):
+    """Se o navegador saiu do Flowlab, volta — e diz que voltou."""
+    if esta_no_flowlab():
+        return False
+    vai(url, espera=4)
+    fecha_dialogo()
+    return True
 
 
 def cap_tela(J=None, arquivo="/tmp/_nav_tela.png"):
@@ -336,8 +372,14 @@ def cap_tela(J=None, arquivo="/tmp/_nav_tela.png"):
     return arquivo, (W / J["w"]) if J["w"] else 2.0
 
 
+# (pergunta do dialogo, botao que eu clico). Atencao a ESCOLHA: em "sair do
+# site" eu sigo em frente, mas em "atualizar o site" eu CANCELO — recarregar no
+# meio da montagem joga fora o que ainda nao foi salvo.
 DIALOGOS = [("sair do site", "sair"), ("leave site", "leave"),
-            ("sair da pagina", "sair"), ("reload site", "reload")]
+            ("sair da pagina", "sair"),
+            ("atualizar o site", "cancelar"), ("reload site", "cancel"),
+            # dialogo do macOS que as minhas teclas repetidas disparam
+            ("ativar o ditado", "agora"), ("enable dictation", "not now")]
 
 
 def fecha_dialogo(espera=1.5):

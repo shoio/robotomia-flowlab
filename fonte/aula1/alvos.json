@@ -1,0 +1,56 @@
+{
+ "criar_objeto": {
+  "antes": "g01_a.png",
+  "depois": "g01_b.png",
+  "alvo": [
+   1374,
+   895
+  ],
+  "botao": "esq"
+ },
+ "escolher_create": {
+  "antes": "g02_a.png",
+  "depois": "g02_b.png",
+  "alvo": [
+   1254,
+   892
+  ],
+  "botao": "esq"
+ },
+ "abrir_physics": {
+  "antes": "g03_a.png",
+  "depois": "g03_b.png",
+  "alvo": [
+   2004,
+   1270
+  ],
+  "botao": "esq"
+ },
+ "marcar_movable": {
+  "antes": "g04_a.png",
+  "depois": "g04_b.png",
+  "alvo": [
+   1681,
+   476
+  ],
+  "botao": "esq"
+ },
+ "clonar": {
+  "antes": "g05_a.png",
+  "depois": "g05_b.png",
+  "alvo": [
+   1225,
+   872
+  ],
+  "botao": "esq"
+ },
+ "jogar": {
+  "antes": "g06_a.png",
+  "depois": "g06_b.png",
+  "alvo": [
+   1051,
+   1584
+  ],
+  "botao": "esq"
+ }
+}

@@ -1,70 +1,64 @@
-# Estado do curso de Flowlab — 29-09-2026, 04h40
+# Estado do curso de Flowlab — 03-10-2026, 19h
 
-**A maquina constroi jogo no Flowlab.** Nesta segunda noite o robo criou um
-jogo do zero, criou dois objetos, pintou os dois, ligou um fio entre blocos,
-mexeu na fisica e nas configuracoes, e jogou — tudo sozinho, com foto de cada
-passo (`fonte/aula1/`, 24 fotos). **A Aula 1 ainda nao esta escrita nem
-publicada**: falta o jogo fazer o que promete.
+**A animacao com o mouse esta pronta** e a maquina monta o jogo inteiro. **A
+Aula 1 ainda nao fecha**: o jogo nao faz o que a aula promete — a moeda nao
+some. Tudo o que foi medido hoje esta abaixo, para a proxima sessao nao
+repetir nenhuma descoberta.
 
-## O que ficou provado nesta noite
+## Pronto hoje
 
-- `editor.jogo_novo()` → jogo novo + Empty Project;
-- `editor.objeto_ou_abre(x, y)` → cria objeto na celula, ou abre o que ja
-  existe (Create/Edit no menu radial);
-- escrever o **Name** do objeto (com **Tab**, nunca Enter: o Enter FECHA o
-  painel);
-- `edit sprite` + balde + cor da paleta → objeto pintado (o sprite padrao tem
-  TRES partes, entao sao tres cliques de balde);
-- `editor.abre_comportamentos()` → editor de blocos;
-- `blocos.solta(nome, x, y)` → bloco na tela, conferido, com **desfazer** se
-  nao aparecer;
-- `blocos.liga_fixo(a, "hit", b, "in")` → **fio ligado e conferido**;
-- `Settings` → nome do jogo e **Gravity**;
-- `Physics >` → caixinha **movable**;
-- **Play** → o jogo abre na pagina publica e roda.
+- **`gif.mouse(...)`**: desenha um mouse ao lado do cursor com o botao
+  ESQUERDO ou DIREITO aceso em vermelho, nos quadros do clique. E o que o
+  dono pediu: a crianca ve qual botao apertar.
+- **`cap1.confere_fase()`**: olha o nivel e reprova se o chao tiver vao, se o
+  jogador ou a moeda nao estiverem sobre ele, ou se estiverem em linhas
+  diferentes. Pegou tres fases tortas seguidas.
+- **Persistencia provada**: o pacote de comportamento SO fica salvo com pausa
+  antes de fechar (2,5 s). Sem isso ele some em silencio — o jogador nao anda
+  e nada no editor acusa. A captura agora reabre o objeto e CONFERE.
+- **28 fotos e 6 animacoes** registradas de gestos reais em `fonte/aula1/`.
 
-O jogo de teste existe e e jogavel: `flowlab.io/game/view/3146055`
-("Pega-moedas"), com o jogador azul e a moeda amarela.
+## Medidas da tela (pagina em 100%)
 
-## O jogo de teste (Pega-moedas) — onde parou
+| medida | valor |
+|---|---|
+| canto da area do nivel | (958, 415) |
+| celula da grade | 64 px |
+| nivel | 16 x 12 celulas |
+| OK do painel do objeto | branco sobre azul `(126,168,224)`, **altura varia** |
+| passo do jogador, toque de 0,15 s | **344 px** (5 celulas) |
+| passo do jogador, toque de ate 0,08 s | **0 px** |
 
-`flowlab.io/game/view/3146055`. Tem jogador azul, moeda amarela, chao verde,
-`Run & Jump` no jogador, `Collision -> Destroyer` na moeda e Gravity 45.
+## Dialogos que aparecem e travam tudo (todos tratados em `nav.DIALOGOS`)
 
-**O jogador cai por um VAO do chao.** As pecas de chao que eu clonei ficaram
-espacadas: na foto `aula1/p31_jogo_fim.png` da para ver os dentes separados.
-Duas medidas para a proxima sessao:
+1. "Sair do site?" → **Sair**
+2. "Atualizar o site?" → **Cancelar** (recarregar perde o que nao foi salvo)
+3. "Recover unsaved work" → **Recover** (o titulo tambem diz 'Recover': o
+   botao e a ocorrencia de BAIXO)
+4. "Deseja ativar o Ditado?" (macOS, disparado pelas minhas teclas repetidas)
+   → **Agora Nao**
 
-- a celula da grade tem **~147 px na tela** (o jogador em x=1502 e a moeda em
-  x=1821 estao a duas celulas: 319 px);
-- a moeda esta FLUTUANDO acima do chao: ela tem de ficar na mesma linha por
-  onde o jogador anda, senao ele passa por baixo e nunca encosta.
+## O que trava a Aula 1, com o que ja sei
 
-Ou seja: o chao precisa de pecas COLADAS (passo de 147 px, sem pular), e a
-moeda na linha do jogador. Isso e desenho de fase, nao maquina — a maquina ja
-fez tudo o que a aula pede.
+A moeda **nao some** quando o jogador passa por ela. O que esta medido:
 
-## O que falta, e e pouco
+- a logica da moeda **existe e fica salva**: `Collision (Any) -> Destroyer.in`,
+  conferida depois de reabrir;
+- a moeda e **solida e estatica** (`is solid` marcado, `movable` desmarcado);
+- o jogador e **solido e movel**, com o pacote `Run & Jump` salvo;
+- num toque de 0,15 s o jogador vai de x=1373 a x=1717 — e a moeda estava em
+  x=1470, no caminho.
 
-**O jogador quase nao anda.** Usei o pacote `Ship Controls` e o boneco se
-mexeu 10 px e parou. Provavel: esse pacote e de nave (gira e impulsiona), nao
-de andar. O caminho certo para a Aula 1, a testar primeiro:
+Isso e contraditorio: com os dois solidos, o jogador devia ser BARRADO pela
+moeda, nao atravessa-la. Tres hipoteses, em ordem de custo:
 
-1. **`Run & Jump`** (o pacote de plataforma) + um **chao** (um terceiro objeto
-   largo embaixo) + Gravity de volta em 45. E o jogo que o Flowlab espera.
-2. Ou manter visto de cima (Gravity 0) e mover com `Keyboard` → `Impulse`,
-   montado a mao — mais blocos, mais aula.
+1. o que eu medi como "jogador em 1717" nao era o jogador (outro azul da
+   tela) — **medir dentro do recorte do nivel**, como `confere_fase` ja faz;
+2. o pacote `Run & Jump` faz o boneco PULAR por cima da moeda (o impulso de
+   344 px num toque e alto demais para um passo);
+3. a colisao nao vale porque os dois estao em grupos de colisao diferentes.
 
-Provado isso, a captura da Aula 1 roda inteira e a aula se escreve a partir
-das fotos.
-
-## Duas armadilhas novas desta noite
-
-- **O Enter no campo Name fecha o painel do objeto** (perdi uma etapa assim).
-- **`movable` ligado com gravidade derruba o objeto para fora do mundo**: a
-  foto do jogo fica sem o jogador e parece que ele "sumiu". O Flowlab ate
-  avisa o contrario quando falta fisica ("This object is not movable, so
-  Impulse will have no effect") — os dois avisos viram material de aula.
+A primeira se resolve em cinco minutos e e a mais provavel.
 
 ---
 

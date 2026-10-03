@@ -21,6 +21,34 @@ def cursor(im, x, y, escala=1.0):
     return im
 
 
+def mouse(im, x, y, botao="esq", escala=1.0, apertado=True):
+    """Desenha um mouse pequeno ao lado do cursor, com o botao APERTADO aceso.
+
+       A aula e para crianca de 10 anos: 'clique' e 'clique com o botao
+       direito' sao gestos diferentes, e ninguem adivinha qual e qual por uma
+       seta. O desenho mostra qual dos dois botoes afunda."""
+    d = ImageDraw.Draw(im, "RGBA")
+    L, A = 34 * escala, 52 * escala          # corpo do mouse
+    x0, y0 = x - L - 16 * escala, y - A - 10 * escala
+    corpo = [x0, y0, x0 + L, y0 + A]
+    d.rounded_rectangle(corpo, radius=int(L * 0.45),
+                        fill=(250, 250, 252, 240), outline=(28, 30, 38, 255),
+                        width=max(2, int(2.4 * escala)))
+    meio_y = y0 + A * 0.42
+    aceso = (232, 60, 60, 255) if apertado else (210, 214, 220, 255)
+    if botao == "esq":
+        d.pieslice([x0, y0, x0 + L, y0 + A * 0.84], 180, 270, fill=aceso)
+    else:
+        d.pieslice([x0, y0, x0 + L, y0 + A * 0.84], 270, 360, fill=aceso)
+    d.line([x0 + L / 2, y0 + 2, x0 + L / 2, meio_y], fill=(28, 30, 38, 255),
+           width=max(2, int(2 * escala)))
+    d.line([x0, meio_y, x0 + L, meio_y], fill=(28, 30, 38, 255),
+           width=max(2, int(2 * escala)))
+    d.rounded_rectangle(corpo, radius=int(L * 0.45), outline=(28, 30, 38, 255),
+                        width=max(2, int(2.4 * escala)))
+    return im
+
+
 def anel(im, x, y, r, alpha=220, larg=7):
     d = ImageDraw.Draw(im, "RGBA")
     d.ellipse([x-r, y-r, x+r, y+r], outline=(232, 60, 60, alpha), width=larg)
@@ -37,7 +65,7 @@ def _prep(caminho, box, larg):
 
 
 def gesto(nome, antes, depois, alvo, box=None, larg=900,
-          origem=None, n_mov=9, n_clique=3, n_fim=7, ms=110):
+          origem=None, n_mov=9, n_clique=3, n_fim=7, ms=110, botao="esq"):
     """antes/depois = arquivos; alvo = (x,y) em pixels da captura ORIGINAL."""
     a0 = Image.open(os.path.join(D, antes)).convert("RGB")
     esc = larg / (box[2]-box[0] if box else a0.width)
@@ -55,17 +83,19 @@ def gesto(nome, antes, depois, alvo, box=None, larg=900,
         f = A.copy()
         cursor(f, origem[0] + (ax-origem[0])*t, origem[1] + (ay-origem[1])*t)
         q.append(f)
-    # clique
+    # clique: anel + o mouse com o botao aceso
     for k in range(n_clique):
         f = A.copy()
         anel(f, ax, ay, 14 + k*14, alpha=220 - k*60)
         cursor(f, ax, ay)
+        mouse(f, ax, ay, botao=botao)
         q.append(f)
     # resultado
     for k in range(n_fim):
         f = B.copy()
         if k < 2:
             anel(f, ax, ay, 44 + k*16, alpha=150 - k*60, larg=5)
+            mouse(f, ax, ay, botao=botao, apertado=(k == 0))
         cursor(f, ax, ay)
         q.append(f)
     return _grava(nome, q, ms)
