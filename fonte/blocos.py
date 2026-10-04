@@ -117,7 +117,7 @@ def item_palheta(nome, tentativas=3):
     raise RuntimeError(f"o bloco '{nome}' nao aparece na palheta")
 
 
-def solta(nome, x, y, tentativas=3):
+def solta(nome, x, y, tentativas=3, titulo=None):
     """Arrasta um bloco da palheta para (x, y) e CONFERE que ele nasceu ali.
        Sem conferir, um arrasto que nao pegou deixa a tela igual e o resto da
        aula e capturado em cima de um bloco que nao existe."""
@@ -126,14 +126,14 @@ def solta(nome, x, y, tentativas=3):
         p = item_palheta(nome)
         rs.arrasta_img(p[0], p[1], x, y, escala=2.0, janela=J)
         time.sleep(1.4)
-        b = Bloco(nome, x, y)
+        b = Bloco(titulo or nome, x, y)
         a, _ = nav.captura("/tmp/_bl_solta.png")
         lido = " ".join(t for t, *_ in rs.ocr_forte(a, regiao=b.regiao(), psm="6")).lower()
-        if nome.split()[0].lower()[:6] in lido:
+        if (titulo or nome).split()[0].lower()[:6] in lido:
             # devolvo o bloco localizado pelo TITULO: os deslocamentos dos
             # pinos sao medidos dali, e nao do ponto onde eu soltei
             try:
-                return acha_bloco(nome)
+                return acha_bloco(titulo or nome)
             except RuntimeError:
                 return b
         # DESFAZ antes de tentar de novo: repetir sem desfazer empilha blocos
@@ -646,6 +646,9 @@ def pino(bloco, rotulo, lado):
 DESLOC = {
     "Collision": {"esq": {}, "dir": {"hit": (247, 57)}},
     "Destroyer": {"esq": {"in": (-28, 57)}, "dir": {"out": (248, 57)}},
+    # o titulo no canvas e 'RestartGame' (sem espaco), mas na palheta ele
+    # aparece como 'Restart Game' — por isso solta() aceita titulo diferente
+    "RestartGame": {"esq": {"go": (-28, 57)}, "dir": {"out": (248, 57)}},
 }
 
 

@@ -35,8 +35,15 @@ def jogo_novo():
     nav.vai("https://flowlab.io/games/mine", espera=4)
     nav.fecha_dialogo()
     espera_tela("new game", "my games", limite=25)
-    nav.clica_cor(VERDE, regiao=(0.5, 0.05, 1, 0.30), espera=5)
-    espera_tela("empty project", limite=25)
+    nav.clica_cor(VERDE, regiao=(0.5, 0.05, 1, 0.30), espera=6)
+    # o seletor demora a desenhar; se nao vier, clico de novo uma vez
+    try:
+        espera_tela("empty project", limite=30)
+    except RuntimeError:
+        nav.fecha_dialogo()
+        if na_tela("new game"):
+            nav.clica_cor(VERDE, regiao=(0.5, 0.05, 1, 0.30), espera=6)
+        espera_tela("empty project", limite=30)
     J = nav.janela()
     rs.clique_img(1272, 860, escala=2.0, janela=J)     # miniatura do Empty Project
     time.sleep(3); nav.espera_parar(limite=25)
