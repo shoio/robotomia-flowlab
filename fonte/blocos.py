@@ -728,7 +728,11 @@ def escreve_valor(bloco, valor):
     alvo = (p[0] + 30, p[1] + 68)
     nav.clique_seguro(*alvo); time.sleep(0.6)
     rs.tecla(0, cmd=True); time.sleep(0.25)          # Cmd+A
-    rs.digita_teclas(str(valor)); time.sleep(0.5)
+    # pelo caminho UNICODE, nao por codigo de tecla: o teclado desta maquina e
+    # ABNT2, e o codigo 27 (o '-' do teclado americano) nao produz hifen aqui.
+    # O campo ficava com '0.3' onde eu pedira '-0.3', sem erro nenhum — e o
+    # sinal e justamente o que faz a lava SUBIR em vez de descer.
+    rs.digita(str(valor)); time.sleep(0.6)
     fecha_ajustes()
     lido = le_valor(bloco)
     if lido != str(valor):
@@ -746,17 +750,81 @@ def fecha_ajustes():
     return True
 
 
+AZUL_VALOR = None      # o numero do bloco e desenhado em azul claro
+
+
+def _glifos_azuis(arquivo, bloco):
+    """As manchas AZUIS dentro do bloco, da esquerda para a direita.
+       Cada mancha e um sinal ou um algarismo."""
+    import numpy as _np
+    im = _np.asarray(Image.open(arquivo).convert("RGB"), dtype=int)
+    y0, y1 = max(0, bloco.y - 10), min(im.shape[0], bloco.y + 140)
+    x0, x1 = max(0, bloco.x - 10), min(im.shape[1], bloco.x + 300)
+    sub = im[y0:y1, x0:x1]
+    m = (sub[:, :, 2] > 170) & (sub[:, :, 2] - sub[:, :, 0] > 55) & (sub[:, :, 1] > 95)
+    if not m.any():
+        return [], None
+    vistos = _np.zeros_like(m); grupos = []
+    ys, xs = _np.nonzero(m)
+    for yy, xx in zip(ys, xs):
+        if vistos[yy, xx]:
+            continue
+        pilha, pts = [(yy, xx)], []
+        vistos[yy, xx] = True
+        while pilha:
+            cy, cx = pilha.pop(); pts.append((cy, cx))
+            for dy in (-1, 0, 1):
+                for dx in (-1, 0, 1):
+                    ny, nx = cy + dy, cx + dx
+                    if 0 <= ny < m.shape[0] and 0 <= nx < m.shape[1] \
+                            and m[ny, nx] and not vistos[ny, nx]:
+                        vistos[ny, nx] = True; pilha.append((ny, nx))
+        pys = [q[0] for q in pts]; pxs = [q[1] for q in pts]
+        grupos.append(dict(x=min(pxs) + x0, y=min(pys) + y0,
+                           w=max(pxs) - min(pxs) + 1, h=max(pys) - min(pys) + 1))
+    grupos.sort(key=lambda g: g["x"])
+    caixa = (min(g["x"] for g in grupos) - 8, min(g["y"] for g in grupos) - 8,
+             max(g["x"] + g["w"] for g in grupos) + 8,
+             max(g["y"] + g["h"] for g in grupos) + 8)
+    return grupos, caixa
+
+
 def le_valor(bloco, tentativas=3):
-    """O numero escrito DENTRO do bloco, lido da tela."""
+    """O numero escrito DENTRO do bloco, lido da tela.
+
+       O SINAL nao vem do OCR: o hifen do Flowlab e uma barrinha curta e o
+       tesseract come ou inventa. Entao o sinal e lido por GEOMETRIA — a
+       mancha azul mais a esquerda, se for baixa e larga, e o menos. Ler
+       '-1.7' como '1.7' deixaria a lava DESCENDO com o guarda verde."""
     for k in range(tentativas):
         b = acha_bloco(bloco.nome)
         a, _ = nav.captura("/tmp/_bl_val.png")
-        itens = rs.ocr(a, regiao=b.regiao(folga_esq=20, folga_dir=230,
-                                          folga_cima=20, folga_baixo=150),
-                       psm="6", escala=3, limiar=None)
-        nums = [t.strip() for t, *_ in itens
-                if t.strip().lstrip("-").replace(".", "").isdigit()]
-        if nums:
-            return nums[0]
-        time.sleep(0.8)
+        grupos, caixa = _glifos_azuis(a, b)
+        if not grupos:
+            time.sleep(0.8); continue
+        altura = max(g["h"] for g in grupos)
+        negativo = (grupos[0]["h"] <= altura * 0.45 and
+                    grupos[0]["w"] >= grupos[0]["h"] * 1.6)
+        # recorte BINARIZADO pela propria mascara azul: em cinza, o azul
+        # claro sobre o corpo escuro do bloco volta vazio do tesseract.
+        # E SEM AMPLIAR: com 4x os algarismos ficam com ~180 px de altura e o
+        # tesseract volta vazio tambem — a escada que me ajudou na palheta
+        # atrapalha aqui. O que ele le e o tamanho nativo, com margem branca.
+        import numpy as _np
+        from PIL import ImageOps
+        rgb = _np.asarray(Image.open(a).convert("RGB"), dtype=int)
+        cx0, cy0, cx1, cy1 = [int(v) for v in caixa]
+        rec = rgb[cy0:cy1, cx0:cx1]
+        mk = (rec[:, :, 2] > 170) & (rec[:, :, 2] - rec[:, :, 0] > 55) & (rec[:, :, 1] > 95)
+        im = Image.fromarray(_np.where(mk, 0, 255).astype("uint8"), "L")
+        im = ImageOps.expand(im, border=30, fill=255)
+        rec_png = "/tmp/_bl_val_rec.png"; im.save(rec_png)
+        lido = " ".join(t for t, *_ in rs.ocr(rec_png, psm="7", escala=1,
+                                              idioma="eng"))
+        # o tesseract devolve o hifen como aspas ou nada: fico so com os
+        # algarismos e o ponto, e o sinal vem da geometria
+        bruto = "".join(c for c in lido if c.isdigit() or c == ".").strip(".")
+        if not bruto:
+            time.sleep(0.8); continue
+        return ("-" if negativo else "") + bruto
     return None

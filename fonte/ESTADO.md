@@ -241,3 +241,33 @@ limpos.
 
 **Pendente da bancada:** o Mac esta na BATERIA (26%, sem carregador). O
 `vigia_tela.py` solta a tela abaixo de 25%, entao a captura para por ai.
+
+**O sinal de menos nao sai por codigo de tecla.** O teclado desta maquina e
+**ABNT2** ("Brazilian - Pro"), e o codigo 27 — que e o `-` do teclado
+americano — nao produz hifen aqui. O campo ficava com `0.3` onde eu pedira
+`-0.3`, sem erro nenhum, e o sinal e justamente o que faz a lava SUBIR em vez
+de descer. `blocos.escreve_valor` agora digita pelo caminho **Unicode**
+(`rs.digita`). Para a CRIANCA nao muda nada: ela aperta a tecla de verdade.
+
+**Ler o numero de volta tambem precisou de conserto.** O hifen do Flowlab e
+uma barrinha curta: o tesseract come ou inventa. Agora o sinal vem da
+GEOMETRIA (a mancha azul mais a esquerda, baixa e larga, e o menos) e os
+algarismos saem do recorte binarizado **em tamanho nativo** — ampliar 4x,
+que e o que me salva na palheta, deixa o tesseract vazio aqui.
+`fonte/prova_le_valor.py` prova isso sem tela, com um caso positivo e um
+NEGATIVO; sabotando a regra do sinal, ele reprova (conferido).
+
+### Onde a Aula 3 parou
+
+O rascunho e o jogo `3150191`. Ja esta montado e funcionando:
+`Always.out -> Number.get -> Number.out -> Velocity.y`, com o objeto
+`movable` e com `affected by gravity` DESMARCADO.
+
+Falta medir quanto tempo a lava leva para atravessar a tela com um valor
+negativo pequeno (o alvo e uns 15 a 25 s), e dai sai o numero que a aula
+manda a crianca escrever.
+
+**BLOQUEADO:** as 09:30 de 04-10 a bateria chegou a 25% sem carregador e o
+`vigia_tela.py` soltou a tela, como ele foi feito para fazer. A captura para
+de funcionar com a tela apagada — e para RUIDOSAMENTE (`rs.TelaCega`), nao com
+numero errado. Para retomar: ligar o carregador.
