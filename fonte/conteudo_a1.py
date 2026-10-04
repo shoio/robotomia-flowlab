@@ -86,10 +86,11 @@ AULA = {
     sos=[("A caixinha não fica azul","Clique bem em cima do quadradinho, não na palavra."),
          ("Sumiram as opções de Density","Elas ficam acinzentadas enquanto <span class=ui>movable</span> está desmarcado. Marque-o primeiro.")]),
 
-  dict(n=13, titulo="Deixe o jogador PESADO", img="aula1/p21_densidade.jpg", clipe=None,
-    corpo="Ainda na física, arraste dois controles até a <b>ponta direita</b>:<br><br><b>1.</b> <span class=ui>Density</span> (peso) até <b>100</b>.<br><b>2.</b> <span class=ui>Friction</span> (atrito) até <b>100</b>.<br><br>Clique na ponta direita da barrinha — ela vai para onde você clicar.<br><br>Isto não é enfeite: um boneco leve demais <b>sai voando</b> a cada toque de tecla e passa por cima da moeda sem encostar nela. Pesado, ele dá passos curtos e a moeda sente o toque.",
-    ck="<span class=ui>Density</span> mostra <b>100.0</b> e <span class=ui>Friction</span> mostra <b>100.0</b>.",
-    sos=[("O número foi para 3 em vez de 100","Você clicou na ponta esquerda. A barrinha marca o valor <b>onde você clica</b>: clique na ponta da direita."),
+  dict(n=13, titulo="Dê o peso certo ao jogador", img="aula1/p21_densidade.jpg", clipe="peso_do_pulo.gif",
+    corpo="Ainda na física, mexa em dois controles:<br><br><b>1.</b> Em <span class=ui>Density</span> (peso), clique na barrinha <b>um pouco antes da metade</b>, até o número ao lado ficar perto de <b>30</b>. A barrinha marca o valor <b>onde você clica</b>: se passar de 30, clique um pouco mais para a <b>esquerda</b>; se ficar abaixo, um pouco mais para a <b>direita</b>.<br><b>2.</b> Em <span class=ui>Friction</span> (atrito), clique na <b>ponta direita</b> da barrinha, para ficar <b>100</b>.<br><br>Isto não é enfeite. Leve demais, o boneco <b>sai voando</b> a cada toque de tecla e passa por cima da moeda sem encostar nela. Pesado demais, ele fica tão grudado no chão que <b>nem pula</b> — e no passo 14 você vai dar a ele justamente o pulo. Perto de <b>30</b> ele dá passos curtos, a moeda sente o toque, e o pulo funciona.",
+    ck="<span class=ui>Density</span> mostra um número perto de <b>30</b> e <span class=ui>Friction</span> mostra <b>100.0</b>.",
+    sos=[("O número foi para 100 e eu queria 30","Você clicou perto da ponta direita. Clique mais perto do começo da barrinha."),
+         ("O número foi para 3","Você clicou na ponta esquerda. Clique um pouco mais para a direita, num terço da barrinha."),
          ("Density está cinza e não muda","Volte ao passo 12: ele só funciona com <span class=ui>movable</span> marcado."),
          ("Meu boneco continua voando","Confira os dois: peso <b>e</b> atrito. Um só não resolve.")]),
 
@@ -137,7 +138,7 @@ AULA = {
     ck="A moeda sumiu da tela quando o boneco encostou nela.",
     sos=[("O boneco não anda","Clique uma vez dentro do jogo antes de usar as setas; o teclado precisa estar 'dentro' dele."),
          ("Ele cai e some","Tem buraco no chão, ou ele chegou ao fim da faixa verde. Volte e estenda o chão."),
-         ("Ele passa pela moeda e ela não some","É velocidade: volte ao passo 13 e confira <span class=ui>Density</span> e <span class=ui>Friction</span> em 100."),
+         ("Ele passa pela moeda e ela não some","É velocidade: volte ao passo 13 e confira <span class=ui>Density</span> perto de 30 e <span class=ui>Friction</span> em 100."),
          ("A moeda some sozinha no começo","O chão está encostando nela. Suba a moeda uma casa.")]),
  ],
 }

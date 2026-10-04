@@ -23,7 +23,8 @@ import comum
 from comum import (celula, clique, pinta, nomeia, abre_sprite, marca_caixa,
                    arrasta_slider, fecha_painel_objeto, confere_fase,
                    LINHA_CHAO, LINHA_ANDAR, COL_JOGADOR, COL_MOEDA, COLS_CHAO,
-                   CELULA, GRADE_X, GRADE_Y, A, etapa, ETAPAS)
+                   CELULA, GRADE_X, GRADE_Y, A, etapa, ETAPAS,
+                   SPRITE_OK)
 
 comum.pasta("aula1")
 ETAPAS.clear()      # a lista vive em comum.py: cada aula comeca a sua
@@ -64,19 +65,36 @@ def jogador():
     return True
 
 
+DENSIDADE = 30     # medido: pega a moeda E ainda pula. Ver peso() abaixo.
+
+
 @etapa
 def peso():
-    """Deixa o jogador PESADO. Sem isto ele corre 180 px por quadro e atravessa
-       a moeda sem a fisica registrar contato: a moeda nao some e nada no
-       editor acusa. Medido: com densidade e friccao no maximo o passo cai
-       para 52 px e a colisao vale."""
+    """Deixa o jogador PESADO -- mas nao pesado DEMAIS.
+
+       Sem peso nenhum ele corre 180 px por quadro e atravessa a moeda sem a
+       fisica registrar contato: a moeda nao some e nada no editor acusa.
+
+       Mas com densidade 100 ele passa a nao PULAR, e o passo 15 desta mesma
+       aula manda arrastar o pacote `Run & Jump` e diz que ele faz o boneco
+       "correr com as setas e pular". A pagina prometia um pulo que o arquivo
+       nao dava. Medido no rascunho da Aula 2: com densidade 30 o pulo sobe
+       273 px (quatro casas) e o passo horizontal fica em 60 px -- menos que
+       uma casa, entao a colisao com a moeda continua valendo.
+
+       A friccao fica no maximo: e ela que impede o boneco de deslizar."""
     x, y = celula(COL_JOGADOR, LINHA_ANDAR)
     editor.objeto_ou_abre(x, y)
     a, _ = nav.captura("/tmp/_c1_fis.png")
     q = nav.acha_texto("physics", arquivo=a)
     A.gesto("abrir_physics2", "g07", q, lambda: clique(*q), espera=2.5)
     marca_caixa("movable", True)      # sem isto a Densidade fica desabilitada
-    arrasta_slider("density")
+    pd = nav.acha_texto("density", arquivo=nav.captura("/tmp/_c1_d.png")[0],
+                        regiao=(0.45, 0.1, 1.0, 0.85))
+    if not pd:
+        raise RuntimeError("nao achei o controle 'Density' no painel de fisica")
+    alvo = (int(pd[0] + 155 + 2.75 * DENSIDADE), pd[1])
+    A.gesto("peso_do_pulo", "g08", alvo, lambda: clique(*alvo), espera=1.2)
     A.cap("p21_densidade")
     arrasta_slider("friction")
     A.cap("p22_friccao")
@@ -184,12 +202,44 @@ def prova():
         return int(((im[:, :, 0] > 200) & (im[:, :, 1] > 140) &
                     (im[:, :, 1] < 200) & (im[:, :, 2] < 110)).sum())
 
+    def azul():
+        """Onde esta o boneco agora, em pixels da tela."""
+        a, _ = nav.captura("/tmp/_c1_j.png")
+        im = np.asarray(Image.open(a).convert("RGB"), dtype=int)
+        m = ((im[:, :, 2] > 100) & (im[:, :, 2] - im[:, :, 0] > 40) &
+             (im[:, :, 1] < 120))
+        ys, xs = np.nonzero(m)
+        return (int(xs.mean()), int(ys.mean())) if len(ys) > 100 else None
+
     confere_fase()
     p = nav.acha_texto("play")
     A.gesto("jogar", "g06", p, lambda: clique(*p), espera=6)
+    editor.exige_jogo()
     clique(1470, 640); time.sleep(1.5)
     antes = A.cap("p19_jogo")
     n0 = amarelo(antes)
+
+    # PROMESSA DO PASSO 15: o pacote faz o boneco "correr com as setas e
+    # PULAR". Com densidade 100 ele nao saia do chao e a aula mentia. Entao a
+    # prova mede o pulo ANTES de andar -- depois de pegar a moeda ele ja pode
+    # estar na beirada do chao.
+    base = azul()
+    if not base:
+        raise RuntimeError("nao achei o boneco azul no jogo")
+    alturas = []
+    rs.segura_tecla(126, 0.2)           # 126 = seta para cima
+    for _ in range(6):
+        time.sleep(0.12)
+        q = azul()
+        alturas.append(q[1] if q else None)
+    validos = [h for h in alturas if h]
+    sobe = base[1] - min(validos) if validos else 0
+    print(f"   pulo: subiu {sobe} px", flush=True)
+    if sobe < 60:
+        raise RuntimeError(f"o boneco subiu so {sobe} px: o passo 15 promete "
+                           "que o pacote faz ele PULAR, e com este peso ele "
+                           "nao sai do chao")
+    time.sleep(1.5)
     # toques CURTOS, conferindo a cada um: segurando, o boneco passa correndo
     # pela moeda e cai no fim do chao antes de a colisao valer
     n1 = n0
