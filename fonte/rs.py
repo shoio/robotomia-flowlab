@@ -693,3 +693,30 @@ def procura_forte(alvo, arquivo=None, regiao=None, psm="6", escada=ESCADA, exato
             if (lido == alvo_l) if exato else (alvo_l in lido or lido in alvo_l and len(lido) >= 3):
                 return (t, x, y, w, h)
     return None
+
+
+def tecla_baixo(codigo):
+    e = Quartz.CGEventCreateKeyboardEvent(None, codigo, True)
+    Quartz.CGEventPost(Quartz.kCGHIDEventTap, e)
+
+
+def tecla_cima(codigo):
+    e = Quartz.CGEventCreateKeyboardEvent(None, codigo, False)
+    Quartz.CGEventPost(Quartz.kCGHIDEventTap, e)
+
+
+def corre_e_pula(direcao=124, pulo=126, antes=0.25, segurando=0.45, depois=0.25):
+    """Segura a seta de ANDAR e, com ela ainda apertada, toca a de PULAR.
+
+       Tocar uma e depois a outra nao e a mesma coisa: o boneco pula PARADO e
+       cai no mesmo lugar. Para atravessar o vao entre duas plataformas ele
+       precisa estar andando no momento do pulo — e foi assim que a minha
+       sonda 'subiu a fase' tres vezes sem sair do chao."""
+    tecla_baixo(direcao)
+    time.sleep(antes)
+    tecla_baixo(pulo)
+    time.sleep(0.08)
+    tecla_cima(pulo)
+    time.sleep(segurando)
+    tecla_cima(direcao)
+    time.sleep(depois)

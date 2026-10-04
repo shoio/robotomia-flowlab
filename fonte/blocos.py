@@ -126,16 +126,17 @@ def solta(nome, x, y, tentativas=3, titulo=None):
         p = item_palheta(nome)
         rs.arrasta_img(p[0], p[1], x, y, escala=2.0, janela=J)
         time.sleep(1.4)
-        b = Bloco(titulo or nome, x, y)
-        a, _ = nav.captura("/tmp/_bl_solta.png")
-        lido = " ".join(t for t, *_ in rs.ocr_forte(a, regiao=b.regiao(), psm="6")).lower()
-        if (titulo or nome).split()[0].lower()[:6] in lido:
-            # devolvo o bloco localizado pelo TITULO: os deslocamentos dos
-            # pinos sao medidos dali, e nao do ponto onde eu soltei
-            try:
-                return acha_bloco(titulo or nome)
-            except RuntimeError:
-                return b
+        # A conferencia e feita na MESA INTEIRA, nao num recorte em volta do
+        # ponto onde eu soltei. Num recorte pequeno de uma tela escura com uma
+        # palavra so, o tesseract volta lixo: ele lia 'EM' onde estava escrito
+        # 'Always', e o solta() desfazia um bloco que tinha nascido certo —
+        # tres vezes seguidas, e a captura parava ali.
+        try:
+            achado = acha_bloco(titulo or nome)
+        except RuntimeError:
+            achado = None
+        if achado and abs(achado.x - x) < 600 and abs(achado.y - y) < 400:
+            return achado
         # DESFAZ antes de tentar de novo: repetir sem desfazer empilha blocos
         # invisiveis para mim e visiveis para a crianca na foto da aula
         rs.tecla(6, cmd=True)          # 6 = Z
@@ -677,24 +678,40 @@ def _ha_fio(arquivo, p1, p2, folga=34, claro=200, minimo=40):
     """Ja existe um fio ligando estes dois pinos?
 
        Olha a FAIXA entre eles e conta pixels claros — o fio e quase branco, e
-       o fundo da mesa e escuro. A faixa e partida em tres colunas e as TRES
-       precisam ter fio: assim um fio de outro par que cruze a regiao nao
-       passa por ligacao.
+       o fundo da mesa e escuro. A faixa e partida em tres fatias ao longo do
+       eixo MAIS LONGO, e as tres precisam ter fio: assim um fio de outro par
+       que cruze a regiao nao passa por ligacao.
+
+       O eixo importa. A primeira versao sempre fatiava na horizontal, e para
+       dois pinos quase um em cima do outro (Always.out -> Number.get, 86 px
+       de distancia horizontal) a faixa ficava estreita demais e ela respondia
+       'nao ha fio' com o fio desenhado na tela.
 
        Isto e o invariante ('ha um fio entre estes dois pinos'), e nao o proxy
-       que eu usava antes ('alguma coisa mudou no caminho'). O proxy reprovava
-       quando o fio JA ESTAVA LA — que e o estado normal de uma etapa repetida
-       depois de um erro no meio dela."""
+       ('alguma coisa mudou no caminho'). O proxy reprovava quando o fio JA
+       ESTAVA LA — que e o estado normal de uma etapa repetida depois de um
+       erro no meio dela."""
     import numpy as _np
     im = _np.asarray(Image.open(arquivo).convert("L"), dtype=int)
-    x0, x1 = sorted((p1[0], p2[0])); y0, y1 = sorted((p1[1], p2[1]))
-    x0, x1 = x0 + folga, x1 - folga
-    y0, y1 = max(0, y0 - 60), min(im.shape[0], y1 + 60)
-    if x1 - x0 < 30:
+    x0, x1 = sorted((p1[0], p2[0]))
+    y0, y1 = sorted((p1[1], p2[1]))
+    horizontal = (x1 - x0) >= (y1 - y0)
+    if horizontal:
+        x0, x1 = x0 + folga, x1 - folga
+        y0, y1 = max(0, y0 - 60), min(im.shape[0], y1 + 60)
+    else:
+        y0, y1 = y0 + folga, y1 - folga
+        x0, x1 = max(0, x0 - 60), min(im.shape[1], x1 + 60)
+    if x1 - x0 < 20 or y1 - y0 < 20:
         return False
-    largura = (x1 - x0) // 3
+    passo = ((x1 - x0) if horizontal else (y1 - y0)) // 3
+    if passo < 4:
+        return False
     for k in range(3):
-        rec = im[y0:y1, x0 + k * largura: x0 + (k + 1) * largura]
+        if horizontal:
+            rec = im[y0:y1, x0 + k * passo: x0 + (k + 1) * passo]
+        else:
+            rec = im[y0 + k * passo: y0 + (k + 1) * passo, x0:x1]
         if int((rec > claro).sum()) < minimo:
             return False
     return True

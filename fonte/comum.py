@@ -89,13 +89,21 @@ def clique(x, y, duplo=False):
 
 
 def fecha_painel_objeto():
+    """Fecha o painel do objeto pelo OK azul, achado pela COR.
+
+       O painel nasce do LADO da casa clicada: para a lava, que comeca na
+       coluna 1, ele abre a ESQUERDA da tela. Procurando o azul so na metade
+       direita eu caia no ponto de reserva — espaco vazio — e o painel ficava
+       aberto, com o clique seguinte caindo dentro dele."""
     for _ in range(3):
-        p = nav.acha_cor(AZUL_OK, tol=40, regiao=(0.45, 0.45, 0.9, 0.98), minimo=800)
+        p = (nav.acha_cor(AZUL_OK, tol=40, regiao=(0.0, 0.45, 1.0, 0.98), minimo=800)
+             or nav.acha_cor(AZUL_OK, tol=40, regiao=(0.0, 0.05, 1.0, 0.98), minimo=800))
         alvo = (p[0], p[1]) if p else OK_PAINEL
         clique(*alvo)
         time.sleep(1.8); nav.espera_parar(limite=12)
         a, _ = nav.captura("/tmp/_c1_ok.png")
-        if "edit sprite" not in " ".join(t for t, *_ in rs.ocr_forte(a, psm="6")).lower():
+        texto = " ".join(t for t, *_ in rs.ocr_forte(a, psm="6")).lower()
+        if "edit sprite" not in texto and "collision shape" not in texto:
             return True
     raise RuntimeError("cliquei no OK e o painel do objeto continua aberto")
 
@@ -324,3 +332,24 @@ def maior_mancha(mascara):
             melhor = (int(sum(p[1] for p in pts) / len(pts)),
                       int(sum(p[0] for p in pts) / len(pts)), len(pts))
     return melhor
+
+
+def nomeia_tipo(nome):
+    """Escreve o TIPO do objeto (o campo `Type`, ao lado do `Name`).
+
+       E o nome do TIPO que aparece na lista do bloco `Collision` — o nome do
+       objeto nao aparece la. Sem isto a lista mostra 'New Type 1', 'New Type
+       2'… e nao ha como a crianca saber qual e qual."""
+    a, _ = nav.captura("/tmp/_c1_tipo.png")
+    p = None
+    for regiao in ((0.3, 0.05, 0.75, 0.9), (0.0, 0.05, 1.0, 0.95), None):
+        p = nav.acha_texto("type", arquivo=a, regiao=regiao)
+        if p:
+            break
+    if not p:
+        raise RuntimeError("nao achei o campo Type")
+    clique(p[0] + 40, p[1] + 54, duplo=True); time.sleep(0.6)
+    rs.tecla(0, cmd=True); time.sleep(0.25)
+    rs.digita_teclas(nome); time.sleep(0.4)
+    rs.tecla(48); time.sleep(0.8)          # Tab: o Enter FECHA o painel
+    return True

@@ -1,34 +1,34 @@
 {
  "criar_objeto": {
-  "antes": "g01_a.png",
-  "depois": "g01_b.png",
+  "antes": "g01_a.jpg",
+  "depois": "g01_b.jpg",
   "alvo": [
-   1246,
+   1182,
    895
   ],
   "botao": "esq"
  },
  "escolher_create": {
-  "antes": "g02_a.png",
-  "depois": "g02_b.png",
+  "antes": "g02_a.jpg",
+  "depois": "g02_b.jpg",
   "alvo": [
-   1126,
+   1062,
    892
   ],
   "botao": "esq"
  },
  "abrir_physics": {
-  "antes": "g03_a.png",
-  "depois": "g03_b.png",
+  "antes": "g03_a.jpg",
+  "depois": "g03_b.jpg",
   "alvo": [
-   1876,
+   1812,
    1270
   ],
   "botao": "esq"
  },
  "marcar_movable": {
-  "antes": "g04_a.png",
-  "depois": "g04_b.png",
+  "antes": "g04_a.jpg",
+  "depois": "g04_b.jpg",
   "alvo": [
    0,
    0
@@ -36,26 +36,44 @@
   "botao": "esq"
  },
  "peso_do_pulo": {
-  "antes": "g05_a.png",
-  "depois": "g05_b.png",
+  "antes": "g05_a.jpg",
+  "depois": "g05_b.jpg",
   "alvo": [
-   1718,
+   1654,
    688
   ],
   "botao": "esq"
  },
  "fisica_da_lava": {
-  "antes": "g06_a.png",
-  "depois": "g06_b.png",
+  "antes": "g06_a.jpg",
+  "depois": "g06_b.jpg",
   "alvo": [
-   1226,
+   1162,
    990
   ],
   "botao": "esq"
  },
  "desligar_gravidade": {
-  "antes": "g07_a.png",
-  "depois": "g07_b.png",
+  "antes": "g07_a.jpg",
+  "depois": "g07_b.jpg",
+  "alvo": [
+   0,
+   0
+  ],
+  "botao": "esq"
+ },
+ "lava_atravessa": {
+  "antes": "g10_a.jpg",
+  "depois": "g10_b.jpg",
+  "alvo": [
+   0,
+   0
+  ],
+  "botao": "esq"
+ },
+ "lava_sente_o_toque": {
+  "antes": "g11_a.jpg",
+  "depois": "g11_b.jpg",
   "alvo": [
    0,
    0
@@ -63,17 +81,17 @@
   "botao": "esq"
  },
  "botao_menos": {
-  "antes": "g08_a.png",
-  "depois": "g08_b.png",
+  "antes": "g08_a.jpg",
+  "depois": "g08_b.jpg",
   "alvo": [
-   1655,
-   483
+   1669,
+   543
   ],
   "botao": "esq"
  },
  "jogar": {
-  "antes": "g09_a.png",
-  "depois": "g09_b.png",
+  "antes": "g09_a.jpg",
+  "depois": "g09_b.jpg",
   "alvo": [
    1051,
    1584

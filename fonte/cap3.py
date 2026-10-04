@@ -21,7 +21,7 @@
 import os, sys, time, json
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import rs, nav, editor, blocos, comum
-from comum import (celula, clique, pinta, nomeia, abre_sprite, marca_caixa,
+from comum import (celula, clique, pinta, nomeia, nomeia_tipo, abre_sprite, marca_caixa,
                    arrasta_slider, fecha_painel_objeto, A, etapa, ETAPAS,
                    CELULA, GRADE_X, GRADE_Y, SPRITE_OK)
 
@@ -29,17 +29,27 @@ comum.pasta("aula3")
 ETAPAS.clear()
 D = "aula3"
 
-# o desenho da fase
+# O DESENHO DA FASE — uma escada, nao um salto de fe.
+#
+# A primeira versao tinha plataformas de 3 casas separadas por 2 colunas de
+# vao. Medido em jogo: o pulo chegava la, mas o pouso caia em qualquer lugar
+# entre a beirada esquerda e o vazio depois da direita — a mesma sequencia de
+# teclas as vezes pousava, as vezes caia. Isso nao e dificuldade, e sorte.
+#
+# Agora cada degrau sobe 2 fileiras e anda 1 coluna, e as plataformas sao
+# largas. A estrela fica na PONTA DIREITA do degrau de cima, para a crianca
+# ANDAR ate ela — encostar andando e o toque que esta provado desde a Aula 1;
+# cair em cima de uma peca de 1 casa, nao.
 LINHA_CHAO  = 8
 LINHA_MEIO  = 6
 LINHA_ALTA  = 4
 LINHA_LAVA  = 11
-COL_JOGADOR = 4
-COLS_CHAO   = [3, 4, 5, 6]
-COLS_MEIO   = [8, 9, 10]
-COLS_ALTA   = [12, 13, 14]
-COL_ESTRELA = 13
-COLS_LAVA   = list(range(1, 16))
+COL_JOGADOR = 3
+COLS_CHAO   = [1, 2, 3, 4, 5, 6]
+COLS_MEIO   = [7, 8, 9, 10, 11]
+COLS_ALTA   = [12, 13, 14, 15]
+COL_ESTRELA = 15
+COLS_LAVA   = list(range(0, 16))
 
 DENSIDADE = 30          # medido na Aula 2: pula 273 px e anda 60 px por toque
 SUBIDA    = "0.5"       # digitado positivo; um clique no `−` deixa -0.5
@@ -86,6 +96,9 @@ def jogador():
     A.gesto("escolher_create", "g02", p, lambda: clique(*p), espera=3)
     editor.espera_tela("behaviors", limite=20)
     nomeia("Jogador")
+    # o TIPO tambem: e o nome do tipo que aparece na lista do bloco Collision,
+    # nao o nome do objeto. Sem isto a lava nao tem como saber em quem bater.
+    nomeia_tipo("Jogador")
     A.cap("p02_nome")
     abre_sprite()
     pinta("azul")
@@ -155,6 +168,18 @@ def lava_fisica():
     marca_caixa("movable", True)
     A.gesto("desligar_gravidade", "g07", (0, 0),
             lambda: marca_caixa("affected by gravity", False), espera=1.2)
+    # SEM 'is solid' a lava ATRAVESSA as plataformas. Medido em jogo: com ela
+    # solida, as pecas que ficam debaixo de uma plataforma travam e a parede
+    # se parte — a lava vira pedacos em alturas diferentes e a crianca fica
+    # em cima do chao sem perigo nenhum. O editor nao acusa nada disso.
+    A.gesto("lava_atravessa", "g10", (0, 0),
+            lambda: marca_caixa("is solid", False), espera=1.2)
+    # ...mas desmarcar 'is solid' tambem desliga a BATIDA: a lava subia por
+    # cima do boneco e nada acontecia. No lugar do 'is solid' nasce uma
+    # caixinha nova, `enable collisions` — e ela que devolve o toque sem
+    # devolver o empurrao. Medido: com ela, o jogo recomeca; sem ela, nao.
+    A.gesto("lava_sente_o_toque", "g11", (0, 0),
+            lambda: marca_caixa("enable collisions", True), espera=1.2)
     A.cap("p10_lava_sem_gravidade")
     fecha_painel_objeto(); time.sleep(1.5)
     return True
@@ -167,11 +192,11 @@ def lava_sobe():
     x, y = celula(COLS_LAVA[0], LINHA_LAVA)
     editor.objeto_ou_abre(x, y)
     editor.abre_comportamentos()
-    al = blocos.solta("Always", 1150, 600)
+    al = blocos.bloco_ou_solta("Always", 1150, 600)
     A.cap("p11_always")
-    nu = blocos.solta("Number", 1500, 900)
+    nu = blocos.bloco_ou_solta("Number", 1500, 900)
     A.cap("p12_number")
-    ve = blocos.solta("Velocity", 2000, 600)
+    ve = blocos.bloco_ou_solta("Velocity", 2000, 600)
     A.cap("p13_velocity")
     blocos.liga_fixo(al, "out", nu, "get")
     blocos.liga_fixo(nu, "out", ve, "y")
@@ -195,9 +220,17 @@ def lava_mata():
     x, y = celula(COLS_LAVA[0], LINHA_LAVA)
     editor.objeto_ou_abre(x, y)
     editor.abre_comportamentos()
-    c = blocos.bloco_ou_solta("Collision", 1150, 1150)
-    r = blocos.bloco_ou_solta("Restart Game", 1950, 1150, titulo="RestartGame")
+    # Longe da beirada direita de proposito: soltar um bloco perto dela faz a
+    # mesa ROLAR sozinha, e os blocos que ja estavam la saem de vista — eu
+    # media pinos de um bloco que nao estava mais onde eu pensava.
+    c = blocos.bloco_ou_solta("Collision", 1120, 1220)
+    r = blocos.bloco_ou_solta("Restart Game", 1700, 1220, titulo="RestartGame")
     blocos.liga_fixo(c, "hit", r, "go")
+    # COM QUEM a batida conta. Em 'Any Type' o bloco dispara com qualquer
+    # coisa — e uma lava que sobe bate primeiro no CHAO: o jogo reiniciava
+    # sozinho a cada poucos segundos e a fase ficava impossivel, sem nada no
+    # editor acusando.
+    blocos.escolhe_tipo_da_colisao(c, "Jogador")
     A.cap("p16_lava_reinicia")
     print("   lava ligada ao reinicio", flush=True)
     time.sleep(2)
@@ -216,16 +249,22 @@ def estrela():
     clique(*SPRITE_OK); time.sleep(2); nav.espera_parar(limite=15)
     A.cap("p17_estrela")
     editor.abre_comportamentos()
-    c = blocos.bloco_ou_solta("Collision", 1150, 600)
-    al = blocos.bloco_ou_solta("Alert", 1950, 600)
-    blocos.liga_fixo(c, "hit", al, "show")
-    A.cap("p18_fio_alerta")
-    # as frases do aviso: SEM ACENTO de proposito — o caminho de teclado da
-    # captura nao alcanca 'ê' nem 'ç', e a aula manda a crianca digitar
-    # exatamente estas, para a tela dela bater com a foto
-    blocos.escreve_textos(al, "GANHOU!", "Chegou na estrela antes da lava!",
-                          "Fechar")
-    A.cap("p19_aviso")
+    c = blocos.bloco_ou_solta("Collision", 1120, 620)
+    d = blocos.bloco_ou_solta("Destroyer", 1700, 620)
+    blocos.liga_fixo(c, "hit", d, "in")
+    # A estrela tambem precisa dizer COM QUEM a batida conta. Em 'Any Type' a
+    # LAVA, ao subir, atravessa a estrela e a destroi — o jogo se ganha
+    # sozinho, antes de a crianca chegar la, e o que ela ve e uma estrela que
+    # some do nada. Foi isso que fez a minha sonda "subir a fase seis vezes
+    # sem nunca pegar a estrela": ela ja tinha sido comida pela lava.
+    blocos.escolhe_tipo_da_colisao(c, "Jogador")
+    A.cap("p18_fio_estrela")
+    # Aqui havia um `Alert` com as frases da vitoria. Tirei depois de ver em
+    # jogo: o Alert ESCURECE a tela e nao desenha a caixa dentro do canvas da
+    # pagina do jogo — a crianca encostaria na estrela e veria a tela apagar,
+    # sem uma palavra. A estrela que SOME e a mesma peca da Aula 1, ja provada,
+    # e diz 'peguei' sem ambiguidade.
+    A.cap("p19_estrela_pronta")
     time.sleep(2)
     editor.fecha_comportamentos(); time.sleep(2.5)
     fecha_painel_objeto(); time.sleep(1.5)
@@ -300,6 +339,7 @@ def prova():
         if k == 3:
             A.cap("p22_lava_subindo")
         time.sleep(0.6)
+    print("   serie da lava:", serie, flush=True)
     alturas = [y for y in serie if y is not None]
     if len(alturas) < 10:
         raise RuntimeError(f"nao achei a lava vermelha no jogo ({len(alturas)} "
@@ -329,12 +369,41 @@ def prova():
 
 @etapa
 def prova_vitoria():
-    """Prova que ENCOSTAR NA ESTRELA abre o aviso de vitoria.
+    """Prova que ENCOSTAR NA ESTRELA faz ela sumir.
 
        A aula promete isso no passo 19, e promessa de pagina sem execucao que
-       a contradiga e justamente a que envelhece sem ninguem ver. Entao eu
-       subo a fase de verdade — seta para a direita e seta para cima — e
-       procuro a palavra GANHOU na tela."""
+       a contradiga e a que envelhece sem ninguem ver. Entao subo a fase de
+       verdade.
+
+       Duas coisas que a primeira versao desta sonda errou:
+       - ela tocava a seta de ANDAR e depois a de PULAR. Separadas, o boneco
+         pula parado e cai no mesmo lugar: 'subi a fase tres vezes' sem ter
+         saido do chao. `rs.corre_e_pula` segura uma e toca a outra.
+       - e ela conferia sem olhar se o boneco ainda estava vivo. Depois de
+         cair, as teclas vao para o vazio e a sonda conclui que a fase nao tem
+         saida."""
+    from PIL import Image
+    import numpy as np
+
+    azul = lambda im: ((im[:, :, 2] > 100) & (im[:, :, 2] - im[:, :, 0] > 40) &
+                       (im[:, :, 1] < 120))
+    amar = lambda im: ((im[:, :, 0] > 190) & (im[:, :, 1] > 130) &
+                       (im[:, :, 1] < 210) & (im[:, :, 2] < 120))
+
+    def mancha(mascara, minimo=600):
+        a, _ = nav.captura("/tmp/_c3_v.png")
+        im = np.asarray(Image.open(a).convert("RGB"), dtype=int)
+        g = comum.maior_mancha(mascara(im))
+        return g if g and g[2] > minimo else None
+
+    def espera_comeco(limite=40):
+        for _ in range(limite):
+            q = mancha(azul)
+            if q and abs(q[0] - inicio[0]) < 40:
+                return True
+            time.sleep(0.8)
+        return False
+
     editor.volta_ao_editor(); time.sleep(2)
     editor.volta_ao_nivel()
     p = nav.acha_texto("play")
@@ -342,20 +411,33 @@ def prova_vitoria():
         raise RuntimeError("nao achei o botao Play (estou mesmo no editor?)")
     clique(*p); time.sleep(6)
     editor.exige_jogo()
-    clique(1470, 620); time.sleep(1.5)
-    for tentativa in range(3):
-        for _ in range(26):
-            rs.segura_tecla(124, 0.30)       # direita
-            rs.segura_tecla(126, 0.12)       # cima
-            a, _ = nav.captura("/tmp/_c3_win.png")
-            lido = " ".join(t for t, *_ in rs.ocr_forte(a, psm="6")).lower()
-            if "ganhou" in lido:
-                A.cap("p24_ganhou")
-                print(f"   encostei na estrela e o aviso APARECEU "
-                      f"(tentativa {tentativa+1})", flush=True)
+    clique(1470, 620); time.sleep(1.2)
+    if not mancha(amar):
+        raise RuntimeError("nao achei a estrela amarela no jogo")
+    # ONDE o boneco nasce, medido na hora. Numero fixo aqui envelhece: bastou
+    # mudar a coluna onde a fase comeca para a sonda ficar esperando um boneco
+    # que estava na tela, parado, 60 px ao lado.
+    inicio = mancha(azul)
+    if not inicio:
+        raise RuntimeError("nao achei o boneco azul no comeco do jogo")
+    print(f"   o boneco nasce em x={inicio[0]}", flush=True)
+
+    for tentativa in range(6):
+        if not espera_comeco():
+            raise RuntimeError("o boneco nao voltou ao comeco: o jogo travou?")
+        rs.corre_e_pula(antes=0.25)                    # chao -> plataforma do meio
+        rs.corre_e_pula(antes=0.02, segurando=0.12)    # meio -> plataforma alta
+        for k in range(10):
+            if not mancha(amar):
+                A.cap("p24_pegou_a_estrela")
+                print(f"   encostei na estrela e ela SUMIU "
+                      f"(tentativa {tentativa + 1}, passo {k})", flush=True)
                 return True
-        time.sleep(1.0)                      # a lava me pegou: comeca de novo
-    raise RuntimeError("subi a fase tres vezes e o aviso de vitoria nao apareceu")
+            q = mancha(azul)
+            if not q or q[1] > 520:        # caiu da plataforma alta
+                break
+            rs.segura_tecla(123, 0.08)     # seta esquerda, ate tocar a estrela
+    raise RuntimeError("subi ate a plataforma alta seis vezes e a estrela nao sumiu")
 
 
 def main():
