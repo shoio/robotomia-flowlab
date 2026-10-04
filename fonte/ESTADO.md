@@ -242,12 +242,19 @@ limpos.
 **Pendente da bancada:** o Mac esta na BATERIA (26%, sem carregador). O
 `vigia_tela.py` solta a tela abaixo de 25%, entao a captura para por ai.
 
-**O sinal de menos nao sai por codigo de tecla.** O teclado desta maquina e
-**ABNT2** ("Brazilian - Pro"), e o codigo 27 — que e o `-` do teclado
-americano — nao produz hifen aqui. O campo ficava com `0.3` onde eu pedira
-`-0.3`, sem erro nenhum, e o sinal e justamente o que faz a lava SUBIR em vez
-de descer. `blocos.escreve_valor` agora digita pelo caminho **Unicode**
-(`rs.digita`). Para a CRIANCA nao muda nada: ela aperta a tecla de verdade.
+**O CAMPO engole o menos quando ele e o primeiro.** (Corrige o que eu
+escrevi antes: eu tinha culpado o teclado ABNT2, e estava errado. Medi tecla
+por tecla no campo `Label` e o codigo 27 produz hifen sim.) O que acontece e
+no campo `Current value`: com o conteudo todo selecionado, digitar `-0.3`
+deixa `0.3` — sem erro nenhum, e o sinal e justamente o que faz a lava SUBIR
+em vez de descer. Digitado DEPOIS, com o cursor ja dentro do texto, o hifen
+entra. `blocos.escreve_valor` agora escreve os algarismos, volta o cursor com
+a seta esquerda e so entao poe o sinal. (O caminho Unicode, `rs.digita`, nao
+entrega nada neste campo.)
+
+**Isso vale para a CRIANCA tambem**: se ela digitar `-1` de uma vez, o campo
+fica com `1`. A aula tem de mandar usar o botao **−** ao lado do campo, que
+tira 1 do valor a cada clique — de 0, um clique em `−` da exatamente `-1`.
 
 **Ler o numero de volta tambem precisou de conserto.** O hifen do Flowlab e
 uma barrinha curta: o tesseract come ou inventa. Agora o sinal vem da
@@ -271,3 +278,42 @@ manda a crianca escrever.
 `vigia_tela.py` soltou a tela, como ele foi feito para fazer. A captura para
 de funcionar com a tela apagada — e para RUIDOSAMENTE (`rs.TelaCega`), nao com
 numero errado. Para retomar: ligar o carregador.
+
+### Medidas da Aula 3 (04-10, tarde)
+
+**A lava sobe.** `Always.out -> Number.get -> Number.out -> Velocity.y`, no
+objeto com `movable` marcado e `affected by gravity` DESMARCADO:
+
+| valor no `Number` | velocidade medida | tela inteira (768 px) |
+|---|---|---|
+| `1`    | ~34 px/s para BAIXO | — |
+| `-1`   | 55 px/s para CIMA   | 14 s |
+| `-0.5` | 27,2 px/s para CIMA | 28 s |
+
+Da lava (fileira 11) ate a plataforma da estrela (fileira 4) sao 7 casas =
+448 px: com `-0.5` a crianca tem **16 s** para subir. Com `-1` teria 8 s, que
+e tenso demais para quem esta aprendendo a pular.
+
+**Como a crianca escreve um numero negativo.** Nao digitando o hifen — o campo
+o engole quando ele e o primeiro caractere. Pelo **botao `−`** ao lado do
+campo, que tira 1 do valor a cada clique: escrever `0.5` e clicar uma vez da
+`-0.5`. `blocos.valor_com_botao_menos` faz exatamente esse gesto, e e por ele
+que a captura passa — assim o clipe mostra o caminho que a crianca segue, e
+nao um atalho meu.
+
+**O bloco `Alert`** (categoria GUI) tem tres frases — *Title*, *Body* e
+*Button* — alem das cores. Pinos: `show` e `hide` na esquerda, `click` na
+direita. `blocos.escreve_textos` preenche as tres.
+
+**Sem acentos no texto DENTRO do jogo.** O `digita_teclas` manda codigos de
+tecla e eles caem no mapa americano (foi o que a sonda tecla-a-tecla mostrou),
+entao nao da para escrever `ê` nem `ç`. As frases do jogo sao escolhidas sem
+acento de proposito (`GANHOU!`, `Chegou na estrela antes da lava!`), e a aula
+manda a crianca digitar exatamente essas — assim a foto dela bate com a minha.
+
+**⛔ `rs.digita` (caminho Unicode) nao se usa no Chrome.** Ele pendura cada
+caractere no CODIGO DE TECLA 0, e o Chrome le o codigo cru como atalho: numa
+tentativa de escrever `VOCÊ VENCEU!` ele abriu o DevTools, ligou o modo
+dispositivo e abriu o painel lateral — tres estados de interface de uma vez, e
+a janela do Flowlab mudou de largura por baixo de todas as coordenadas
+medidas. O campo nao recebeu nada. O aviso esta na docstring da funcao.

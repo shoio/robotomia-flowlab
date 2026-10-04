@@ -212,6 +212,18 @@ def tecla(codigo, cmd=False, shift=False, alt=False, ctrl=False):
 
 
 def digita(txt):
+    """⛔ NAO USE ISTO NO CHROME.
+
+       Este caminho manda cada caractere como Unicode pendurado no CODIGO DE
+       TECLA 0 (que e o 'a'). Em campo de pagina web o Chrome le o codigo cru
+       e entende ATALHO: numa tentativa de escrever 'VOCÊ VENCEU!' ele abriu o
+       DevTools, ligou o modo dispositivo e abriu o painel lateral — tres
+       estados de interface mudados de uma vez, e a janela do Flowlab mudou de
+       tamanho por baixo de todas as minhas coordenadas medidas. E o campo nao
+       recebeu nada.
+
+       Para digitar no navegador, use `digita_teclas` (codigos de tecla
+       reais)."""
     for ch in txt:
         e = Quartz.CGEventCreateKeyboardEvent(None, 0, True)
         Quartz.CGEventKeyboardSetUnicodeString(e, len(ch), ch)

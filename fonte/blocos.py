@@ -654,6 +654,8 @@ DESLOC = {
     # Ligar o Always no 'set' nao faz nada sair: quem dispara e o 'get'.
     "Number":   {"esq": {"set": (-28, 39), "get": (-28, 75), "mais": (-28, 114)},
                  "dir": {"out": (249, 74)}},
+    "Alert":    {"esq": {"show": (-26, 45), "hide": (-26, 86)},
+                 "dir": {"click": (247, 65)}},
     "Destroyer": {"esq": {"in": (-28, 57)}, "dir": {"out": (248, 57)}},
     # o titulo no canvas e 'RestartGame' (sem espaco), mas na palheta ele
     # aparece como 'Restart Game' — por isso solta() aceita titulo diferente
@@ -728,11 +730,21 @@ def escreve_valor(bloco, valor):
     alvo = (p[0] + 30, p[1] + 68)
     nav.clique_seguro(*alvo); time.sleep(0.6)
     rs.tecla(0, cmd=True); time.sleep(0.25)          # Cmd+A
-    # pelo caminho UNICODE, nao por codigo de tecla: o teclado desta maquina e
-    # ABNT2, e o codigo 27 (o '-' do teclado americano) nao produz hifen aqui.
-    # O campo ficava com '0.3' onde eu pedira '-0.3', sem erro nenhum — e o
-    # sinal e justamente o que faz a lava SUBIR em vez de descer.
-    rs.digita(str(valor)); time.sleep(0.6)
+    # O CAMPO ENGOLE O MENOS QUANDO ELE E O PRIMEIRO. Com o conteudo todo
+    # selecionado, digitar '-0.3' deixa '0.3' — sem erro nenhum, e o sinal e
+    # justamente o que faz a lava SUBIR em vez de descer. (Nao e o teclado:
+    # medi tecla por tecla no campo 'Label' e o codigo 27 produz hifen sim.)
+    # Entao escrevo os algarismos, volto o cursor ate o comeco e so entao o
+    # sinal. Pelo caminho UNICODE o campo nao recebe nada.
+    texto = str(valor)
+    negativo = texto.startswith("-")
+    corpo = texto.lstrip("-")
+    rs.digita_teclas(corpo); time.sleep(0.4)
+    if negativo:
+        for _ in range(len(corpo)):
+            rs.tecla(123); time.sleep(0.08)          # seta esquerda
+        rs.digita_teclas("-"); time.sleep(0.4)
+    time.sleep(0.3)
     fecha_ajustes()
     lido = le_valor(bloco)
     if lido != str(valor):
@@ -792,39 +804,102 @@ def _glifos_azuis(arquivo, bloco):
 def le_valor(bloco, tentativas=3):
     """O numero escrito DENTRO do bloco, lido da tela.
 
-       O SINAL nao vem do OCR: o hifen do Flowlab e uma barrinha curta e o
-       tesseract come ou inventa. Entao o sinal e lido por GEOMETRIA — a
-       mancha azul mais a esquerda, se for baixa e larga, e o menos. Ler
-       '-1.7' como '1.7' deixaria a lava DESCENDO com o guarda verde."""
+       Cada glifo e classificado SOZINHO, e nao a frase inteira:
+       - o menos e uma barrinha baixa e larga — geometria, nao OCR, porque o
+         tesseract come ou inventa o hifen (e ler '-1.7' como '1.7' deixaria a
+         lava DESCENDO com o guarda verde);
+       - o ponto decimal e um quadradinho;
+       - so os ALGARISMOS vao para o tesseract, um por um, com margem branca e
+         em tamanho nativo. A linha inteira nao serve: '-1' volta vazio e
+         '-1.7' volta '1' — o recorte curto derruba a segmentacao."""
     for k in range(tentativas):
         b = acha_bloco(bloco.nome)
         a, _ = nav.captura("/tmp/_bl_val.png")
-        grupos, caixa = _glifos_azuis(a, b)
+        grupos, _caixa = _glifos_azuis(a, b)
         if not grupos:
             time.sleep(0.8); continue
-        altura = max(g["h"] for g in grupos)
-        negativo = (grupos[0]["h"] <= altura * 0.45 and
-                    grupos[0]["w"] >= grupos[0]["h"] * 1.6)
-        # recorte BINARIZADO pela propria mascara azul: em cinza, o azul
-        # claro sobre o corpo escuro do bloco volta vazio do tesseract.
-        # E SEM AMPLIAR: com 4x os algarismos ficam com ~180 px de altura e o
-        # tesseract volta vazio tambem — a escada que me ajudou na palheta
-        # atrapalha aqui. O que ele le e o tamanho nativo, com margem branca.
         import numpy as _np
         from PIL import ImageOps
         rgb = _np.asarray(Image.open(a).convert("RGB"), dtype=int)
-        cx0, cy0, cx1, cy1 = [int(v) for v in caixa]
-        rec = rgb[cy0:cy1, cx0:cx1]
-        mk = (rec[:, :, 2] > 170) & (rec[:, :, 2] - rec[:, :, 0] > 55) & (rec[:, :, 1] > 95)
-        im = Image.fromarray(_np.where(mk, 0, 255).astype("uint8"), "L")
-        im = ImageOps.expand(im, border=30, fill=255)
-        rec_png = "/tmp/_bl_val_rec.png"; im.save(rec_png)
-        lido = " ".join(t for t, *_ in rs.ocr(rec_png, psm="7", escala=1,
-                                              idioma="eng"))
-        # o tesseract devolve o hifen como aspas ou nada: fico so com os
-        # algarismos e o ponto, e o sinal vem da geometria
-        bruto = "".join(c for c in lido if c.isdigit() or c == ".").strip(".")
-        if not bruto:
+        alt = max(g["h"] for g in grupos)
+        saida, falhou = "", False
+        for g in grupos:
+            if g["h"] <= alt * 0.45 and g["w"] >= g["h"] * 1.6:
+                saida += "-"; continue
+            if g["h"] <= alt * 0.33 and g["w"] <= alt * 0.33:
+                saida += "."; continue
+            rec = rgb[g["y"] - 4:g["y"] + g["h"] + 4, g["x"] - 4:g["x"] + g["w"] + 4]
+            mk = (rec[:, :, 2] > 170) & (rec[:, :, 2] - rec[:, :, 0] > 55) & (rec[:, :, 1] > 95)
+            im = Image.fromarray(_np.where(mk, 0, 255).astype("uint8"), "L")
+            im = ImageOps.expand(im, border=40, fill=255)
+            im.save("/tmp/_bl_glifo.png")
+            lido = ""
+            for psm in ("10", "8", "7"):
+                r = [c for t, *_ in rs.ocr("/tmp/_bl_glifo.png", psm=psm, escala=1,
+                                           idioma="eng") for c in t if c.isdigit()]
+                if r:
+                    lido = r[0]; break
+            if not lido:
+                falhou = True; break
+            saida += lido
+        if falhou or not saida.strip("-."):
             time.sleep(0.8); continue
-        return ("-" if negativo else "") + bruto
+        return saida
     return None
+
+
+def escreve_textos(bloco, titulo, corpo="", botao=""):
+    """Preenche as tres frases de um bloco `Alert` e fecha no OK.
+
+       Os campos sao achados pelo texto-fantasma do PRIMEIRO ('Title
+       Message'); os outros dois saem dali por deslocamento medido, porque
+       assim que um campo recebe texto o fantasma some e nao da mais para
+       procurar por ele."""
+    abre_ajustes(bloco)
+    a, _ = nav.captura("/tmp/_bl_alerta.png")
+    p = nav.acha_texto("title message", arquivo=a)
+    if not p:
+        raise RuntimeError("nao achei o campo 'Title Message' do Alert")
+    for i, texto in enumerate((titulo, corpo, botao)):
+        if not texto:
+            continue
+        nav.clique_seguro(p[0], p[1] + 84 * i); time.sleep(0.5)
+        rs.tecla(0, cmd=True); time.sleep(0.2)
+        rs.digita_teclas(texto); time.sleep(0.4)
+    a, _ = nav.captura("/tmp/_bl_alerta2.png")
+    lido = " ".join(t for t, *_ in rs.ocr_forte(a, psm="6")).lower()
+    if titulo.split()[0].lower() not in lido:
+        raise RuntimeError(f"escrevi {titulo!r} no Alert e nao li de volta")
+    fecha_ajustes()
+    return True
+
+
+def valor_com_botao_menos(bloco, positivo, cliques=1):
+    """Escreve um valor POSITIVO e clica no botao `−` do painel.
+
+       E este o gesto que a aula ensina, e nao o truque do cursor: o campo
+       engole o hifen quando ele e o primeiro caractere, entao mandar a
+       crianca digitar `-0.5` deixaria `0.5` na tela dela — a lava DESCENDO —
+       sem nada acusar. O botao `−` tira 1 do valor a cada clique: de `0.5`,
+       um clique da `-0.5`.
+
+       Capturar pelo mesmo caminho que a crianca segue e o que faz o clipe
+       mostrar o gesto certo."""
+    p = abre_ajustes(bloco)
+    if not p:
+        raise RuntimeError(f"o bloco {bloco.nome} nao tem campo 'Current value'")
+    nav.clique_seguro(p[0] + 30, p[1] + 68); time.sleep(0.6)
+    rs.tecla(0, cmd=True); time.sleep(0.25)
+    rs.digita_teclas(str(positivo)); time.sleep(0.5)
+    # o `−` fica na propria linha do campo, bem a direita
+    menos = (p[0] + 220, p[1] + 70)
+    for _ in range(cliques):
+        nav.clique_seguro(*menos); time.sleep(0.7)
+    fecha_ajustes()
+    esperado = round(float(positivo) - cliques, 6)
+    texto = f"{esperado:g}"
+    lido = le_valor(bloco)
+    if lido != texto:
+        raise RuntimeError(f"queria {texto} em {bloco.nome} (digitei {positivo} e "
+                           f"cliquei {cliques}x no menos) e o bloco mostra {lido!r}")
+    return menos

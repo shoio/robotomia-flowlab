@@ -15,7 +15,10 @@ os.chdir(os.path.dirname(os.path.abspath(__file__)))
 import blocos, nav
 
 CASOS = [("provas/numero_positivo.png", "0.3"),
-         ("provas/numero_negativo.png", "-1.7")]
+         ("provas/numero_negativo.png", "-1.7"),
+         # UM ALGARISMO SO: foi o caso que quebrou a primeira versao (ela lia
+         # a linha inteira de uma vez, e um recorte curto volta vazio)
+         ("provas/numero_um_digito.png", "-1")]
 # o recorte guardado comeca em (1235, 842) da captura inteira
 DX, DY = 1235, 842
 BLOCO = (1295 - DX, 872 - DY)
