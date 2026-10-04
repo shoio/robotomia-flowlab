@@ -11,6 +11,14 @@ import os, sys, time, json
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import rs, nav, editor, blocos
 
+# A BANCADA. Com `BANCADA=1` no ambiente, as pecas de entrada e captura passam
+# a falar com um Chrome fora da tela, em vez do mouse e do teclado do sistema.
+# Fica aqui porque toda aula importa `comum`, e porque so vale depois de `rs`,
+# `nav`, `editor` e `blocos` ja estarem carregados — a troca e nos objetos de
+# modulo, que sao os mesmos para todo mundo.
+import bancada
+bancada.liga_se_pedido()
+
 D = "aula1"          # a aula que esta sendo capturada; cada capN.py muda isto
 
 
