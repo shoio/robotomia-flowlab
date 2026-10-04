@@ -10,10 +10,29 @@ VERDE = (99, 173, 97)              # o botao "+ New Game"
 CENTRO_CANVAS = (1502, 831)        # meio da grade branca do nivel
 
 
-def na_tela(*palavras, regiao=None):
-    """Alguma dessas palavras esta na tela agora?"""
+# A BARRA DE BAIXO e quem diz em que tela estou: no editor ela traz
+# 'Library / Game Levels / Layer / Settings'; na pagina do jogo, nao.
+RODAPE = (0, 0.93, 1.0, 1.0)
+
+
+def le_tela(regiao=None):
+    """O texto da tela, lido de um jeito que aguenta a tela quase vazia.
+
+       A leitura da tela INTEIRA volta vazia no editor do Flowlab: e uma
+       imagem escura com pouquissimo texto, e o limiar do tesseract afunda.
+       Isso me fez esperar 40s por uma palavra que estava la, duas vezes.
+       Entao, alem da tela inteira, leio sempre a barra de baixo ampliada."""
     a, _ = nav.captura("/tmp/_ed_tela.png")
     txt = " ".join(t for t, *_ in rs.ocr_forte(a, regiao=regiao, psm="6")).lower()
+    if regiao is None:
+        rodape = " ".join(t for t, *_ in rs.ocr(a, regiao=RODAPE, psm="6", escala=2))
+        txt = txt + " " + rodape.lower()
+    return txt
+
+
+def na_tela(*palavras, regiao=None):
+    """Alguma dessas palavras esta na tela agora?"""
+    txt = le_tela(regiao)
     return [p for p in palavras if p.lower() in txt]
 
 

@@ -645,6 +645,15 @@ def pino(bloco, rotulo, lado):
 #   chave: nome do bloco -> lado -> rotulo -> (dx, dy)
 DESLOC = {
     "Collision": {"esq": {}, "dir": {"hit": (247, 57)}},
+    # medidos na captura de tela, no rascunho da Aula 3
+    "Always":   {"esq": {}, "dir": {"out": (251, 54)}},
+    "Velocity": {"esq": {"x": (-31, 40), "y": (-31, 76), "forward": (-31, 114)},
+                 "dir": {"out": (249, 40), "out2": (249, 76), "out3": (249, 114)}},
+    # o Number tem TRES entradas: 'set' (quadrada, recebe valor), 'get'
+    # (redonda, e o gatilho que faz ele cuspir o valor) e '+' (soma 1).
+    # Ligar o Always no 'set' nao faz nada sair: quem dispara e o 'get'.
+    "Number":   {"esq": {"set": (-28, 39), "get": (-28, 75), "mais": (-28, 114)},
+                 "dir": {"out": (249, 74)}},
     "Destroyer": {"esq": {"in": (-28, 57)}, "dir": {"out": (248, 57)}},
     # o titulo no canvas e 'RestartGame' (sem espaco), mas na palheta ele
     # aparece como 'Restart Game' — por isso solta() aceita titulo diferente
@@ -675,3 +684,79 @@ def liga_fixo(origem, pino_saida, destino, pino_entrada):
             return True
     raise RuntimeError(f"liguei {origem.nome}.{pino_saida} -> "
                        f"{destino.nome}.{pino_entrada} e nenhum fio apareceu")
+
+
+# ---------------------------------------------------------------------------
+# AJUSTES DE UM BLOCO
+#
+# Descoberto no rascunho da Aula 3, depois de meia duzia de tentativas erradas:
+# o painel de ajustes de um bloco (Label, Current value, OK, Delete) NAO abre
+# com clique comum nem com clique duplo — esses so SELECIONAM o bloco, e o
+# arrasto o move. Quem abre e o clique LENTO (`rs.clique_lento`): parar o
+# ponteiro em cima, apertar e segurar um instante antes de soltar.
+#
+# Enquanto eu insistia no clique rapido, o numero continuava 0 e nada na tela
+# dizia por que — o bloco ate ficava com a borda azul, parecendo que tinha
+# recebido o clique.
+# ---------------------------------------------------------------------------
+
+def abre_ajustes(bloco, tentativas=3):
+    """Abre o painel de ajustes do bloco e devolve o ponto do campo de valor."""
+    J = nav.janela()
+    for k in range(tentativas):
+        rs.clique_lento(J["x"] + bloco.x / 2.0 + 55, J["y"] + bloco.y / 2.0 + 33)
+        time.sleep(1.4)
+        a, _ = nav.captura("/tmp/_bl_aj.png")
+        p = nav.acha_texto("current value", arquivo=a)
+        if p:
+            return p
+        # o painel pode ter aberto sem o campo (blocos sem valor): aceito se o
+        # OK/Delete do painel estiver la
+        if nav.acha_texto("delete", arquivo=a):
+            return None
+        time.sleep(0.8)
+    raise RuntimeError(f"nao consegui abrir os ajustes do bloco {bloco.nome}")
+
+
+def escreve_valor(bloco, valor):
+    """Abre os ajustes, escreve o valor em 'Current value' e fecha no OK.
+       CONFERE lendo o numero que ficou no corpo do bloco."""
+    p = abre_ajustes(bloco)
+    if not p:
+        raise RuntimeError(f"o bloco {bloco.nome} nao tem campo 'Current value'")
+    # o campo fica logo ABAIXO do rotulo 'Current value'
+    alvo = (p[0] + 30, p[1] + 68)
+    nav.clique_seguro(*alvo); time.sleep(0.6)
+    rs.tecla(0, cmd=True); time.sleep(0.25)          # Cmd+A
+    rs.digita_teclas(str(valor)); time.sleep(0.5)
+    fecha_ajustes()
+    lido = le_valor(bloco)
+    if lido != str(valor):
+        raise RuntimeError(f"escrevi {valor} em {bloco.nome} e o bloco mostra {lido!r}")
+    return True
+
+
+def fecha_ajustes():
+    a, _ = nav.captura("/tmp/_bl_ok.png")
+    p = nav.acha_texto("delete", arquivo=a)
+    if not p:
+        return False
+    # o OK fica a ESQUERDA do Delete, na mesma altura
+    nav.clique_seguro(p[0] - 200, p[1]); time.sleep(1.2)
+    return True
+
+
+def le_valor(bloco, tentativas=3):
+    """O numero escrito DENTRO do bloco, lido da tela."""
+    for k in range(tentativas):
+        b = acha_bloco(bloco.nome)
+        a, _ = nav.captura("/tmp/_bl_val.png")
+        itens = rs.ocr(a, regiao=b.regiao(folga_esq=20, folga_dir=230,
+                                          folga_cima=20, folga_baixo=150),
+                       psm="6", escala=3, limiar=None)
+        nums = [t.strip() for t, *_ in itens
+                if t.strip().lstrip("-").replace(".", "").isdigit()]
+        if nums:
+            return nums[0]
+        time.sleep(0.8)
+    return None

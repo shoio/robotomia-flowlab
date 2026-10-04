@@ -192,3 +192,52 @@ ficou de pe.
 - Nao mudei nenhuma configuracao do Chrome. Tentei ligar *"Permitir o
   JavaScript do Eventos da Apple"* pelo menu; o Chrome **ignora** o clique
   programatico, entao continua desligado, como estava.
+
+---
+
+## 04-10 — o que foi medido para a Aula 3
+
+**O acerto pendente da Aula 1 saiu.** Ela mandava `Density 100`, e com 100 o
+boneco nao sai do chao — enquanto o passo 15 dela diz, com estas palavras, que
+o pacote `Run & Jump` faz ele "correr com as setas e pular". Agora o jogo esta
+em `Density 34.4 / Friction 100`, e a prova em jogo mede as DUAS promessas:
+subiu 264 px no pulo e a moeda sumiu no segundo toque. O clipe do gesto foi
+refeito a partir do painel COMO A CRIANCA O VE (49.3/49.3, o padrao) — o
+anterior comecava em 100.0, que e estado daquele jogo e nao existe para quem
+segue a aula.
+
+**Como se ajusta um bloco (vale para as nove aulas que faltam).** O painel de
+ajustes de um bloco (Label, Current value, OK, Delete) NAO abre com clique
+comum nem com clique duplo: esses so selecionam, e o arrasto move o bloco.
+Quem abre e o **clique lento** (`rs.clique_lento`): parar o ponteiro, apertar e
+segurar um instante. Perdi meia duzia de tentativas achando que o numero nao
+mudava por outro motivo — o bloco ate ficava com a borda azul, parecendo que
+tinha recebido o clique. Esta em `blocos.escreve_valor` / `abre_ajustes` /
+`le_valor`, e `escreve_valor` CONFERE lendo o numero que ficou no bloco.
+
+**O `Number` tem tres entradas.** `set` (quadrada, recebe valor), `get`
+(redonda, e o GATILHO que faz ele cuspir o valor) e `+`. Ligar o `Always` no
+`set` nao faz sair nada: quem dispara e o `get`.
+
+**A corrente que move uma coisa sozinha:**
+`Always.out -> Number.get -> Number.out -> Velocity.y`.
+
+**Direcao e velocidade, medidas em jogo:** com `Velocity y = 1` o objeto desce
+~97 px de tela por segundo (1,5 casas). **`+y` e para BAIXO**; para subir, o
+numero e NEGATIVO.
+
+**Inventario da palheta** em `palheta.json` — lido categoria por categoria no
+editor. Serve para escolher o bloco certo sem adivinhar: `Velocity`, `Position`
+e `Size` moram em *Properties*; `Always` e `Timer` em *Triggers*; `Spawn`,
+`Emit`, `Proximity`, `Camera` e `Message` em *Components*; `Label` e `Bar` em
+*GUI*; `Restart`, `Level` e `Pause` em *Game Flow*.
+
+**Um defeito da maquina, consertado:** `editor.na_tela` lia a tela INTEIRA e
+voltava vazia no editor do Flowlab (imagem escura, pouquissimo texto, o limiar
+do tesseract afunda). Isso me fez esperar 40 s por uma palavra que estava la,
+duas vezes, e abortar duas capturas. Agora `editor.le_tela` le tambem a barra
+de baixo ampliada, onde 'Library / Game Levels / Layer / Settings' saem
+limpos.
+
+**Pendente da bancada:** o Mac esta na BATERIA (26%, sem carregador). O
+`vigia_tela.py` solta a tela abaixo de 25%, entao a captura para por ai.
