@@ -78,7 +78,14 @@ def instala():
 
     # ── captura ──
     def captura(arquivo=None, wid=None):
-        arquivo = arquivo or "/tmp/_bancada.png"
+        # CAMINHO ABSOLUTO sempre. Quem salva a foto e o motor, que roda noutra
+        # pasta: um caminho relativo como 'aula3/p17.png' ia parar em
+        # fonte/bancada/aula3/, e a aula ficava sem a foto com um erro que
+        # falava de arquivo inexistente, nao de pasta errada.
+        arquivo = os.path.abspath(arquivo or "/tmp/_bancada.png")
+        pasta = os.path.dirname(arquivo)
+        if pasta:
+            os.makedirs(pasta, exist_ok=True)
         _chama("foto", arquivo=arquivo)
         motivo = rs._quadro_cego(Image.open(arquivo).convert("RGB"))
         if motivo:

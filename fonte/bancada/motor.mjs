@@ -22,8 +22,13 @@ const ctx = await chromium.launchPersistentContext(PERFIL, {
   headless: false,
   viewport: { width: 1470, height: 802 },
   deviceScaleFactor: 2,
+  // O Cloudflare do Flowlab devolvia o desafio PARA SEMPRE: o Playwright abre
+  // o Chrome anunciando que e automacao (--enable-automation, a tarja do
+  // --no-sandbox, e o navigator.webdriver). Tirando o anuncio, ele passa.
+  ignoreDefaultArgs: ['--enable-automation', '--no-sandbox'],
   args: [
     VISIVEL ? '--window-position=40,40' : '--window-position=-3200,0',
+    '--disable-blink-features=AutomationControlled',
     '--disable-backgrounding-occluded-windows',
     '--disable-renderer-backgrounding',
     '--disable-features=CalculateNativeWinOcclusion',

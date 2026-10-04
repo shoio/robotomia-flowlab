@@ -10,7 +10,8 @@ const ctx = await chromium.launchPersistentContext('/Users/shoio/.flowlab-bancad
   headless: false,
   viewport: { width: 1470, height: 802 },
   deviceScaleFactor: 2,
-  args: ['--window-position=40,40'],
+  ignoreDefaultArgs: ['--enable-automation', '--no-sandbox'],
+  args: ['--window-position=40,40', '--disable-blink-features=AutomationControlled'],
 });
 const pag = ctx.pages()[0] || await ctx.newPage();
 await pag.goto('https://flowlab.io/games/mine', { waitUntil: 'domcontentloaded' });

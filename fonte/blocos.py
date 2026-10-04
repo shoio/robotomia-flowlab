@@ -986,9 +986,18 @@ def escolhe_tipo_da_colisao(bloco, tipo):
         raise RuntimeError(f"o tipo {tipo!r} nao aparece na lista do Collision — "
                            "o objeto tem esse nome no campo `Type`?")
     nav.clique_seguro(*r); time.sleep(1.2)
-    a3, _ = nav.captura("/tmp/_bl_col2.png")
-    lido = " ".join(t for t, *_ in rs.ocr_forte(a3, psm="6")).lower()
-    if tipo.lower() not in lido:
-        raise RuntimeError(f"escolhi {tipo!r} e o bloco nao mostra isso")
+    # FECHA PRIMEIRO. O rotulo embaixo do bloco (onde estava 'Any') so troca
+    # depois do OK: conferir com o painel ainda aberto reprovava uma escolha
+    # que tinha dado certo. E e esse rotulo que a aula manda a crianca olhar.
     fecha_ajustes()
-    return True
+    for tentativa in range(4):
+        time.sleep(1.0)
+        b = acha_bloco(bloco.nome)
+        a3, _ = nav.captura("/tmp/_bl_col2.png")
+        lido = " ".join(t for t, *_ in rs.ocr_forte(
+            a3, regiao=b.regiao(folga_esq=60, folga_dir=320,
+                                folga_cima=60, folga_baixo=220), psm="6")).lower()
+        if tipo.lower() in lido:
+            return True
+    raise RuntimeError(f"escolhi {tipo!r} e o bloco continua sem mostrar isso "
+                       f"(li {lido[:70]!r})")
