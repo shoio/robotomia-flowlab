@@ -1001,3 +1001,29 @@ def escolhe_tipo_da_colisao(bloco, tipo):
             return True
     raise RuntimeError(f"escolhi {tipo!r} e o bloco continua sem mostrar isso "
                        f"(li {lido[:70]!r})")
+
+
+def prepara_menos(bloco, positivo):
+    """Abre os ajustes e deixa o valor POSITIVO digitado, pronto para o `−`.
+
+       Serve para gravar o clipe do gesto certo: com o painel ABERTO nos dois
+       quadros. Gravando o gesto inteiro (abrir, digitar, clicar, fechar), o
+       antes e o depois mostram os dois o painel FECHADO, e a seta aponta para
+       um botao que nao existe em nenhum dos dois — foi o que aconteceu com o
+       clipe do passo mais importante da Aula 3.
+
+       Devolve o ponto do botao `−`."""
+    p = abre_ajustes(bloco)
+    if not p:
+        raise RuntimeError(f"o bloco {bloco.nome} nao tem campo 'Current value'")
+    nav.clique_seguro(p[0] + 30, p[1] + 68); time.sleep(0.6)
+    rs.tecla(0, cmd=True); time.sleep(0.25)
+    rs.digita_teclas(str(positivo)); time.sleep(0.5)
+    return (p[0] + 220, p[1] + 70)
+
+
+def clica_menos(ponto, cliques=1):
+    """Clica no `−` do painel ja aberto. Nao fecha: quem fecha e o chamador."""
+    for _ in range(cliques):
+        nav.clique_seguro(*ponto); time.sleep(0.7)
+    return ponto

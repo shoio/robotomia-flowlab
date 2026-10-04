@@ -30,8 +30,8 @@
   "antes": "g04_a.jpg",
   "depois": "g04_b.jpg",
   "alvo": [
-   0,
-   0
+   1370,
+   545
   ],
   "botao": "esq"
  },
@@ -57,8 +57,8 @@
   "antes": "g07_a.jpg",
   "depois": "g07_b.jpg",
   "alvo": [
-   0,
-   0
+   1038,
+   263
   ],
   "botao": "esq"
  },
@@ -66,8 +66,8 @@
   "antes": "g10_a.jpg",
   "depois": "g10_b.jpg",
   "alvo": [
-   0,
-   0
+   724,
+   337
   ],
   "botao": "esq"
  },
@@ -75,8 +75,8 @@
   "antes": "g11_a.jpg",
   "depois": "g11_b.jpg",
   "alvo": [
-   0,
-   0
+   1034,
+   337
   ],
   "botao": "esq"
  },
@@ -84,8 +84,8 @@
   "antes": "g08_a.jpg",
   "depois": "g08_b.jpg",
   "alvo": [
-   1669,
-   543
+   1927,
+   453
   ],
   "botao": "esq"
  },

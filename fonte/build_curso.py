@@ -83,8 +83,11 @@ o quadro laranja do próprio passo tem o conserto.</p>
 def monta():
     # o guarda roda ANTES de gerar: toda regra dele nasceu de um defeito
     # que passou pela leitura e so apareceu seguindo a aula como aluno.
-    import confere_aulas
+    import confere_aulas, confere_alvos
     problemas = confere_aulas.confere()
+    # E o guarda dos CLIPES, que ate agora existia e nao era chamado por
+    # ninguem: a seta tem de apontar para onde a tela mudou.
+    problemas += confere_alvos.confere()
     if problemas:
         for m in problemas:
             print("  !!", m)

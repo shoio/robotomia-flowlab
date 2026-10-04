@@ -70,6 +70,7 @@ def faz_peca(c, r, nome, cor, cols_clone=None):
 def novo():
     A.url = editor.jogo_novo()
     print("   jogo:", A.url, flush=True)
+    A.guarda_url()
     A.cap("p01_vazio")
     return True
 
@@ -193,11 +194,13 @@ def prova():
     import numpy as np
 
     def pos():
+        """A MAIOR mancha azul, nao a media de todo o azul da pagina."""
         a, _ = nav.captura("/tmp/_c2_j.png")
         im = np.asarray(Image.open(a).convert("RGB"), dtype=int)
-        az = ((im[:, :, 2] > 100) & (im[:, :, 2] - im[:, :, 0] > 40) & (im[:, :, 1] < 120))
-        ys, xs = np.nonzero(az)
-        return (int(xs.mean()), int(ys.mean())) if len(ys) > 100 else None
+        g = comum.maior_mancha((im[:, :, 2] > 100) &
+                               (im[:, :, 2] - im[:, :, 0] > 40) &
+                               (im[:, :, 1] < 120))
+        return (g[0], g[1]) if g and g[2] > 600 else None
 
     p = nav.acha_texto("play")
     A.gesto("jogar", "g06", p, lambda: clique(*p), espera=6)
@@ -220,14 +223,31 @@ def prova():
         raise RuntimeError(f"o pulo subiu so {sobe} px — a aula promete pular "
                            "entre plataformas")
     # 2) cair na lava recomeca
-    for k in range(18):
-        rs.segura_tecla(123, 0.12); time.sleep(0.45)    # 123 = seta esquerda
-        q = pos()
-        if q and k > 3 and abs(q[0] - base[0]) < 25:
-            A.cap("p18_recomecou")
-            print(f"   caiu na lava e o jogo RECOMECOU (toque {k+1})", flush=True)
-            return True
-    raise RuntimeError("andei ate o fim e o jogo nao recomecou ao cair")
+    #
+    # SEGURANDO a seta, nao com toquinhos. Com toques de 0,12 s o boneco anda
+    # um passo curto e para: eu dava dezoito e ele nem chegava na beirada do
+    # chao — a sonda concluia que o jogo nao recomeca, quando ele nem tinha
+    # caido. E assim que a crianca joga: segurando.
+    # O REINICIO SE PROVA PELO PAR: o boneco SAI de onde estava e VOLTA para
+    # la. A queda e rapida demais para aparecer numa foto — ele cai e renasce
+    # entre duas capturas minhas — entao o que eu procuro e o sumico (ou uma
+    # posicao bem longe) seguido do reaparecimento na origem.
+    #
+    # A versao anterior desta sonda lia a MEDIA de todo o azul da pagina e
+    # andava com toquinhos de 0,12 s: ela deu "recomecou" sem o boneco ter
+    # saido do lugar. Prova que passa por acaso e pior que prova que falha.
+    caiu = False
+    for k in range(14):
+        rs.segura_tecla(123, 0.3)          # 123 = seta esquerda
+        for _ in range(5):
+            q = pos()                       # a captura ja leva ~0,4 s
+            if q is None or abs(q[0] - base[0]) > 80:
+                caiu = True
+            elif caiu and abs(q[0] - base[0]) < 40:
+                A.cap("p18_recomecou")
+                print(f"   caiu na lava e o jogo RECOMECOU (leitura {k+1})", flush=True)
+                return True
+    raise RuntimeError("andei para a esquerda ate o fim e nao vi o jogo recomecar")
 
 
 def main():

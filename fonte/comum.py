@@ -62,6 +62,23 @@ class A:
     url = None
 
     @staticmethod
+    def guarda_url(endereco=None):
+        """Grava o endereco do jogo da aula em `aulaN/jogo.txt`.
+
+           Antes ele so era IMPRESSO durante a captura. Quando precisei
+           regravar um clipe da Aula 2, abri o rascunho que eu usara para
+           medir, porque o unico numero escrito em algum lugar era o do
+           comentario do codigo — e na conta todos os jogos se chamam
+           `New Game` e nenhum tem miniatura."""
+        endereco = endereco or A.url
+        if not endereco:
+            return None
+        os.makedirs(D, exist_ok=True)
+        with open(os.path.join(D, "jogo.txt"), "w") as f:
+            f.write(endereco.strip() + "\n")
+        return endereco
+
+    @staticmethod
     def cap(nome):
         os.makedirs(D, exist_ok=True)
         nav.captura(f"{D}/{nome}.png")
@@ -234,8 +251,14 @@ def marca_caixa(rotulo, quero=True):
         if not achado:
             raise RuntimeError(f"achei o rotulo '{rotulo}' mas nao a caixinha dele")
         cx, cy, marcada = achado
+        # DEVOLVE O PONTO, nao True — e so DEPOIS de conferir que a caixinha
+        # ficou como eu queria. Quem grava o clipe usa o que esta funcao
+        # devolver como alvo da seta; devolvendo True, o alvo ficava no (0,0)
+        # que o chamador tinha passado, e a animacao mostrava o cursor
+        # clicando no CANTO DA TELA enquanto o texto mandava marcar quatro
+        # caixinhas. Cinco clipes sairam assim, um deles ja publicado.
         if marcada == quero:
-            return True
+            return (cx, cy)
         clique(cx, cy)
         time.sleep(1.0)
     raise RuntimeError(f"nao consegui deixar '{rotulo}' como {quero}")
@@ -361,3 +384,64 @@ def nomeia_tipo(nome):
     rs.digita_teclas(nome); time.sleep(0.4)
     rs.tecla(48); time.sleep(0.8)          # Tab: o Enter FECHA o painel
     return True
+
+
+LINK_FISICA = (108, 170, 233)      # o azul claro do texto "Physics >"
+
+
+def abre_fisica(tentativas=4):
+    """Entra na fisica do objeto.
+
+       O `Physics >` e texto pequeno, fino e azul claro sobre fundo escuro, no
+       canto do painel: o OCR o perde — lia 'Behaviors', 'edit sprite', 'Type',
+       'Name', 'Reset', 'Display Order' e justamente ele nao. Entao acho pela
+       COR do proprio link, dentro da area do painel.
+
+       O QUE ESTA FUNCAO NAO FAZ MAIS: chutar. A primeira versao, quando nao
+       achava, clicava num ponto deduzido do botao OK — e o azul do OK casou
+       com o AVATAR DA CONTA, no canto de baixo. O clique abriu o menu
+       `droneiscool / Log out`, que ficou por cima de tudo, e as tentativas
+       seguintes procuraram o painel numa tela que era outra. Palpite que
+       clica estraga o estado; guarda que para, nao."""
+    for k in range(tentativas):
+        a, _ = nav.captura("/tmp/_c1_fis0.png")
+        txt = " ".join(t for t, *_ in rs.ocr_forte(a, psm="6")).lower()
+        if "collision shape" in txt:
+            return True                       # ja estou na fisica
+        if "edit sprite" not in txt:
+            # o painel pode so nao ter sido lido: insisto em vez de abortar
+            time.sleep(1.2)
+            continue
+        # A FAIXA A DIREITA DO OK — do OK DAQUELE painel, nao de um pedaco
+        # fixo da tela. Dois motivos:
+        #  - o azul do link (108,170,233) e quase o do botao OK (126,168,224),
+        #    e procurando na largura toda a media das duas manchas caia em
+        #    cima do OK, que ao ser clicado FECHA o painel;
+        #  - e o painel nasce do lado da casa clicada: para a lava, que fica
+        #    no canto de baixo a esquerda, ele abre a ESQUERDA, e uma regiao
+        #    fixa na direita da tela nao o alcanca.
+        from PIL import Image as _I
+        L, A_ = _I.open(a).size
+        ok = nav.acha_cor(AZUL_OK, tol=40, regiao=(0.0, 0.3, 1.0, 0.98),
+                          minimo=800, arquivo=a)
+        p = None
+        if ok:
+            # DEPOIS da borda direita do OK, nao a partir do meio dele.
+            # Medido: o OK vai de x=652 a 955 com 23.932 pixels azuis; o link
+            # sao oito manchinhas de letra entre 1120 e 1224, somando 597. Uma
+            # faixa que comece dentro do OK afoga o link na media.
+            borda = ok[0] + ok[2] // 2 + 60
+            faixa = (min(0.99, borda / L), max(0.0, (ok[1] - 70) / A_),
+                     min(1.0, (borda + 560) / L), min(1.0, (ok[1] + 70) / A_))
+            p = nav.acha_cor(LINK_FISICA, tol=34, regiao=faixa,
+                             minimo=200, arquivo=a)
+        if not p:
+            p = nav.acha_texto("physics", arquivo=a)
+        if p:
+            clique(p[0], p[1]); time.sleep(2.5)
+            a2, _ = nav.captura("/tmp/_c1_fis1.png")
+            if "collision shape" in " ".join(
+                    t for t, *_ in rs.ocr_forte(a2, psm="6")).lower():
+                return True
+        time.sleep(1.2)
+    raise RuntimeError("nao achei o `Physics >` no painel do objeto")

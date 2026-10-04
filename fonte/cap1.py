@@ -34,6 +34,7 @@ D = "aula1"
 def novo():
     A.url = editor.jogo_novo()
     print("   jogo:", A.url, flush=True)
+    A.guarda_url()
     A.cap("p01_vazio")
     return True
 

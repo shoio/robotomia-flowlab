@@ -83,6 +83,7 @@ def faz_peca(c, r, nome, cor, cols_clone=None):
 def novo():
     A.url = editor.jogo_novo()
     print("   jogo:", A.url, flush=True)
+    A.guarda_url()
     A.cap("p01_vazio")
     return True
 
@@ -203,9 +204,11 @@ def lava_sobe():
     A.cap("p14_fios")
     # O NUMERO: digitado positivo e levado ao negativo pelo botao `−`, que e o
     # unico caminho que funciona (o campo engole o hifen digitado primeiro)
-    ponto = blocos.valor_com_botao_menos(nu, SUBIDA, 1)
-    A.reg("botao_menos", antes=A.cap("g08_a"), depois=A.cap("g08_b"),
-          alvo=[int(ponto[0]), int(ponto[1])], botao="esq")
+    # Pelo `A.gesto`, nao pelo `A.reg` na mao: eu fotografava os DOIS quadros
+    # depois do gesto ja feito, e o clipe saia uma figura parada — antes
+    # identico a depois. O guarda dos alvos agora reprova isso.
+    A.gesto("botao_menos", "g08", (0, 0),
+            lambda: blocos.valor_com_botao_menos(nu, SUBIDA, 1), espera=1.6)
     A.cap("p15_menos_meio")
     print("   lava com velocidade", blocos.le_valor(nu), flush=True)
     time.sleep(2)

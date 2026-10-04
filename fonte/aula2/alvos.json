@@ -30,8 +30,8 @@
   "antes": "g04_a.jpg",
   "depois": "g04_b.jpg",
   "alvo": [
-   0,
-   0
+   1434,
+   545
   ],
   "botao": "esq"
  },
@@ -49,7 +49,7 @@
   "depois": "g06_b.jpg",
   "alvo": [
    1051,
-   1584
+   1586
   ],
   "botao": "esq"
  }
