@@ -141,6 +141,36 @@ def fecha_comportamentos():
     return True
 
 
+def no_editor_de_blocos():
+    """Estou com a mesa de blocos aberta? A palheta da esquerda denuncia."""
+    return bool(na_tela("triggers", "behavior bundles", regiao=(0, 0, 0.16, 1.0)))
+
+
+def volta_ao_nivel(limite=20):
+    """Fecha o que estiver aberto por cima do nivel: a mesa de blocos e o
+       painel do objeto. Serve para uma etapa COMECAR de um estado conhecido.
+
+       Sem isto, repetir uma etapa que ja tinha aberto a mesa de blocos fazia o
+       clique na casa cair dentro da MESA — e eu procurava um menu radial que
+       nunca ia aparecer, por 20 s, tres vezes seguidas."""
+    if no_editor_de_blocos():
+        fecha_comportamentos()
+        time.sleep(1.5)
+    import comum
+    for _ in range(3):
+        a, _ = nav.captura("/tmp/_ed_nivel.png")
+        # o painel do objeto tem duas caras: a de cima ('edit sprite', Name,
+        # Type) e a da FISICA ('Collision Shape', 'Density'). Fechar so pela
+        # primeira deixava a fisica aberta, e o clique seguinte na casa caia
+        # dentro dela — eu procurava um menu radial que nunca ia aparecer.
+        if not (nav.acha_texto("edit sprite", arquivo=a) or
+                nav.acha_texto("collision shape", arquivo=a)):
+            return True
+        comum.fecha_painel_objeto()
+        time.sleep(1.0)
+    raise RuntimeError("nao consegui fechar o painel do objeto")
+
+
 def objeto_ou_abre(x=None, y=None):
     """Clica na celula: se estiver vazia escolhe Create, se ja tiver objeto
        escolhe Edit. Serve para retomar uma etapa sem criar objeto duplicado."""
@@ -152,6 +182,19 @@ def objeto_ou_abre(x=None, y=None):
     texto = " ".join(t for t, *_ in rs.ocr_forte(a, psm="6")).lower()
     escolha = "edit" if "edit" in texto and "create" not in texto else "create"
     p = nav.acha_texto(escolha, arquivo=a)
+    if not p and ("cancel" in texto or "delete" in texto):
+        # O MENU ESTA ABERTO, so que o OCR nao le a metade de cima dele
+        # ('Clone' e 'Edit', branco sobre o circulo escuro). 'Cancel' e
+        # 'Delete', embaixo, ele le. Entao me ancoro no que foi LIDO e ando o
+        # deslocamento medido ate o Edit — ancorar no ponto do clique seria
+        # supor que o menu nasce sempre centrado nele.
+        c = nav.acha_texto("cancel", arquivo=a)
+        if c:
+            p = (c[0], c[1] - 169)
+        else:
+            d = nav.acha_texto("delete", arquivo=a)
+            if d:
+                p = (d[0] + 169, d[1] - 169)
     if not p:
         raise RuntimeError(f"o menu radial nao abriu (nao vi '{escolha}')")
     rs.clique_img(p[0], p[1], escala=2.0, janela=J)

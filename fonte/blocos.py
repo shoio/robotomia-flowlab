@@ -673,16 +673,45 @@ def pino_fixo(bloco, rotulo, lado):
     return (bloco.x + dx, bloco.y + dy)
 
 
+def _ha_fio(arquivo, p1, p2, folga=34, claro=200, minimo=40):
+    """Ja existe um fio ligando estes dois pinos?
+
+       Olha a FAIXA entre eles e conta pixels claros — o fio e quase branco, e
+       o fundo da mesa e escuro. A faixa e partida em tres colunas e as TRES
+       precisam ter fio: assim um fio de outro par que cruze a regiao nao
+       passa por ligacao.
+
+       Isto e o invariante ('ha um fio entre estes dois pinos'), e nao o proxy
+       que eu usava antes ('alguma coisa mudou no caminho'). O proxy reprovava
+       quando o fio JA ESTAVA LA — que e o estado normal de uma etapa repetida
+       depois de um erro no meio dela."""
+    import numpy as _np
+    im = _np.asarray(Image.open(arquivo).convert("L"), dtype=int)
+    x0, x1 = sorted((p1[0], p2[0])); y0, y1 = sorted((p1[1], p2[1]))
+    x0, x1 = x0 + folga, x1 - folga
+    y0, y1 = max(0, y0 - 60), min(im.shape[0], y1 + 60)
+    if x1 - x0 < 30:
+        return False
+    largura = (x1 - x0) // 3
+    for k in range(3):
+        rec = im[y0:y1, x0 + k * largura: x0 + (k + 1) * largura]
+        if int((rec > claro).sum()) < minimo:
+            return False
+    return True
+
+
 def liga_fixo(origem, pino_saida, destino, pino_entrada):
-    """Liga usando os deslocamentos medidos, e CONFERE que o fio apareceu."""
+    """Liga usando os deslocamentos medidos, e CONFERE que o fio existe."""
     p1 = pino_fixo(origem, pino_saida, "dir")
     p2 = pino_fixo(destino, pino_entrada, "esq")
-    a_antes, _ = nav.captura("/tmp/_lf_antes.png")
+    a, _ = nav.captura("/tmp/_lf_antes.png")
+    if _ha_fio(a, p1, p2):
+        return "ja estava"
     for _ in range(2):
         arrasta_devagar(p1[0], p1[1], p2[0], p2[1])
         time.sleep(0.8)
         a_dep, _ = nav.captura("/tmp/_lf_depois.png")
-        if _mudou_no_caminho(a_antes, a_dep, p1, p2, raio=90, minimo=60):
+        if _ha_fio(a_dep, p1, p2):
             return True
     raise RuntimeError(f"liguei {origem.nome}.{pino_saida} -> "
                        f"{destino.nome}.{pino_entrada} e nenhum fio apareceu")
@@ -903,3 +932,46 @@ def valor_com_botao_menos(bloco, positivo, cliques=1):
         raise RuntimeError(f"queria {texto} em {bloco.nome} (digitei {positivo} e "
                            f"cliquei {cliques}x no menos) e o bloco mostra {lido!r}")
     return menos
+
+
+def bloco_ou_solta(nome, x, y, titulo=None):
+    """O bloco, se ele JA estiver na mesa; senao solta um novo ali.
+
+       Uma etapa de captura costuma ser repetida depois de um erro no meio
+       dela. Sem isto, a repetição empilha um segundo bloco igual — e o
+       segundo nao aparece na foto que a crianca vai comparar."""
+    alvo = titulo or nome
+    try:
+        return acha_bloco(alvo)
+    except RuntimeError:
+        return solta(nome, x, y, titulo=titulo)
+
+
+def escolhe_tipo_da_colisao(bloco, tipo):
+    """No bloco `Collision`, escolhe COM QUEM a batida conta.
+
+       Sem isto o bloco vem em 'Any Type' e dispara com QUALQUER coisa — e uma
+       lava que sobe bate primeiro no CHAO, nao no jogador. O jogo reiniciava
+       sozinho a cada poucos segundos e a fase ficava impossivel, sem nada no
+       editor acusando. Medido em jogo, nao lido no editor.
+
+       O nome que aparece aqui e o TIPO do objeto (o campo `Type` do painel),
+       nao o nome dele — por isso a aula manda escrever `Jogador` nos dois."""
+    p = abre_ajustes(bloco)
+    a, _ = nav.captura("/tmp/_bl_col0.png")
+    q = nav.acha_texto("any type", arquivo=a)
+    if not q:
+        raise RuntimeError("nao achei a lista de tipos no bloco Collision")
+    nav.clique_seguro(q[0], q[1]); time.sleep(1.5)
+    a2, _ = nav.captura("/tmp/_bl_col1.png")
+    r = nav.acha_texto(tipo.lower(), arquivo=a2, regiao=(0.3, 0.1, 0.6, 0.7))
+    if not r:
+        raise RuntimeError(f"o tipo {tipo!r} nao aparece na lista do Collision — "
+                           "o objeto tem esse nome no campo `Type`?")
+    nav.clique_seguro(*r); time.sleep(1.2)
+    a3, _ = nav.captura("/tmp/_bl_col2.png")
+    lido = " ".join(t for t, *_ in rs.ocr_forte(a3, psm="6")).lower()
+    if tipo.lower() not in lido:
+        raise RuntimeError(f"escolhi {tipo!r} e o bloco nao mostra isso")
+    fecha_ajustes()
+    return True

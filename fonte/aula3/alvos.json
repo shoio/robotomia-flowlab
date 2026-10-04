@@ -1,0 +1,83 @@
+{
+ "criar_objeto": {
+  "antes": "g01_a.png",
+  "depois": "g01_b.png",
+  "alvo": [
+   1246,
+   895
+  ],
+  "botao": "esq"
+ },
+ "escolher_create": {
+  "antes": "g02_a.png",
+  "depois": "g02_b.png",
+  "alvo": [
+   1126,
+   892
+  ],
+  "botao": "esq"
+ },
+ "abrir_physics": {
+  "antes": "g03_a.png",
+  "depois": "g03_b.png",
+  "alvo": [
+   1876,
+   1270
+  ],
+  "botao": "esq"
+ },
+ "marcar_movable": {
+  "antes": "g04_a.png",
+  "depois": "g04_b.png",
+  "alvo": [
+   0,
+   0
+  ],
+  "botao": "esq"
+ },
+ "peso_do_pulo": {
+  "antes": "g05_a.png",
+  "depois": "g05_b.png",
+  "alvo": [
+   1718,
+   688
+  ],
+  "botao": "esq"
+ },
+ "fisica_da_lava": {
+  "antes": "g06_a.png",
+  "depois": "g06_b.png",
+  "alvo": [
+   1226,
+   990
+  ],
+  "botao": "esq"
+ },
+ "desligar_gravidade": {
+  "antes": "g07_a.png",
+  "depois": "g07_b.png",
+  "alvo": [
+   0,
+   0
+  ],
+  "botao": "esq"
+ },
+ "botao_menos": {
+  "antes": "g08_a.png",
+  "depois": "g08_b.png",
+  "alvo": [
+   1655,
+   483
+  ],
+  "botao": "esq"
+ },
+ "jogar": {
+  "antes": "g09_a.png",
+  "depois": "g09_b.png",
+  "alvo": [
+   1051,
+   1584
+  ],
+  "botao": "esq"
+ }
+}

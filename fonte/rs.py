@@ -475,13 +475,29 @@ TECLAS = {"a":0,"s":1,"d":2,"f":3,"h":4,"g":5,"z":6,"x":7,"c":8,"v":9,"b":11,
           " ":49,"-":27,"=":24,".":47,",":43}
 
 
+# O que sai com SHIFT em cima de outra tecla. Medido com uma sonda tecla a
+# tecla num campo de texto da propria pagina: estes codigos caem no mapa
+# AMERICANO, mesmo com o teclado do sistema em ABNT2.
+COM_SHIFT = {"!": 18, "@": 19, "#": 20, "$": 21, "%": 23, "&": 26, "*": 28,
+             "(": 25, ")": 29, "?": 44, ":": 41, '"': 39, "+": 24, "_": 27}
+
+
 def digita_teclas(texto):
-    """Digita com codigos de tecla reais — o Studio ignora o caminho Unicode
-       em varios campos (a busca de material, por exemplo)."""
+    """Digita com codigos de tecla reais — o caminho Unicode (`digita`) nao
+       serve: em campo de pagina web o Chrome le o codigo cru como ATALHO.
+
+       Acentos ficam de fora de proposito: nao ha tecla morta aqui. Quando o
+       texto vai PARA DENTRO do jogo, escolha palavras sem acento — e mande a
+       crianca digitar as mesmas, para a tela dela bater com a foto."""
     for ch in texto:
+        if ch in COM_SHIFT:
+            tecla(COM_SHIFT[ch], shift=True)
+            time.sleep(0.06)
+            continue
         base = ch.lower()
         if base not in TECLAS:
-            raise ValueError(f"nao sei digitar {ch!r}")
+            raise ValueError(f"nao sei digitar {ch!r} — se for acento, troque a "
+                             "palavra; se for sinal, acrescente em rs.COM_SHIFT")
         tecla(TECLAS[base], shift=ch.isupper())
         time.sleep(0.06)
 

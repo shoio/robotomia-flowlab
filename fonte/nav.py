@@ -375,24 +375,40 @@ def cap_tela(J=None, arquivo="/tmp/_nav_tela.png"):
 # (pergunta do dialogo, botao que eu clico). Atencao a ESCOLHA: em "sair do
 # site" eu sigo em frente, mas em "atualizar o site" eu CANCELO — recarregar no
 # meio da montagem joga fora o que ainda nao foi salvo.
-DIALOGOS = [("sair do site", "sair"), ("leave site", "leave"),
-            ("sair da pagina", "sair"),
-            ("atualizar o site", "cancelar"), ("reload site", "cancel"),
+# Cada dialogo diz qual botao segue em frente: "principal" (o azul, que o
+# Chrome aciona com Enter) ou "secundario" (o cinza, que o Esc aciona).
+DIALOGOS = [("sair do site", "principal"), ("leave site", "principal"),
+            ("sair da pagina", "principal"),
+            ("atualizar o site", "secundario"), ("reload site", "secundario"),
             # dialogo do macOS que as minhas teclas repetidas disparam
-            ("ativar o ditado", "agora"), ("enable dictation", "not now")]
+            ("ativar o ditado", "secundario"), ("enable dictation", "secundario")]
 
 
 def fecha_dialogo(espera=1.5):
-    """Se houver um dialogo do Chrome na frente, clica no botao que segue em
-       frente e devolve qual era. Devolve None se nao havia nenhum."""
+    """Se houver um dialogo do Chrome na frente, responde e devolve qual era.
+       Devolve None se nao havia nenhum.
+
+       Responde pelo TECLADO, nao pelo clique. Dois motivos, os dois medidos:
+       - o OCR nao le os botoes deste dialogo (branco sobre azul, cinza sobre
+         cinza): das duas linhas do 'Sair do site?' ele so devolve o TITULO;
+       - e a palavra do botao aparece tambem na pergunta, entao procurar por
+         ela achava o titulo. Eu clicava no texto, o dialogo ficava la, e tudo
+         o que vinha depois esperava 25 s por uma tela que nunca chegava.
+
+       Enter aciona o botao azul (o padrao) e Esc o cinza — sem coordenada
+       nenhuma. E CONFERE que o dialogo saiu."""
     J = janela()
     a, _ = cap_tela(J, "/tmp/_nav_dlg.png")
     texto = " ".join(t for t, *_ in rs.ocr_forte(a, psm="6")).lower()
-    for pergunta, botao in DIALOGOS:
+    for pergunta, qual in DIALOGOS:
         if pergunta in texto:
-            p = acha_texto(botao, arquivo=a)
-            if p:
-                rs.clique_img(p[0], p[1], escala=2.0, janela=J)
+            for tentativa in range(3):
+                rs.tecla(36 if qual == "principal" else 53)
                 time.sleep(espera)
-                return pergunta
+                b, _ = cap_tela(J, "/tmp/_nav_dlg2.png")
+                depois = " ".join(t for t, *_ in rs.ocr_forte(b, psm="6")).lower()
+                if pergunta not in depois:
+                    return pergunta
+            raise RuntimeError(f"o dialogo {pergunta!r} nao saiu com "
+                               f"{'Enter' if qual == 'principal' else 'Esc'}")
     return None

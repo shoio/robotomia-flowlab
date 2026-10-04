@@ -138,6 +138,69 @@ def abre_sprite():
     return p
 
 
+# O painel do objeto nasce do LADO da casa clicada: para um objeto do meio da
+# tela ele abre a direita, para um da beirada esquerda (a lava, que comeca na
+# coluna 1) ele abre a ESQUERDA. Procurar so na metade direita fazia o
+# 'movable' da lava "nao existir".
+PAINEL = [(0.45, 0.05, 1.0, 0.9), (0.0, 0.05, 0.55, 0.9), None]
+
+
+def _acha_no_painel(alvo, arquivo):
+    for regiao in PAINEL:
+        p = nav.acha_texto(alvo, arquivo=arquivo, regiao=regiao)
+        if p:
+            return p
+    return None
+
+
+# As duas caras de uma caixinha do painel de fisica, medidas na tela:
+CAIXA_MARCADA   = (131, 183, 249)      # azul
+CAIXA_DESMARCADA = (69, 76, 93)        # cinza (o fundo do painel e 47,52,63)
+
+
+def _caixinha(arquivo, ponto_rotulo):
+    """(x, y, marcada) da caixinha que pertence a este rotulo.
+
+       Acha a caixinha pela COR, na faixa a esquerda do rotulo, e fica com a
+       mais PERTO dele. O deslocamento fixo que eu usava antes (90 px) so
+       valia para 'movable': o rotulo e achado pelo CENTRO do texto, e o
+       centro anda com o tamanho da palavra. Para 'is solid' o deslocamento
+       certo e 54, e para 'affected by gravity' e 84 — com os 90 eu amostrava
+       o fundo do painel, lia 'desmarcada' e saia sem clicar. A funcao
+       devolvia True sem ter feito nada."""
+    import numpy as _np
+    from PIL import Image as _I
+    im = _np.asarray(_I.open(arquivo).convert("RGB"), dtype=int)
+    x, y = ponto_rotulo
+    x0 = max(0, x - 200)
+    faixa = im[max(0, y - 8):y + 9, x0:max(x0 + 1, x - 20)]
+    def perto(cor, tol=26):
+        return ((abs(faixa[:, :, 0] - cor[0]) < tol) &
+                (abs(faixa[:, :, 1] - cor[1]) < tol) &
+                (abs(faixa[:, :, 2] - cor[2]) < tol))
+    for cor, marcada in ((CAIXA_MARCADA, True), (CAIXA_DESMARCADA, False)):
+        m = perto(cor)
+        colunas = m.sum(axis=0)
+        # junto colunas vizinhas em FAIXAS e fico com a faixa mais a direita
+        # que tenha largura de caixinha. Pegar simplesmente o pixel mais a
+        # direita apanhava a borda do texto do rotulo, 50 px fora da caixa.
+        faixas, inicio = [], None
+        for i, n_px in enumerate(list(colunas) + [0]):
+            if n_px >= 6 and inicio is None:
+                inicio = i
+            elif n_px < 6 and inicio is not None:
+                faixas.append((inicio, i - 1)); inicio = None
+        boas = [f for f in faixas if 14 <= (f[1] - f[0] + 1) <= 70]
+        if not boas:
+            continue
+        a_, b_ = boas[-1]
+        # faixa larga = a caixinha COLADA na borda do texto do rotulo; a
+        # caixinha e a ponta DIREITA dela
+        meio = (a_ + b_) // 2 if (b_ - a_ + 1) <= 34 else b_ - 13
+        return (x0 + meio, y, marcada)
+    return None
+
+
 def marca_caixa(rotulo, quero=True):
     """Marca/desmarca uma caixinha do painel, achando-a pelo ROTULO.
 
@@ -145,15 +208,16 @@ def marca_caixa(rotulo, quero=True):
        esta aberto; coordenada fixa aqui ja deixou 'movable' desmarcado sem
        ninguem notar — e com ele desmarcado a Densidade fica desabilitada, o
        jogador corre e a moeda nao some. Conferido pela COR da caixinha."""
-    from PIL import Image
+    from PIL import Image as _I
     for tentativa in range(3):
         a, _ = nav.captura("/tmp/_c1_caixa.png")
-        p = nav.acha_texto(rotulo.lower(), arquivo=a, regiao=(0.45, 0.1, 1.0, 0.85))
+        p = _acha_no_painel(rotulo.lower(), a)
         if not p:
             raise RuntimeError(f"nao achei a caixinha '{rotulo}' no painel")
-        cx, cy = p[0] - 90, p[1]
-        cor = Image.open(a).convert("RGB").getpixel((cx, cy))
-        marcada = cor[2] > 150 and cor[2] - cor[0] > 40
+        achado = _caixinha(a, p)
+        if not achado:
+            raise RuntimeError(f"achei o rotulo '{rotulo}' mas nao a caixinha dele")
+        cx, cy, marcada = achado
         if marcada == quero:
             return True
         clique(cx, cy)
@@ -166,7 +230,7 @@ def arrasta_slider(rotulo, ate_direita=True):
        Acha pela ETIQUETA (Density, Friction) porque o painel MUDA de altura:
        marcar 'movable' faz nascer uma linha nova e empurra tudo para baixo."""
     a, _ = nav.captura("/tmp/_c1_slider.png")
-    p = nav.acha_texto(rotulo.lower(), arquivo=a, regiao=(0.45, 0.1, 1.0, 0.85))
+    p = _acha_no_painel(rotulo.lower(), a)
     if not p:
         raise RuntimeError(f"nao achei o controle '{rotulo}' no painel de fisica")
     # este controle fixa o valor ONDE O MOUSE DESCE — arrastar a partir da
@@ -228,3 +292,35 @@ def confere_fase():
     return True
 
 
+
+
+def maior_mancha(mascara):
+    """(x, y, tamanho) do MAIOR aglomerado conexo da mascara, ou None.
+
+       A media de TODOS os pixels da cor nao serve na pagina do jogo: a
+       selecao de texto do Chrome pinta as palavras do menu de azul, e a media
+       do 'azul' passou a cair no meio do caminho entre o boneco e o topo da
+       pagina. O boneco e um quadrado inteiro; o realce e um risco fino — a
+       maior mancha e ele."""
+    import numpy as _np
+    vistos = _np.zeros_like(mascara)
+    ys, xs = _np.nonzero(mascara)
+    melhor = None
+    H, L = mascara.shape
+    for yy, xx in zip(ys, xs):
+        if vistos[yy, xx]:
+            continue
+        pilha, pts = [(yy, xx)], []
+        vistos[yy, xx] = True
+        while pilha:
+            cy, cx = pilha.pop()
+            pts.append((cy, cx))
+            for dy, dx in ((-1, 0), (1, 0), (0, -1), (0, 1)):
+                ny, nx = cy + dy, cx + dx
+                if 0 <= ny < H and 0 <= nx < L and mascara[ny, nx] and not vistos[ny, nx]:
+                    vistos[ny, nx] = True
+                    pilha.append((ny, nx))
+        if melhor is None or len(pts) > melhor[2]:
+            melhor = (int(sum(p[1] for p in pts) / len(pts)),
+                      int(sum(p[0] for p in pts) / len(pts)), len(pts))
+    return melhor
