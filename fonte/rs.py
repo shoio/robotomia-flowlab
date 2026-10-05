@@ -70,6 +70,7 @@ def dialogos():
 
 def captura(wid=None, arquivo=None):
     """Salva PNG da janela (mesmo sem estar na frente). Devolve (caminho, escala)."""
+    _exige_bancada_instalada()
     if wid is None:
         p = principal()
         if p is None:
@@ -163,7 +164,30 @@ def acha(alvo, arquivo=None, regiao=None, psm="11"):
 
 # ────────────────────────── mouse e teclado ────────────────────────
 
+def _exige_bancada_instalada():
+    """A PORTA DO DANO: com `BANCADA=1` pedida, nada vai para a tela de verdade.
+
+       O buraco que isto tapa: quem liga a bancada e `comum.py`, no fim dos
+       imports dele. Um script meu que importasse so `nav` e `editor` ficava
+       com `BANCADA=1` no ambiente e NENHUM remendo instalado — e ai cada
+       clique, cada arrasto e cada foto iam para o computador do Julio, que e
+       exatamente a coisa que a bancada existe para nao fazer. Aconteceu: eu
+       levei o navegador DELE para a pagina do jogo e arrastei um controle na
+       tela dele, achando que estava na bancada.
+
+       Fail-open mudo e a pior forma: a variavel de ambiente dizia uma coisa e
+       o programa fazia outra, sem uma palavra. Agora para."""
+    if os.environ.get("BANCADA") != "1":
+        return
+    if not getattr(sys.modules.get("rs"), "_BANCADA_INSTALADA", False):
+        raise RuntimeError(
+            "BANCADA=1 pedida, mas os remendos da bancada NAO estao instalados "
+            "— este gesto iria para a tela de verdade. Importe `comum` (que "
+            "chama bancada.liga_se_pedido()) ou chame bancada.instala() antes.")
+
+
 def _evento_mouse(tipo, x, y, botao=Quartz.kCGMouseButtonLeft):
+    _exige_bancada_instalada()
     e = Quartz.CGEventCreateMouseEvent(None, tipo, (x, y), botao)
     Quartz.CGEventPost(Quartz.kCGHIDEventTap, e)
 
@@ -198,6 +222,7 @@ def clique_img(px, py, escala=None, janela=None, duplo=False):
 
 
 def tecla(codigo, cmd=False, shift=False, alt=False, ctrl=False):
+    _exige_bancada_instalada()
     flags = 0
     if cmd:   flags |= Quartz.kCGEventFlagMaskCommand
     if shift: flags |= Quartz.kCGEventFlagMaskShift

@@ -104,7 +104,7 @@ AULA = {
          ("Fechei e o bloco sumiu","Espere uns segundos antes de fechar: o Flowlab precisa de um tempinho para guardar. Abra de novo e confira se ele está lá.")]),
 
   dict(n=15, titulo="Volte para o mundo", img="aula1/p07_jogador_pronto.jpg", clipe=None,
-    corpo="Clique em <span class=ui>OK</span> no canto de baixo à esquerda (fecha a mesa de blocos) e depois em <span class=ui>OK</span> no painel do objeto (o botão azul).<br><br>Você volta a ver a folha branca com o seu quadrado azul nela.",
+    corpo="Clique em <span class=ui>OK</span> no canto de baixo à esquerda (fecha a mesa de blocos) e depois em <span class=ui>OK</span> no painel do objeto (o botão azul).<br><br>Você volta a ver a folha branca com o seu boneco nela.",
     ck="A folha branca está à vista com o boneco, e a fileira de baixo mostra <span class=ui>Play</span> de novo.",
     sos=[("Fiquei preso numa tela de blocos","O <span class=ui>OK</span> da mesa de blocos é o do canto de baixo à <b>esquerda</b>, azul e comprido.")]),
 

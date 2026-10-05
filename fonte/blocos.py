@@ -28,12 +28,30 @@ CATEGORIAS = ["Triggers", "Logic & Math", "Components", "Properties",
 
 
 class Bloco:
-    def __init__(self, nome, x, y):
+    def __init__(self, nome, x, y, confirmado=True):
         self.nome = nome
         self.x, self.y = x, y          # onde eu soltei (canto de cima-esquerda)
+        # `confirmado` = este bloco foi LIDO na tela, nao suposto.
+        #
+        # Existe porque `solta` tinha uma saida de emergencia que, quando nao
+        # conseguia achar o titulo, devolvia um Bloco nas coordenadas onde eu
+        # tinha MIRADO. Na Aula 3 o Collision nunca nasceu — a mesa rolou, os
+        # pixels perto do ponto mudaram, o guarda por pixel aprovou, e o
+        # fantasma viajou ate `liga_fixo`, que arrastou de um pino de um bloco
+        # que nao existe. O erro so apareceu tres gestos depois, no fio.
+        self.confirmado = confirmado
 
     def __repr__(self):
-        return f"<{self.nome} em ({self.x},{self.y})>"
+        marca = "" if self.confirmado else " ?NAO-ACHADO"
+        return f"<{self.nome} em ({self.x},{self.y}){marca}>"
+
+    def exige_achado(self, para_que):
+        """A porta do DANO: usar a coordenada de um bloco que ninguem viu."""
+        if not self.confirmado:
+            raise RuntimeError(
+                f"ia {para_que} do bloco '{self.nome}', mas ele nunca foi achado "
+                f"na mesa — a coordenada ({self.x},{self.y}) e so onde eu mirei. "
+                "Solte o bloco de novo, ou confira se a mesa rolou.")
 
     def regiao(self, folga_esq=360, folga_dir=420, folga_cima=200, folga_baixo=300):
         """A caixa em volta do bloco, em fracao da imagem — para OCR local.
@@ -50,6 +68,7 @@ class Bloco:
     def pino(self, rotulo, lado, arquivo=None):
         """(x, y) da BOLINHA do pino, em pixels da imagem.
            lado='dir' para saida, 'esq' para entrada."""
+        self.exige_achado(f"ler o pino '{rotulo}'")
         a = arquivo or nav.captura("/tmp/_bl_pino.png")[0]
         alvo = rotulo.lower()
         cands, lidos = [], []
@@ -148,7 +167,14 @@ def solta(nome, x, y, tentativas=3, titulo=None):
             try:
                 return acha_bloco(titulo or nome)
             except RuntimeError:
-                return Bloco(titulo or nome, x, y)
+                # NAO consegui ler o titulo. Isso e normal para os pacotes de
+                # `Behavior Bundles`, cujo nome o OCR nao pega — e eles nunca
+                # tem fio ligado. Devolvo o bloco MARCADO: quem for usar a
+                # coordenada dele (pino, ajustes) reprova na hora, em vez de
+                # arrastar no vazio tres gestos depois.
+                print(f"   (!) soltei '{nome}' em ({x},{y}) e nao consegui LER "
+                      "o titulo na mesa", flush=True)
+                return Bloco(titulo or nome, x, y, confirmado=False)
         # so desfaz quando NADA mudou — desfazer um bloco que nasceu e o que
         # empilhava copias
         rs.tecla(6, cmd=True)
@@ -290,6 +316,7 @@ def bolinhas(bloco, folga=(70, 620, 60, 340), claro=185, raio=(3, 11)):
 
 def pino_por_nome(bloco, rotulo, lado):
     """A bolinha do pino, pela ORDEM conhecida do bloco — sem ler texto."""
+    bloco.exige_achado(f"medir o pino '{rotulo}'")
     ordem = PORTAS.get(bloco.nome, {}).get(lado)
     if not ordem or rotulo not in ordem:
         raise RuntimeError(f"nao sei a ordem dos pinos de '{bloco.nome}' "
@@ -685,6 +712,7 @@ DESLOC = {
 
 def pino_fixo(bloco, rotulo, lado):
     """(x, y) do pino pelo deslocamento medido do tipo do bloco."""
+    bloco.exige_achado(f"medir o pino '{rotulo}'")
     tab = DESLOC.get(bloco.nome, {}).get(lado, {})
     if rotulo not in tab:
         raise RuntimeError(f"nao tenho o deslocamento do pino '{rotulo}' ({lado}) "
@@ -788,6 +816,7 @@ def liga_fixo(origem, pino_saida, destino, pino_entrada):
 
 def abre_ajustes(bloco, tentativas=3):
     """Abre o painel de ajustes do bloco e devolve o ponto do campo de valor."""
+    bloco.exige_achado("abrir os ajustes")
     J = nav.janela()
     for k in range(tentativas):
         rs.clique_lento(J["x"] + bloco.x / 2.0 + 55, J["y"] + bloco.y / 2.0 + 33)

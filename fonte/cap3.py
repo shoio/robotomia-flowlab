@@ -54,14 +54,84 @@ COLS_LAVA   = list(range(0, 16))
 DENSIDADE = 30          # medido na Aula 2: pula 273 px e anda 60 px por toque
 SUBIDA    = "0.5"       # digitado positivo; um clique no `−` deixa -0.5
 
+# OS DESENHOS, da biblioteca do Flowlab (pacote do ENDESGA). Ate a Aula 2 todo
+# objeto era um quadrado pintado com a latinha; agora sao sprites de verdade,
+# os MESMOS da Aula 2 — a Aula 3 muda o que a lava FAZ, nao o que ela parece.
+SPRITES = {
+    "Jogador":    ("Flowlab Sprites", "Characters", 0, 0),   # o menino
+    "Chao":       ("Flowlab Sprites", "Blocks", 0, 0),       # bloco de grama
+    "Plataforma": ("Flowlab Sprites", "Blocks", 0, 0),
+    "Alta":       ("Flowlab Sprites", "Blocks", 0, 0),
+    "Estrela":    ("Flowlab Sprites", "Objects", 9, 1),      # a estrela dourada
+    "Lava":       ("Flowlab Sprites", "Terrain", 6, 0),      # lava com bolhas
+}
+CORES = {}
+
+
+def _cor_de(quem, indice=0):
+    if quem in CORES and CORES[quem]:
+        return tuple(CORES[quem][indice])
+    caminho = os.path.join(D, "cores.json")
+    if os.path.exists(caminho):
+        g = json.load(open(caminho))
+        if quem in g:
+            return tuple(g[quem][indice])
+    raise RuntimeError(f"nao sei a cor de `{quem}`")
+
+
+def _cor_mais_distinta(quem, longe_de, minimo=120):
+    """A cor mais ABUNDANTE do sprite que ainda se distingue dos vizinhos.
+
+       Pegar a mais DISTANTE escolhia um ciano que existe em pouquissimos
+       pixels do heroi: distingue bem e mede pessimo — o centro de uma duzia de
+       pixels pula sozinho, e na Aula 2 o pulo saiu 50 px em vez de 428. A
+       lista vem da cor mais comum para a menos; fico com a primeira que passa
+       da distancia minima."""
+    opcoes = []
+    for i in range(5):
+        try:
+            opcoes.append(_cor_de(quem, i))
+        except (RuntimeError, IndexError):
+            break
+    if not opcoes:
+        raise RuntimeError(f"nao tenho cor nenhuma de `{quem}`")
+
+    def dist(c):
+        return min(sum(abs(a - b) for a, b in zip(c, o)) for o in longe_de)
+
+    for c in opcoes:                       # da mais comum para a menos
+        if dist(c) >= minimo:
+            return c
+    return max(opcoes, key=dist)
+
+
+def _poe_sprite(quem, so_clique=False):
+    """Escolhe o desenho na biblioteca e guarda as cores com que a prova em
+       jogo vai achar esse objeto na tela."""
+    pacote, sub, lin, col = SPRITES[quem]
+    if so_clique:
+        ponto = comum.clica_sprite(lin, col)
+    else:
+        ponto = comum.escolhe_sprite(pacote, sub, lin, col)
+    CORES[quem] = comum.cores_do_sprite("/tmp/_sp_dep.png")
+    os.makedirs(D, exist_ok=True)
+    caminho = os.path.join(D, "cores.json")
+    g = json.load(open(caminho)) if os.path.exists(caminho) else {}
+    g[quem] = CORES[quem]
+    json.dump(g, open(caminho, "w"), indent=1)
+    print(f"   sprite de {quem}: cores {CORES[quem][:3]}", flush=True)
+    return ponto
+
 
 def faz_peca(c, r, nome, cor, cols_clone=None):
-    """Cria um objeto na casa (c, r), pinta, e clona para as colunas pedidas."""
+    """Cria um objeto na casa (c, r), escolhe o desenho, e clona para as
+       colunas pedidas. `cor` ficou no lugar so por compatibilidade: quem
+       manda agora e a tabela SPRITES."""
     x, y = celula(c, r)
     editor.objeto_ou_abre(x, y)
     nomeia(nome)
     abre_sprite()
-    pinta(cor)
+    _poe_sprite(nome)
     clique(*SPRITE_OK); time.sleep(2); nav.espera_parar(limite=15)
     fecha_painel_objeto()
     if cols_clone:
@@ -90,6 +160,7 @@ def novo():
 
 @etapa
 def jogador():
+    editor.volta_ao_nivel()
     x, y = celula(COL_JOGADOR, LINHA_CHAO - 1)
     A.gesto("criar_objeto", "g01", (x, y), lambda: clique(x, y), espera=1.5)
     a, _ = nav.captura("/tmp/_c3_rad.png")
@@ -102,7 +173,10 @@ def jogador():
     nomeia_tipo("Jogador")
     A.cap("p02_nome")
     abre_sprite()
-    pinta("azul")
+    pacote, sub, lin, col = SPRITES["Jogador"]
+    comum.abre_grade_sprite(pacote, sub)
+    A.gesto("escolher_sprite", "g13", (0, 0),
+            lambda: _poe_sprite("Jogador", so_clique=True), espera=2.0)
     A.cap("p03_azul")
     clique(*SPRITE_OK); time.sleep(2); nav.espera_parar(limite=15)
     A.gesto("abrir_physics", "g03", (0, 0),
@@ -121,6 +195,7 @@ def jogador():
 
 @etapa
 def movimento():
+    editor.volta_ao_nivel()
     x, y = celula(COL_JOGADOR, LINHA_CHAO - 1)
     editor.objeto_ou_abre(x, y)
     editor.abre_comportamentos()
@@ -136,6 +211,7 @@ def movimento():
 
 @etapa
 def plataformas():
+    editor.volta_ao_nivel()
     faz_peca(COLS_CHAO[0], LINHA_CHAO, "Chao", "verde", COLS_CHAO[1:])
     A.cap("p06_chao")
     faz_peca(COLS_MEIO[0], LINHA_MEIO, "Plataforma", "verde", COLS_MEIO[1:])
@@ -147,7 +223,8 @@ def plataformas():
 
 @etapa
 def lava():
-    """A lava: barra vermelha no pe da tela, que vai SUBIR."""
+    """A lava: a barra do pe da tela, que vai SUBIR."""
+    editor.volta_ao_nivel()
     faz_peca(COLS_LAVA[0], LINHA_LAVA, "Lava", "vermelho", COLS_LAVA[1:])
     A.cap("p09_lava")
     return True
@@ -246,7 +323,8 @@ def estrela():
     x, y = celula(COL_ESTRELA, LINHA_ALTA - 1)
     editor.objeto_ou_abre(x, y)
     nomeia("Estrela")
-    abre_sprite(); pinta("amarelo")
+    abre_sprite()
+    _poe_sprite("Estrela")
     clique(*SPRITE_OK); time.sleep(2); nav.espera_parar(limite=15)
     A.cap("p17_estrela")
     editor.abre_comportamentos()
@@ -288,21 +366,39 @@ def prova():
     from PIL import Image
     import numpy as np
 
-    def cor(mascara, minimo=600):
-        """O MAIOR aglomerado da cor — nao a media de todos os pixels dela.
+    # As cores saem dos SPRITES, medidas na hora em que o desenho foi escolhido
+    # — nao de uma faixa de tom escrita a mao. Com quadrados pintados dava para
+    # dizer "o vermelho e a lava"; com sprite de verdade o heroi TAMBEM tem
+    # vermelho na roupa, e a faixa larga pegaria os dois.
+    cor_lava = _cor_de("Lava")
+    cor_estrela = _cor_de("Estrela")
+    cor_jog = _cor_mais_distinta("Jogador", [cor_lava, cor_estrela])
+    if not comum.distantes([cor_jog, cor_lava, cor_estrela]):
+        raise RuntimeError(f"jogador {cor_jog}, lava {cor_lava} e estrela "
+                           f"{cor_estrela} tem cores parecidas demais")
+    print(f"   rastreando o boneco por {cor_jog} e a lava por {cor_lava}",
+          flush=True)
 
-           Na pagina do jogo o Chrome pinta de azul as palavras selecionadas
-           do menu, e a media do 'azul' caia no meio do caminho entre o boneco
-           e o topo da pagina: eu lia o boneco a 300 px de onde ele estava."""
+    def boneco():
+        """O centro de TODOS os pixels da cor do heroi: no jogo o sprite sai
+           pequeno e PARTIDO, e exigir mancha unica dizia que ele sumiu."""
+        a, _ = nav.captura("/tmp/_c3_j.png")
+        g = comum.centro_por_cor(a, cor_jog, minimo=60)
+        return (g[0], g[1]) if g else None
+
+    def topo_da_lava(largura=200):
+        """A BEIRADA DE CIMA da lava, nao o centro de uma mancha.
+
+           A lava e a unica coisa da fase que atravessa a tela inteira: procuro
+           a primeira fileira de pixels que tem pelo menos `largura` pixels da
+           cor dela. Assim um pedaco de roupa vermelha do heroi nunca e lido
+           como lava, e o numero que sai e exatamente o que a aula promete —
+           ate onde a lava CHEGOU."""
         a, _ = nav.captura("/tmp/_c3_j.png")
         im = np.asarray(Image.open(a).convert("RGB"), dtype=int)
-        m = comum.maior_mancha(mascara(im))
-        return m if m and m[2] >= minimo else None
-
-    azul = lambda im: ((im[:, :, 2] > 100) & (im[:, :, 2] - im[:, :, 0] > 40) &
-                       (im[:, :, 1] < 120))
-    verm = lambda im: ((im[:, :, 0] > 150) & (im[:, :, 0] - im[:, :, 1] > 60) &
-                       (im[:, :, 2] < 120))
+        por_fileira = comum.mascara_cor(im, cor_lava).sum(axis=1)
+        fileiras = np.nonzero(por_fileira >= largura)[0]
+        return int(fileiras.min()) if len(fileiras) else None
 
     editor.volta_ao_editor(); time.sleep(2)
     editor.volta_ao_nivel()
@@ -318,14 +414,14 @@ def prova():
     # longe. Medindo no fim, um reinicio no meio das leituras teleporta o
     # boneco e o guarda passa por motivo errado: li 611 px de "pulo" uma vez,
     # quase o dobro do que este pacote consegue.
-    b0 = cor(azul)
+    b0 = boneco()
     if not b0:
-        raise RuntimeError("nao achei o boneco azul no jogo")
+        raise RuntimeError("nao achei o boneco no jogo")
     alt = []
     rs.segura_tecla(126, 0.2)
     for _ in range(6):
         time.sleep(0.12)
-        q = cor(azul)
+        q = boneco()
         alt.append(q[1] if q else None)
     validos = [h for h in alt if h]
     pulo = b0[1] - min(validos) if validos else 0
@@ -335,15 +431,14 @@ def prova():
 
     serie = []
     for k in range(24):
-        l = cor(verm)
-        serie.append(l[1] if l else None)
+        serie.append(topo_da_lava())
         if k == 3:
             A.cap("p22_lava_subindo")
         time.sleep(0.6)
     print("   serie da lava:", serie, flush=True)
     alturas = [y for y in serie if y is not None]
     if len(alturas) < 10:
-        raise RuntimeError(f"nao achei a lava vermelha no jogo ({len(alturas)} "
+        raise RuntimeError(f"nao achei a faixa da lava no jogo ({len(alturas)} "
                            "leituras de 24)")
 
     # 2) a maior SUBIDA seguida: y diminuindo de uma leitura para a outra
@@ -383,23 +478,23 @@ def prova_vitoria():
        - e ela conferia sem olhar se o boneco ainda estava vivo. Depois de
          cair, as teclas vao para o vazio e a sonda conclui que a fase nao tem
          saida."""
-    from PIL import Image
-    import numpy as np
+    cor_lava = _cor_de("Lava")
+    cor_estrela = _cor_de("Estrela")
+    cor_jog = _cor_mais_distinta("Jogador", [cor_lava, cor_estrela])
+    if not comum.distantes([cor_jog, cor_lava, cor_estrela]):
+        raise RuntimeError(f"jogador {cor_jog}, lava {cor_lava} e estrela "
+                           f"{cor_estrela} tem cores parecidas demais")
 
-    azul = lambda im: ((im[:, :, 2] > 100) & (im[:, :, 2] - im[:, :, 0] > 40) &
-                       (im[:, :, 1] < 120))
-    amar = lambda im: ((im[:, :, 0] > 190) & (im[:, :, 1] > 130) &
-                       (im[:, :, 1] < 210) & (im[:, :, 2] < 120))
-
-    def mancha(mascara, minimo=600):
+    def onde(cor, minimo=60):
         a, _ = nav.captura("/tmp/_c3_v.png")
-        im = np.asarray(Image.open(a).convert("RGB"), dtype=int)
-        g = comum.maior_mancha(mascara(im))
-        return g if g and g[2] > minimo else None
+        return comum.centro_por_cor(a, cor, minimo=minimo)
+
+    boneco = lambda: onde(cor_jog)
+    estrela_na_tela = lambda: onde(cor_estrela, minimo=120)
 
     def espera_comeco(limite=40):
         for _ in range(limite):
-            q = mancha(azul)
+            q = boneco()
             if q and abs(q[0] - inicio[0]) < 40:
                 return True
             time.sleep(0.8)
@@ -413,14 +508,14 @@ def prova_vitoria():
     clique(*p); time.sleep(6)
     editor.exige_jogo()
     clique(1470, 620); time.sleep(1.2)
-    if not mancha(amar):
-        raise RuntimeError("nao achei a estrela amarela no jogo")
+    if not estrela_na_tela():
+        raise RuntimeError("nao achei a estrela no jogo")
     # ONDE o boneco nasce, medido na hora. Numero fixo aqui envelhece: bastou
     # mudar a coluna onde a fase comeca para a sonda ficar esperando um boneco
     # que estava na tela, parado, 60 px ao lado.
-    inicio = mancha(azul)
+    inicio = boneco()
     if not inicio:
-        raise RuntimeError("nao achei o boneco azul no comeco do jogo")
+        raise RuntimeError("nao achei o boneco no comeco do jogo")
     print(f"   o boneco nasce em x={inicio[0]}", flush=True)
 
     for tentativa in range(6):
@@ -429,12 +524,12 @@ def prova_vitoria():
         rs.corre_e_pula(antes=0.25)                    # chao -> plataforma do meio
         rs.corre_e_pula(antes=0.02, segurando=0.12)    # meio -> plataforma alta
         for k in range(10):
-            if not mancha(amar):
+            if not estrela_na_tela():
                 A.cap("p24_pegou_a_estrela")
                 print(f"   encostei na estrela e ela SUMIU "
                       f"(tentativa {tentativa + 1}, passo {k})", flush=True)
                 return True
-            q = mancha(azul)
+            q = boneco()
             if not q or q[1] > 520:        # caiu da plataforma alta
                 break
             rs.segura_tecla(123, 0.08)     # seta esquerda, ate tocar a estrela

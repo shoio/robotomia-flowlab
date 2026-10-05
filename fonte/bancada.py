@@ -76,6 +76,11 @@ def instala():
     import rs, nav
     from PIL import Image
 
+    # A MARCA que `rs._exige_bancada_instalada` procura. Sem ela, qualquer
+    # gesto com `BANCADA=1` no ambiente e sem estes remendos para na hora, em
+    # vez de ir para a tela de verdade.
+    rs._BANCADA_INSTALADA = True
+
     # ── captura ──
     def captura(arquivo=None, wid=None):
         # CAMINHO ABSOLUTO sempre. Quem salva a foto e o motor, que roda noutra

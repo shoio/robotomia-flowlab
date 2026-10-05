@@ -59,6 +59,28 @@ E a tabela de velocidade, já medida: `-1` sobe 55 px/s (a tela em 14 s),
 
 ---
 
+## 2b. A biblioteca de desenhos (o que custou a Aula 2 inteira)
+
+Objeto de aula **não é quadrado pintado**: o Flowlab tem sete bibliotecas
+prontas (`edit sprite` → `Browse`), e a da casa é `Flowlab Sprites`
+(ENDESGA), com `Blocks`, `Characters`, `Objects`, `Terrain` e `Town`.
+
+| fato medido | consequência |
+|---|---|
+| O passo entre fileiras da grade é **~89 px**, não 85 | erro de 4 px por fileira ACUMULA: na nona o clique cai no **vão** e não aplica nada — e o editor não acusa |
+| Clique no vão é **mudo** | o objeto fica com o losango bege PADRÃO do Flowlab, e só a prova em jogo descobre |
+| A grade **rola** | contar fileira no olho erra; `comum.linhas_da_grade()` MEDE os centros a cada corrida |
+| O sprite no jogo sai **pequeno e partido** | rastrear por `maior_mancha` diz «sumiu»; use `comum.centro_por_cor` |
+| A cor de rastreio é a mais **ABUNDANTE** que ainda distingue | pegar a mais distante escolheu um ciano de uma dúzia de pixels, e o pulo mediu 50 px em vez de 428 |
+| O herói tem **vermelho** na roupa | faixa de tom escrita à mão («vermelho é a lava») lê o herói como lava; a cor sai MEDIDA do sprite (`cores_do_sprite`) |
+| O `OK` do editor de desenho **não é o azul** do painel do objeto | `volta_ao_nivel` tem de fechar os três: desenho, objeto e física |
+
+E o guarda: `comum.clica_sprite` **exige** que o desenho mude. Aceitar calado
+o «já era esse» é exatamente o que escondeu a estrela sem desenho. Quando nada
+muda, ele põe o vizinho, volta ao alvo e cobra a mudança.
+
+---
+
 ## 3. As três armadilhas de FÍSICA que não aparecem no editor
 
 Todas custaram horas na Aula 3, e nenhuma dá erro em lugar nenhum:
@@ -93,6 +115,9 @@ aconteceu, neste curso ou nos anteriores:
       ESTRELA sendo lida como lava.
 - [ ] **O verde é novo? Sabote e repita.** Guarda que não reprova quando eu
       quebro de propósito não está guardando nada.
+- [ ] **O texto ainda fala de pintar?** Trocar o quadrado pelo sprite deixa
+      «pinte de verde», «a latinha» e «o seu quadrado azul» vivos em `ck` e
+      `sos` de três aulas. `grep -n "pinte\|latinha\|balde\|quadrado"`.
 - [ ] **A foto bate com o texto?** Figura só se confere com o olho; o `ck` que
       descreve o que a foto não mostra é uma mentira silenciosa.
 - [ ] **O passo que manda clicar diz ONDE?**

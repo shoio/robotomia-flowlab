@@ -56,7 +56,8 @@ AULA = {
     clipe="escolher_sprite.gif",
     corpo="Clique em <span class=ui>edit sprite</span>. O Flowlab tem <b>bibliotecas de desenhos prontos</b> — use uma:<br><br><b>1.</b> Clique em <span class=ui>Browse</span>, embaixo da paleta de cores.<br><b>2.</b> Se aparecer o botão azul <span class=ui>&lt; Menu</span> no alto, clique nele.<br><b>3.</b> Clique em <span class=ui>Flowlab Sprites</span> e depois em <span class=ui>Characters</span>.<br><b>4.</b> Clique no <b>primeiro boneco</b>, no canto de cima à esquerda.<br><br>Depois clique em <span class=ui>OK</span>, no canto de baixo à esquerda.",
     ck="O desenho virou um <b>personagem</b>, e o quadradinho do <span class=ui>edit sprite</span> mostra ele.",
-    sos=[("Sobrou pedaço de outra cor","O balde pinta uma região por vez: clique nas outras partes também.")]),
+    sos=[("Cliquei num boneco e o desenho não mudou","O clique caiu <b>entre</b> dois quadradinhos da grade. Clique bem no meio de um deles."),
+         ("Quero desenhar o meu","Pode! As ferramentas da esquerda continuam ali — o balde pinta, o lápis desenha ponto a ponto.")]),
 
   dict(n=9, titulo="Abra as regras de física", img="aula2/g03_b.jpg", clipe="abrir_physics.gif",
     corpo="No painel do objeto, clique em <span class=ui>Physics ></span>, no canto de baixo à direita.",
@@ -117,7 +118,7 @@ AULA = {
   dict(n=18, titulo="Ponha a estrela no alto", img="aula2/p14_fio_estrela.jpg", clipe=None,
     corpo="Em cima da terceira plataforma, crie um objeto chamado <b>Estrela</b> e, pelo <span class=ui>Browse</span>, pegue a <b>estrela dourada</b> em <span class=ui>Flowlab Sprites &rsaquo; Objects</span>.<br><br>Depois dê a ela o mesmo comportamento da moeda da Aula 1: em <span class=ui>Behaviors</span>, um <span class=ui>Collision</span> ligado a um <span class=ui>Destroyer</span> — <i>quando alguém encostar em mim, eu sumo</i>.",
     depois="Feche as duas telas no <span class=ui>OK</span>, como sempre.",
-    ck="A estrela amarela está em cima da plataforma mais alta, e tem um fio ligando <span class=ui>Collision</span> a <span class=ui>Destroyer</span>.",
+    ck="A estrela dourada está em cima da plataforma mais alta, e tem um fio ligando <span class=ui>Collision</span> a <span class=ui>Destroyer</span>.",
     sos=[("A estrela caiu quando eu joguei","Ela não precisa de física: deixe <span class=ui>movable</span> desmarcado nela."),
          ("A estrela some sozinha no começo","Ela está encostando na plataforma. Suba a estrela uma casa.")]),
 
