@@ -445,3 +445,128 @@ def abre_fisica(tentativas=4):
                 return True
         time.sleep(1.2)
     raise RuntimeError("nao achei o `Physics >` no painel do objeto")
+
+
+# ─────────────────────────── sprites de verdade ───────────────────────────
+#
+# Ate a Aula 3 todo objeto era um QUADRADO PINTADO com a latinha. Funcionava e
+# era facil de medir, mas um jogo de quadrados azuis nao motiva ninguem de 10
+# anos — e o Flowlab tem sete bibliotecas de sprite embutidas:
+#
+#   Flowlab Sprites (ENDESGA)  Blocks · Characters · Objects · Terrain · Town
+#   Kenney Sprites             1 Bit · 1 Bit Platformer · Tiny Dungeon · …
+#   Sproutland (Cupnooble)     Animals · Characters · Farming · Terrain · …
+#   Sodacoma · Gustavo (Ships · Projectiles · Misc.) · PixelPizza UI · Cute Planet
+#
+# O gesto e: `Browse` → `< Menu` → pacote → sub-pacote → clicar no boneco.
+#
+# A LISTA SE REORGANIZA conforme o pacote aberto, entao pacote e sub-pacote se
+# acham pelo TEXTO. So a grade de bonecos e por coordenada, e ela e regular.
+
+GRADE_SPRITE = (2307, 180, 87, 85)      # x0, y0, passo em x, passo em y
+
+
+def _botao_menu():
+    """O `< Menu` azul no alto da coluna da direita."""
+    return nav.acha_cor((122, 170, 224), tol=45, regiao=(0.72, 0.02, 0.95, 0.10),
+                        minimo=600)
+
+
+def _subpacotes(abaixo, cor=(122, 170, 224), tol=45):
+    """Os botoes azuis de sub-pacote que ficam ABAIXO do nome do pacote,
+       de cima para baixo. Devolve os centros."""
+    import numpy as _np
+    from PIL import Image as _I
+    a, _ = nav.captura("/tmp/_sp_sub.png")
+    im = _np.asarray(_I.open(a).convert("RGB"), dtype=int)
+    rec = im[:, 2300:2700]
+    m = ((abs(rec[:, :, 0] - cor[0]) < tol) & (abs(rec[:, :, 1] - cor[1]) < tol) &
+         (abs(rec[:, :, 2] - cor[2]) < tol))
+    linhas = m.sum(axis=1)
+    faixas, ini = [], None
+    for y, n_ in enumerate(list(linhas) + [0]):
+        if n_ > 150 and ini is None:
+            ini = y
+        elif n_ <= 150 and ini is not None:
+            if 30 <= (y - ini) <= 90 and ini > abaixo:
+                faixas.append((ini + y) // 2)
+            ini = None
+    return [(2500, y) for y in faixas]
+
+
+def escolhe_sprite(pacote, subpacote, linha, coluna, tentativas=3):
+    """Troca o desenho do objeto por um sprite da biblioteca.
+
+       Devolve a COR DOMINANTE do sprite escolhido — e e ela que as provas em
+       jogo usam para achar o objeto na tela. Antes eu supunha a cor porque
+       era eu quem pintava; com sprite de verdade, quem diz a cor e o sprite."""
+    from PIL import Image as _I
+    import numpy as _np
+    antes, _ = nav.captura("/tmp/_sp_antes.png")
+
+    # A biblioteca tem TRES estados, e eu supus um so:
+    #   fechada            -> ha o botao `Browse`
+    #   aberta nos meus    -> ha o botao azul `< Menu`
+    #   na lista de pacotes-> os nomes dos pacotes estao na tela
+    # Entao: so clico no que PRECISA ser clicado para chegar na lista.
+    def _na_tela(alvo):
+        c, _ = nav.captura("/tmp/_sp_c.png")
+        return nav.acha_texto(alvo.lower(), arquivo=c, regiao=(0.72, 0.0, 1.0, 1.0))
+
+    if not _na_tela(pacote):
+        a, _ = nav.captura("/tmp/_sp_b.png")
+        b = nav.acha_texto("browse", arquivo=a)
+        if b:
+            clique(*b); time.sleep(3)
+        m = _botao_menu()
+        if m:
+            clique(m[0], m[1]); time.sleep(3)
+
+    p = _na_tela(pacote)
+    if not p:
+        raise RuntimeError(f"nao achei `{pacote}` na biblioteca de sprites")
+    clique(*p); time.sleep(3.5)
+
+    # O SUB-PACOTE E ESCOLHIDO PELA ORDEM, nao pelo nome: os botoes sao texto
+    # BRANCO sobre azul claro, e o OCR nao le isso (o mesmo que acontece com os
+    # botoes do dialogo do Chrome). A ordem dentro de cada pacote e estavel.
+    botoes = _subpacotes(abaixo=p[1])
+    if subpacote >= len(botoes):
+        raise RuntimeError(f"`{pacote}` mostrou {len(botoes)} sub-pacotes e eu "
+                           f"queria o {subpacote + 1}o")
+    clique(*botoes[subpacote]); time.sleep(3.5)
+
+    x0, y0, px, py = GRADE_SPRITE
+    clique(x0 + px * coluna, y0 + py * linha); time.sleep(2.5)
+
+    # CONFERE que o desenho mudou, e mede a cor dele
+    dep, _ = nav.captura("/tmp/_sp_dep.png")
+    A = _np.asarray(_I.open(antes).convert("RGB"), dtype=int)
+    B = _np.asarray(_I.open(dep).convert("RGB"), dtype=int)
+    tela = (slice(300, 1300), slice(900, 2000))      # a area de desenho
+    if int((_np.abs(A[tela] - B[tela]).sum(axis=2) > 40).sum()) < 2000:
+        raise RuntimeError(f"cliquei no sprite ({linha},{coluna}) de "
+                           f"{pacote}/{subpacote} e o desenho nao mudou")
+    return cor_dominante(dep)
+
+
+def cor_dominante(arquivo, tela=(slice(300, 1300), slice(900, 2000))):
+    """A cor que mais aparece no desenho, ignorando o xadrez de transparencia
+       e os cinzas da interface. E por ela que a prova acha o objeto no jogo."""
+    import numpy as _np
+    from PIL import Image as _I
+    im = _np.asarray(_I.open(arquivo).convert("RGB"), dtype=int)[tela]
+    px = im.reshape(-1, 3)
+    # fora o xadrez (cinzas quase iguais nos tres canais) e o quase-preto
+    vivo = ((px.max(axis=1) - px.min(axis=1)) > 40) & (px.max(axis=1) > 60)
+    px = px[vivo]
+    if len(px) < 200:
+        return None
+    # agrupa grosso, em caixas de 32, e devolve a caixa mais cheia
+    chave = (px // 32) * 32
+    vistos = {}
+    for c in map(tuple, chave):
+        vistos[c] = vistos.get(c, 0) + 1
+    melhor = max(vistos.items(), key=lambda kv: kv[1])[0]
+    dentro = px[(chave == melhor).all(axis=1)]
+    return tuple(int(v) for v in dentro.mean(axis=0))

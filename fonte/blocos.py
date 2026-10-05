@@ -657,6 +657,13 @@ DESLOC = {
                  "dir": {"out": (249, 74)}},
     "Alert":    {"esq": {"show": (-26, 45), "hide": (-26, 86)},
                  "dir": {"click": (247, 65)}},
+    # medidos no rascunho da Aula 4
+    "Keyboard": {"esq": {}, "dir": {"down": (245, 43), "up": (245, 85)}},
+    "MouseClick": {"esq": {}, "dir": {"down": (245, 43), "up": (245, 85)}},
+    "Timer":    {"esq": {"delay": (-28, 39), "reset": (-28, 76), "start": (-28, 114)},
+                 "dir": {"out": (247, 50), "done": (247, 103)}},
+    "Spawn":    {"esq": {"x": (-25, 41), "y": (-25, 76), "spawn": (-25, 116)},
+                 "dir": {"out": (246, 76)}},
     "Destroyer": {"esq": {"in": (-28, 57)}, "dir": {"out": (248, 57)}},
     # o titulo no canvas e 'RestartGame' (sem espaco), mas na palheta ele
     # aparece como 'Restart Game' — por isso solta() aceita titulo diferente
@@ -674,7 +681,7 @@ def pino_fixo(bloco, rotulo, lado):
     return (bloco.x + dx, bloco.y + dy)
 
 
-def _ha_fio(arquivo, p1, p2, folga=34, claro=200, minimo=40):
+def _ha_fio(arquivo, p1, p2, folga=34, claro=200, minimo=40, blocos_=()):
     """Ja existe um fio ligando estes dois pinos?
 
        Olha a FAIXA entre eles e conta pixels claros — o fio e quase branco, e
@@ -693,6 +700,16 @@ def _ha_fio(arquivo, p1, p2, folga=34, claro=200, minimo=40):
        erro no meio dela."""
     import numpy as _np
     im = _np.asarray(Image.open(arquivo).convert("L"), dtype=int)
+    # A MESA TEM DE ESTAR PARADA. Quando a simulacao do editor de blocos esta
+    # rodando, o fundo do canvas fica BRANCO — e ai todo pixel e claro, o
+    # detector responde "ha fio" para qualquer par de pinos, e `liga_fixo`
+    # aprova uma ligacao que nao existe. Aconteceu: dei por ligado um fio que
+    # a tela nao mostrava.
+    miolo = im[im.shape[0] // 4: im.shape[0] * 3 // 4,
+               im.shape[1] // 3: im.shape[1] * 3 // 4]
+    if float(_np.median(miolo)) > 150:
+        raise RuntimeError("a mesa de blocos esta com a SIMULACAO rodando "
+                           "(fundo claro): pare antes de conferir fio")
     x0, x1 = sorted((p1[0], p2[0]))
     y0, y1 = sorted((p1[1], p2[1]))
     horizontal = (x1 - x0) >= (y1 - y0)
@@ -704,6 +721,15 @@ def _ha_fio(arquivo, p1, p2, folga=34, claro=200, minimo=40):
         x0, x1 = max(0, x0 - 60), min(im.shape[1], x1 + 60)
     if x1 - x0 < 20 or y1 - y0 < 20:
         return False
+    # APAGA O CORPO DOS BLOCOS da conta. Sem isto eu contava a tecla branca do
+    # icone do `Keyboard` e as bordas claras dos proprios blocos como se
+    # fossem fio: o detector aprovou uma ligacao que NAO EXISTIA na tela, e eu
+    # so vi quando a simulacao mostrou os dois blocos soltos.
+    im = im.copy()
+    for b in blocos_:
+        bx0, by0 = max(0, b.x - 60), max(0, b.y - 40)
+        bx1, by1 = min(im.shape[1], b.x + 280), min(im.shape[0], b.y + 170)
+        im[by0:by1, bx0:bx1] = 0
     passo = ((x1 - x0) if horizontal else (y1 - y0)) // 3
     if passo < 4:
         return False
@@ -722,13 +748,13 @@ def liga_fixo(origem, pino_saida, destino, pino_entrada):
     p1 = pino_fixo(origem, pino_saida, "dir")
     p2 = pino_fixo(destino, pino_entrada, "esq")
     a, _ = nav.captura("/tmp/_lf_antes.png")
-    if _ha_fio(a, p1, p2):
+    if _ha_fio(a, p1, p2, blocos_=(origem, destino)):
         return "ja estava"
     for _ in range(2):
         arrasta_devagar(p1[0], p1[1], p2[0], p2[1])
         time.sleep(0.8)
         a_dep, _ = nav.captura("/tmp/_lf_depois.png")
-        if _ha_fio(a_dep, p1, p2):
+        if _ha_fio(a_dep, p1, p2, blocos_=(origem, destino)):
             return True
     raise RuntimeError(f"liguei {origem.nome}.{pino_saida} -> "
                        f"{destino.nome}.{pino_entrada} e nenhum fio apareceu")
@@ -1027,3 +1053,21 @@ def clica_menos(ponto, cliques=1):
     for _ in range(cliques):
         nav.clique_seguro(*ponto); time.sleep(0.7)
     return ponto
+
+
+def para_simulacao():
+    """Para a simulacao da mesa de blocos, se estiver rodando.
+
+       O `Esc` dentro do editor de blocos a LIGA (descobri sem querer, duas
+       vezes). Com ela rodando o fundo fica branco, o OCR muda e o detector de
+       fio da positivo falso."""
+    import numpy as _np
+    a, _ = nav.captura("/tmp/_bl_sim.png")
+    im = _np.asarray(Image.open(a).convert("L"), dtype=int)
+    miolo = im[im.shape[0] // 4: im.shape[0] * 3 // 4,
+               im.shape[1] // 3: im.shape[1] * 3 // 4]
+    if float(_np.median(miolo)) <= 150:
+        return False
+    nav.clique_seguro(165, 1473)        # o quadrado de PARAR, canto de baixo
+    time.sleep(2.0)
+    return True

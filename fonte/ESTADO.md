@@ -317,3 +317,50 @@ tentativa de escrever `VOCÊ VENCEU!` ele abriu o DevTools, ligou o modo
 dispositivo e abriu o painel lateral — tres estados de interface de uma vez, e
 a janela do Flowlab mudou de largura por baixo de todas as coordenadas
 medidas. O campo nao recebeu nada. O aviso esta na docstring da funcao.
+
+### 05-10 — sprites de verdade, e o que a Aula 4 ensinou
+
+**O Flowlab tem SETE bibliotecas de sprite embutidas**, e ate aqui eu nao usei
+nenhuma: todo objeto era um quadrado pintado com a latinha. Funcionava e era
+facil de medir, mas um jogo de quadrados azuis nao motiva ninguem de 10 anos.
+
+| biblioteca | sub-pacotes |
+|---|---|
+| Flowlab Sprites (ENDESGA) | Blocks · Characters · Objects · Terrain · Town |
+| Kenney Sprites | 1 Bit · 1 Bit Platformer · Tiny Dungeon · Tiny Ski · Micro Roguelike · B&W RPG |
+| Sproutland (Cupnooble) | Animals · Characters · Farming · Terrain · Objects · Structures |
+| Gustavo Vituri | **Ships · Projectiles · Misc.** — e a Aula 4 inteira |
+| Sodacoma · PixelPizza UI · Cute Planet | — |
+
+O gesto: `Browse` → `< Menu` → pacote → sub-pacote → clicar no boneco da grade.
+A grade e regular: primeiro em (2307, 180), passo 87 em x e 85 em y.
+
+**Tres armadilhas do gesto**, todas medidas:
+- a biblioteca tem **tres estados** (fechada / nos meus sprites / na lista de
+  pacotes), e clicar num pacote ja aberto o FECHA;
+- os botoes de sub-pacote sao **texto branco sobre azul**, que o OCR nao le —
+  tem de ser achados pela cor e escolhidos pela ORDEM;
+- com sprite de verdade, as provas em jogo nao podem mais supor a cor do
+  objeto: `comum.cor_dominante` mede a cor do sprite escolhido, e e ela que a
+  prova usa para achar o objeto na tela.
+
+### O que a Aula 4 descobriu (nave e tiro)
+
+- `Spawn` funciona e cria o objeto pelo **Type** — o mesmo campo que a Aula 3
+  ja ensina. Provado: com `Always` no gatilho, choveu tiro.
+- O tiro sobe com a mesma corrente da lava (`Always -> Number -> Velocity.y`).
+- ⛔ **`Keyboard`, `MouseClick` e `Timer` nao disparam** nem pela bancada nem
+  por evento de sistema na tela de verdade. So `Always`, as colisoes e as setas
+  (que vem do pacote `Run & Jump`, nao do bloco `Keyboard`). Isso me impede de
+  PROVAR um tiro por tecla, e promessa sem prova nao entra na aula.
+- O `Timer` tem um pino `start`: sem alguem liga-lo, ele nunca corre.
+
+**Dois consertos no detector de fio**, os dois positivos falsos:
+- ele contava a tecla branca do icone do `Keyboard` e as bordas dos blocos como
+  se fossem fio — agora apaga o corpo dos blocos da conta;
+- e com a SIMULACAO da mesa rodando o fundo fica branco, e tudo e claro: agora
+  ele se recusa a responder em vez de chutar. (O `Esc` dentro do editor de
+  blocos LIGA a simulacao — descobri sem querer, duas vezes.)
+
+**Ainda falso:** um fio de outro par que cruze a faixa ainda conta. Foi assim
+que `Timer.out -> Spawn.spawn` passou por ligado sem existir.

@@ -6,7 +6,43 @@ import os, sys, time
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import rs, nav
 
-VERDE = (99, 173, 97)              # o botao "+ New Game"
+VERDE = (41, 168, 70)              # o botao "+ New Game", medido em 04-10
+
+
+def botao_novo_jogo(arquivo=None, regiao=(0.5, 0.05, 1.0, 0.35)):
+    """O `+ New Game` achado pela PROPRIEDADE da cor, nao pelo valor exato.
+
+       O verde dele mudou de (99,173,97) para (41,168,70) entre uma noite e a
+       outra, e a busca por cor com tolerancia 26 passou a nao achar nada: a
+       captura parava no `nao achei nada da cor`. Procurar "verde forte" — G
+       bem maior que R e que B — sobrevive a mudanca de tom.
+
+       Procurar pelo TEXTO tambem nao serve: a lista esta cheia de jogos
+       chamados `New Game`, e a leitura acha o titulo de um cartao primeiro."""
+    import numpy as _np
+    from PIL import Image as _I
+    a = arquivo or nav.captura("/tmp/_ed_verde.png")[0]
+    im = _np.asarray(_I.open(a).convert("RGB"), dtype=int)
+    A, L = im.shape[0], im.shape[1]
+    x0, y0, x1, y1 = (int(regiao[0]*L), int(regiao[1]*A),
+                      int(regiao[2]*L), int(regiao[3]*A))
+    rec = im[y0:y1, x0:x1]
+    m = ((rec[:, :, 1] > 120) & (rec[:, :, 1] - rec[:, :, 0] > 40) &
+         (rec[:, :, 1] - rec[:, :, 2] > 40))
+    ys, xs = _np.nonzero(m)
+    if len(xs) < 2000:
+        return None
+    return (int(xs.mean()) + x0, int(ys.mean()) + y0)
+
+
+def _clica_novo_jogo():
+    b = botao_novo_jogo()
+    if not b:
+        raise RuntimeError("nao achei o botao verde `+ New Game`")
+    rs.clique_img(b[0], b[1], escala=2.0, janela=nav.janela())
+    time.sleep(6)
+    nav.espera_parar(limite=20)
+    return b
 CENTRO_CANVAS = (1502, 831)        # meio da grade branca do nivel
 
 
@@ -54,14 +90,14 @@ def jogo_novo():
     nav.vai("https://flowlab.io/games/mine", espera=4)
     nav.fecha_dialogo()
     espera_tela("new game", "my games", limite=25)
-    nav.clica_cor(VERDE, regiao=(0.5, 0.05, 1, 0.30), espera=6)
+    _clica_novo_jogo()
     # o seletor demora a desenhar; se nao vier, clico de novo uma vez
     try:
         espera_tela("empty project", limite=30)
     except RuntimeError:
         nav.fecha_dialogo()
-        if na_tela("new game"):
-            nav.clica_cor(VERDE, regiao=(0.5, 0.05, 1, 0.30), espera=6)
+        if botao_novo_jogo():
+            _clica_novo_jogo()
         espera_tela("empty project", limite=30)
     J = nav.janela()
     rs.clique_img(1272, 860, escala=2.0, janela=J)     # miniatura do Empty Project
