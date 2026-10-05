@@ -49,9 +49,11 @@ def confere(aulas=None):
                 erra(f"{onde}: foto sumida {img}")
 
             # 3. todo clipe citado existe
-            cl = p.get("clipe")
-            if cl and not os.path.exists(os.path.join(slug, "gifs", cl)):
-                erra(f"{onde}: clipe sumido {cl}")
+            # o clipe pode ser um so ou uma LISTA de (rotulo, arquivo)
+            import gera_curso as _G
+            for _rot, cl in _G.clipes_do(p):
+                if not os.path.exists(os.path.join(slug, "gifs", cl)):
+                    erra(f"{onde}: clipe sumido {cl}")
 
             # 4. quadro verde e quadro laranja obrigatorios
             if not p.get("ck", "").strip():

@@ -12,8 +12,14 @@
 // continuam valendo.
 import { chromium } from 'playwright';
 import http from 'node:http';
+import fs from 'node:fs';
 
 const PERFIL = '/Users/shoio/.flowlab-bancada';
+// O cookie de login do Flowlab e DE SESSAO (expires = -1): o Chrome nao o
+// guarda em disco, e todo navegador novo sobe deslogado. Por isso a bancada
+// guarda a sessao num arquivo e a injeta ao subir. Ele mora FORA do
+// repositorio de proposito — e credencial, nao fonte.
+const SESSAO = PERFIL + '/sessao.json';
 const PORTA = 8765;
 const VISIVEL = process.env.BANCADA_VISIVEL === '1';
 
@@ -34,6 +40,14 @@ const ctx = await chromium.launchPersistentContext(PERFIL, {
     '--disable-features=CalculateNativeWinOcclusion',
   ],
 });
+if (fs.existsSync(SESSAO)) {
+  try {
+    const guardada = JSON.parse(fs.readFileSync(SESSAO, 'utf8'));
+    await ctx.addCookies(guardada.cookies || []);
+    console.log('sessao devolvida ao perfil:', (guardada.cookies || []).length, 'cookies');
+  } catch (e) { console.error('sessao guardada ilegivel:', e.message); }
+}
+
 const pag = ctx.pages()[0] || await ctx.newPage();
 
 // O diálogo do Chrome ("Sair do site?") deixa de ser um problema de OCR: aqui
@@ -114,6 +128,12 @@ const rotas = {
   async titulo() { return { titulo: await pag.title() }; },
   async aval({ js }) { return { valor: await pag.evaluate(js) }; },
   async area() { return { x: 0, y: 0, w: 1470, h: 802 }; },
+  async salva() {
+    // guarda a sessao de agora, para o proximo motor subir logado
+    const e = await ctx.storageState();
+    fs.writeFileSync(SESSAO, JSON.stringify(e));
+    return { cookies: e.cookies.length };
+  },
 };
 
 http.createServer(async (req, res) => {

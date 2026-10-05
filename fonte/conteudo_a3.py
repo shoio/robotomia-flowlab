@@ -103,8 +103,16 @@ AULA = {
     sos=[("Sobrou um buraco na ponta","Tape: a lava precisa cobrir tudo, senão o boneco cai pelo vão e o jogo fica travado."),
          ("A lava ficou em cima do chão verde","Ela vai na <b>última</b> fileira, a mais baixa de todas. Apague e refaça embaixo.")]),
 
-  dict(n=15, titulo="Ensine a lava a se mexer", img="aula3/p10_lava_sem_gravidade.jpg", clipe="lava_sente_o_toque.gif",
-    corpo="Clique na <b>primeira peça da lava</b>, escolha <span class=ui>Edit</span> e depois <span class=ui>Physics &gt;</span>.<br><br>Mexa em <b>quatro</b> caixinhas, nesta ordem:<br><br><b>1.</b> <span class=ui>movable</span> — <b>marque</b>. Sem isso ela fica pregada.<br><b>2.</b> <span class=ui>affected by gravity</span> — <b>desmarque</b>. Com gravidade ela cai, e a gente quer que suba.<br><b>3.</b> <span class=ui>is solid</span> — <b>desmarque</b>. Assim a lava <b>atravessa</b> os degraus em vez de ficar entalada embaixo deles.<br><b>4.</b> <span class=ui>enable collisions</span> — apareceu agora no lugar do <span class=ui>is solid</span>. <b>Marque</b>. Ela devolve o <i>toque</i> sem devolver o <i>empurrão</i>.<br><br>Os dois últimos andam juntos: sem o 3 a lava sobe e trava nos degraus; sem o 4 ela sobe por cima do boneco e <b>não acontece nada</b>.<br><br>Feche no <span class=ui>OK</span> azul.",
+  # CINCO animacoes, uma por gesto. O passo pede cinco coisas e mostrava UMA:
+  # as outras quatro estavam gravadas e paradas no disco, sem nenhuma pagina
+  # que as pedisse.
+  dict(n=15, titulo="Ensine a lava a se mexer", img="aula3/p10_lava_sem_gravidade.jpg",
+    clipe=[("Abrir física", "fisica_da_lava.gif"),
+           ("1 · movable", "lava_movable.gif"),
+           ("2 · gravidade", "desligar_gravidade.gif"),
+           ("3 · is solid", "lava_atravessa.gif"),
+           ("4 · colisões", "lava_sente_o_toque.gif")],
+    corpo="Clique na <b>primeira peça da lava</b>, escolha <span class=ui>Edit</span> e depois <span class=ui>Physics &gt;</span>.<br><br>Mexa em <b>quatro</b> caixinhas, nesta ordem:<br><br><b>1.</b> <span class=ui>movable</span> — <b>marque</b>. Sem isso ela fica pregada.<br><b>2.</b> <span class=ui>affected by gravity</span> — <b>desmarque</b>. Com gravidade ela cai, e a gente quer que suba.<br><b>3.</b> <span class=ui>is solid</span> — <b>desmarque</b>. Assim a lava <b>atravessa</b> os degraus em vez de ficar entalada embaixo deles.<br><b>4.</b> <span class=ui>enable collisions</span> — apareceu agora no lugar do <span class=ui>is solid</span>. <b>Marque</b>. Ela devolve o <i>toque</i> sem devolver o <i>empurrão</i>.<br><br>Os dois últimos andam juntos: sem o 3 a lava sobe e trava nos degraus; sem o 4 ela sobe por cima do boneco e <b>não acontece nada</b>.<br><br>Feche no <span class=ui>OK</span> azul.<br><br><i>Em cima da figura há uma aba para cada um destes gestos — clique nelas para ver um de cada vez.</i>",
     ck="<span class=ui>movable</span> e <span class=ui>enable collisions</span> estão azuis; <span class=ui>affected by gravity</span> e <span class=ui>is solid</span> estão apagados.",
     sos=[("Não existe enable collisions no meu painel","Ela só nasce depois que <span class=ui>is solid</span> for desmarcado. Faça o 3 primeiro."),
          ("Marquei na palavra e não mudou","A caixinha é o quadradinho à esquerda da palavra. Clique nele."),

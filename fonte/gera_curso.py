@@ -200,7 +200,9 @@ JS = """
       var b = e.target.closest(".aba"); if(!b) return;
       var caixa = g.parentNode;
       [].slice.call(g.children).forEach(function(x){ x.setAttribute("aria-pressed", x===b ? "true":"false"); });
-      caixa.querySelector(".gif").hidden  = (b.dataset.ver !== "clipe");
+      caixa.querySelectorAll(".gif").forEach(function(g){
+        g.hidden = !g.classList.contains(b.dataset.ver);
+      });
       caixa.querySelector(".foto").hidden = (b.dataset.ver !== "foto");
       caixa.querySelector(".legenda").textContent = b.dataset.legenda;
     });
@@ -226,19 +228,42 @@ CABECA = """<!doctype html>
 """
 
 
+def clipes_do(p):
+    """Os clipes de um passo, sempre como LISTA de (rotulo, arquivo).
+
+       Um passo pode pedir mais de um gesto. O passo das caixinhas da lava
+       manda mexer em QUATRO e mostrava UMA animacao — as outras tres estavam
+       gravadas e paradas no disco, sem nenhuma pagina que as pedisse."""
+    c = p.get("clipe")
+    if not c:
+        return []
+    if isinstance(c, str):
+        return [("Clipe", c)]
+    return [(r, a) for r, a in c]
+
+
 def midia(p, base=""):
     foto = f'<img class="foto" src="{base}fotos/{p["foto"]}" alt="Tela do Flowlab no passo {p["n"]}" loading="lazy">'
-    if not p.get("clipe"):
+    cs = clipes_do(p)
+    if not cs:
         return (f'<figure class="midia"><div class="moldura">{foto}</div>'
                 f'<p class="legenda">Foto da tela.</p></figure>')
-    gif = f'<img class="gif" src="{base}clipes/{p["clipe"]}" alt="Animação do passo {p["n"]}" loading="lazy">'
-    return ('<figure class="midia"><div class="abas">'
-            '<button class="aba" data-ver="clipe" aria-pressed="true" '
-            'data-legenda="O clipe repete sozinho. Repare onde o cursor vai antes de clicar.">▶ Clipe</button>'
-            '<button class="aba" data-ver="foto" aria-pressed="false" '
-            'data-legenda="Foto da tela.">Foto</button></div>'
-            f'<div class="moldura">{gif}{foto.replace("<img", "<img hidden", 1)}</div>'
-            '<p class="legenda">O clipe repete sozinho. Repare onde o cursor vai antes de clicar.</p>'
+    LEG = "O clipe repete sozinho. Repare onde o cursor vai antes de clicar."
+    abas, imgs = [], []
+    for i, (rotulo, arq) in enumerate(cs):
+        primeiro = (i == 0)
+        abas.append(f'<button class="aba" data-ver="clipe{i}" '
+                    f'aria-pressed="{"true" if primeiro else "false"}" '
+                    f'data-legenda="{LEG}">▶ {rotulo}</button>')
+        oculto = "" if primeiro else " hidden"
+        imgs.append(f'<img class="gif clipe{i}"{oculto} src="{base}clipes/{arq}" '
+                    f'alt="Animação do passo {p["n"]}: {rotulo}" loading="lazy">')
+    abas.append('<button class="aba" data-ver="foto" aria-pressed="false" '
+                'data-legenda="Foto da tela.">Foto</button>')
+    return ('<figure class="midia"><div class="abas">' + "".join(abas) + '</div>'
+            f'<div class="moldura">{"".join(imgs)}'
+            f'{foto.replace("<img", "<img hidden", 1)}</div>'
+            f'<p class="legenda">{LEG}</p>'
             # no papel o clipe nao roda: o @media print troca pela foto, entao
             # a legenda do clipe tambem tem de sair
             '<p class="legenda so-papel">Foto da tela.</p></figure>')

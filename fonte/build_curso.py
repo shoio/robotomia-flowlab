@@ -127,9 +127,9 @@ def monta():
                 im.save(destino, quality=84, optimize=True)
         # clipes
         for p in a["passos"]:
-            if p.get("clipe"):
-                o = os.path.join(a["clipes_de"], p["clipe"])
-                d = os.path.join(pasta, "clipes", p["clipe"])
+            for _rot, arq in G.clipes_do(p):
+                o = os.path.join(a["clipes_de"], arq)
+                d = os.path.join(pasta, "clipes", arq)
                 if os.path.exists(o) and not os.path.exists(d):
                     shutil.copy(o, d)
         open(os.path.join(pasta, "index.html"), "w").write(G.pagina_aula(a, len(PLANO)))
