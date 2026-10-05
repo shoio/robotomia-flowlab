@@ -98,18 +98,34 @@ class A:
            senao a seta da animacao aponta para onde eu PENSEI em clicar, e
            nao para onde cliquei (ja aconteceu com a caixinha 'movable')."""
         a = A.cap(base + "_a")
+        CLIQUES.clear()
         devolvido = acao()
         if isinstance(devolvido, (tuple, list)) and len(devolvido) == 2:
             alvo = devolvido
         time.sleep(espera)
         nav.espera_parar(limite=15)
         b = A.cap(base + "_b")
-        A.reg(chave, antes=a, depois=b, alvo=[int(alvo[0]), int(alvo[1])], botao=botao)
+        alvo = (int(alvo[0]), int(alvo[1]))
+        # o alvo saiu de um clique de verdade?
+        clicado = any(abs(alvo[0] - cx) <= 6 and abs(alvo[1] - cy) <= 6
+                      for cx, cy in CLIQUES)
+        A.reg(chave, antes=a, depois=b, alvo=list(alvo), botao=botao,
+              clicado=clicado)
         return b
 
 
+CLIQUES = []            # onde a maquina clicou desde o ultimo `gesto`
+
+
 def clique(x, y, duplo=False):
-    """Todo clique da aula passa pelo guarda: acima da pagina esta o Chrome."""
+    """Todo clique da aula passa pelo guarda: acima da pagina esta o Chrome.
+
+       E fica REGISTRADO. O alvo da seta de um clipe tem de ser um lugar onde
+       a maquina clicou de verdade — e esse o invariante. A regra anterior
+       ('a seta aponta onde a tela mudou') errava no gesto de escolher sprite:
+       ao clicar no boneco da grade, o que muda e o DESENHO, do outro lado da
+       tela, e a celula clicada fica igual."""
+    CLIQUES.append((int(x), int(y)))
     nav.clique_seguro(x, y, duplo=duplo)
 
 
@@ -281,18 +297,26 @@ def arrasta_slider(rotulo, ate_direita=True):
     return p
 
 
-def confere_fase():
+def confere_fase(cores=None, minimo=120):
     """Olha o nivel e confere que a fase FAZ SENTIDO antes de jogar:
        chao contiguo, e jogador e moeda EM CIMA dele, na mesma linha.
 
        Nasceu de uma fase que parecia pronta na foto e nao era: metade das
        pecas de chao nao tinha sido colocada, o jogador ficou no ar a esquerda
-       do chao, e o jogo 'nao funcionava' sem que nada no editor acusasse."""
+       do chao, e o jogo 'nao funcionava' sem que nada no editor acusasse.
+
+       `cores` = {"chao": (r,g,b), "jogador": …, "moeda": …}, medidas dos
+       SPRITES. Antes eu procurava verde, azul e amarelo chapados porque era eu
+       quem pintava os quadrados; com sprite de verdade o jogador e um boneco,
+       e so a camisa dele e azul — a versao antiga achava 192 px e dizia que a
+       fase nao tinha jogador."""
     from PIL import Image
     import numpy as np
+    import Quartz
+    if not cores:
+        raise RuntimeError("confere_fase precisa das cores medidas dos sprites")
     # tira o ponteiro da area do nivel: o Flowlab desenha uma CAIXINHA LARANJA
     # na celula sob o cursor, e ela entrava na conta como se fosse a moeda
-    import Quartz
     J = nav.janela()
     rs._evento_mouse(Quartz.kCGEventMouseMoved, J["x"] + 60, J["y"] + 700)
     time.sleep(0.8)
@@ -301,33 +325,31 @@ def confere_fase():
     # ler a janela inteira deu um 'jogador' de 1500 px de largura
     im = np.asarray(Image.open(a).convert("RGB"), dtype=int)
     im = im[GRADE_Y:GRADE_Y + CELULA * 12, GRADE_X:GRADE_X + CELULA * 16]
-    verde = (im[:, :, 1] > 140) & (im[:, :, 1] - im[:, :, 0] > 40) & (im[:, :, 2] < 130)
-    azul = (im[:, :, 2] > 100) & (im[:, :, 2] - im[:, :, 0] > 40) & (im[:, :, 1] < 120)
-    amar = (im[:, :, 0] > 190) & (im[:, :, 1] > 130) & (im[:, :, 1] < 210) & (im[:, :, 2] < 120)
-    def caixa(m, nome):
+
+    def caixa(cor, nome):
+        m = mascara_cor(im, cor)
         ys, xs = np.nonzero(m)
-        if len(xs) < 200:
-            raise RuntimeError(f"a fase nao tem {nome} (achei {len(xs)} px)")
-        return xs.min() + GRADE_X, xs.max() + GRADE_X, ys.min() + GRADE_Y, ys.max() + GRADE_Y
-    cx0, cx1, cy0, cy1 = caixa(verde, "chao")
-    jx0, jx1, jy0, jy1 = caixa(azul, "jogador")
-    mx0, mx1, my0, my1 = caixa(amar, "moeda")
+        if len(xs) < minimo:
+            raise RuntimeError(f"a fase nao tem {nome} (achei {len(xs)} px da "
+                               f"cor {cor})")
+        return (xs.min() + GRADE_X, xs.max() + GRADE_X,
+                ys.min() + GRADE_Y, ys.max() + GRADE_Y)
+
+    cx0, cx1, cy0, cy1 = caixa(cores["chao"], "chao")
+    jx0, jx1, jy0, jy1 = caixa(cores["jogador"], "jogador")
+    mx0, mx1, my0, my1 = caixa(cores["moeda"], "moeda")
     largura_esperada = CELULA * len(COLS_CHAO)
     problemas = []
     if (cx1 - cx0) < largura_esperada * 0.9:
-        problemas.append(f"o chao tem {cx1-cx0} px e devia ter ~{largura_esperada} "
-                         f"({len(COLS_CHAO)} pecas): faltou peca")
-    if not (cx0 <= jx0 and jx1 <= cx1):
-        problemas.append(f"o jogador (x {jx0}..{jx1}) nao esta sobre o chao "
-                         f"(x {cx0}..{cx1}): ele vai cair")
-    if not (cx0 <= mx0 and mx1 <= cx1):
-        problemas.append(f"a moeda (x {mx0}..{mx1}) nao esta sobre o chao")
-    if abs(jy1 - my1) > CELULA // 2:
-        problemas.append(f"jogador e moeda em linhas diferentes "
-                         f"(base {jy1} contra {my1}): ele passa por baixo")
+        problemas.append(f"o chao tem {cx1-cx0} px e devia ter ~{largura_esperada}")
+    for nome, x0, x1 in (("jogador", jx0, jx1), ("moeda", mx0, mx1)):
+        if not (cx0 - CELULA <= x0 and x1 <= cx1 + CELULA):
+            problemas.append(f"o {nome} esta fora do chao (x {x0}..{x1}, "
+                             f"chao {cx0}..{cx1})")
     if problemas:
-        raise RuntimeError("a fase esta torta:\n  - " + "\n  - ".join(problemas))
-    print(f"   fase conferida: chao {cx0}..{cx1}, jogador {jx0}, moeda {mx0}", flush=True)
+        raise RuntimeError("a fase nao esta montada: " + "; ".join(problemas))
+    print(f"   fase conferida: chao {cx0}..{cx1}, jogador {jx0}, moeda {mx0}",
+          flush=True)
     return True
 
 
@@ -442,7 +464,8 @@ def abre_fisica(tentativas=4):
             a2, _ = nav.captura("/tmp/_c1_fis1.png")
             if "collision shape" in " ".join(
                     t for t, *_ in rs.ocr_forte(a2, psm="6")).lower():
-                return True
+                # devolve o PONTO, para quem grava o clipe apontar a seta nele
+                return (int(p[0]), int(p[1]))
         time.sleep(1.2)
     raise RuntimeError("nao achei o `Physics >` no painel do objeto")
 
@@ -507,21 +530,14 @@ def _subpacotes(abaixo, cor=(122, 170, 224), tol=45):
     return saida
 
 
-def escolhe_sprite(pacote, subpacote, linha, coluna, tentativas=3):
-    """Troca o desenho do objeto por um sprite da biblioteca.
+def abre_grade_sprite(pacote, subpacote):
+    """Navega ate a grade de bonecos de um sub-pacote. NAO escolhe nada.
 
-       Devolve a COR DOMINANTE do sprite escolhido — e e ela que as provas em
-       jogo usam para achar o objeto na tela. Antes eu supunha a cor porque
-       era eu quem pintava; com sprite de verdade, quem diz a cor e o sprite."""
-    from PIL import Image as _I
-    import numpy as _np
-    antes, _ = nav.captura("/tmp/_sp_antes.png")
-
-    # A biblioteca tem TRES estados, e eu supus um so:
-    #   fechada            -> ha o botao `Browse`
-    #   aberta nos meus    -> ha o botao azul `< Menu`
-    #   na lista de pacotes-> os nomes dos pacotes estao na tela
-    # Entao: so clico no que PRECISA ser clicado para chegar na lista.
+       Existe separado de `escolhe_sprite` por causa do CLIPE: o gesto inteiro
+       atravessa quatro telas (Browse, Menu, pacote, sub-pacote), e um clipe e
+       um par antes-e-depois — a seta apontaria para um lugar que nao existe
+       em nenhum dos dois quadros. Entao a aula grava so o clique final, com a
+       grade ja aberta, que e o que a crianca precisa ver."""
     def _na_tela(alvo):
         c, _ = nav.captura("/tmp/_sp_c.png")
         return nav.acha_texto(alvo.lower(), arquivo=c, regiao=(0.72, 0.0, 1.0, 1.0))
@@ -535,12 +551,10 @@ def escolhe_sprite(pacote, subpacote, linha, coluna, tentativas=3):
         if m:
             clique(m[0], m[1]); time.sleep(3)
 
-    # CLICAR NUM PACOTE JA ABERTO O FECHA. Entao eu clico e CONFIRO se os
-    # sub-pacotes apareceram; se nao apareceram, clico de novo. Sem isso eu
-    # fechava o pacote e ficava procurando sub-pacote numa lista que nao
-    # estava mais la.
+    # CLICAR NUM PACOTE JA ABERTO O FECHA: clico e confiro se os sub-pacotes
+    # apareceram; se nao, clico de novo.
     botoes = []
-    for tentativa in range(3):
+    for _ in range(3):
         p = _na_tela(pacote)
         if not p:
             raise RuntimeError(f"nao achei `{pacote}` na biblioteca de sprites")
@@ -554,26 +568,38 @@ def escolhe_sprite(pacote, subpacote, linha, coluna, tentativas=3):
                                f"eu queria o {subpacote + 1}o")
         alvo = botoes[subpacote][1]
     else:
-        casa = [pt for nome, pt in botoes
-                if subpacote.lower()[:6] in nome.lower()]
+        casa = [pt for nome, pt in botoes if subpacote.lower()[:6] in nome.lower()]
         if not casa:
             raise RuntimeError(f"`{subpacote}` nao esta em `{pacote}` — ha "
                                f"{[n for n, _ in botoes]}")
         alvo = casa[0]
     clique(*alvo); time.sleep(3.5)
+    return True
 
+
+def clica_sprite(linha, coluna):
+    """Clica num boneco da grade ja aberta e CONFERE que o desenho mudou.
+       Devolve o ponto do clique — e ele que a seta do clipe aponta."""
+    import numpy as _np
+    from PIL import Image as _I
+    antes, _ = nav.captura("/tmp/_sp_antes.png")
     x0, y0, px, py = GRADE_SPRITE
-    clique(x0 + px * coluna, y0 + py * linha); time.sleep(2.5)
-
-    # CONFERE que o desenho mudou, e mede a cor dele
+    ponto = (x0 + px * coluna, y0 + py * linha)
+    clique(*ponto); time.sleep(2.5)
     dep, _ = nav.captura("/tmp/_sp_dep.png")
-    A = _np.asarray(_I.open(antes).convert("RGB"), dtype=int)
-    B = _np.asarray(_I.open(dep).convert("RGB"), dtype=int)
-    tela = (slice(300, 1300), slice(900, 2000))      # a area de desenho
-    if int((_np.abs(A[tela] - B[tela]).sum(axis=2) > 40).sum()) < 2000:
-        raise RuntimeError(f"cliquei no sprite ({linha},{coluna}) de "
-                           f"{pacote}/{subpacote} e o desenho nao mudou")
-    return cor_dominante(dep)
+    A_ = _np.asarray(_I.open(antes).convert("RGB"), dtype=int)
+    B_ = _np.asarray(_I.open(dep).convert("RGB"), dtype=int)
+    tela = (slice(300, 1300), slice(900, 2000))
+    if int((_np.abs(A_[tela] - B_[tela]).sum(axis=2) > 40).sum()) < 2000:
+        raise RuntimeError(f"cliquei no sprite ({linha},{coluna}) e o desenho "
+                           "nao mudou — ja era esse?")
+    return ponto
+
+
+def escolhe_sprite(pacote, subpacote, linha, coluna, tentativas=3):
+    """O gesto inteiro: navegar ate a grade e escolher o boneco."""
+    abre_grade_sprite(pacote, subpacote)
+    return clica_sprite(linha, coluna)
 
 
 def cor_dominante(arquivo, tela=(slice(300, 1300), slice(900, 2000))):
@@ -596,3 +622,77 @@ def cor_dominante(arquivo, tela=(slice(300, 1300), slice(900, 2000))):
     melhor = max(vistos.items(), key=lambda kv: kv[1])[0]
     dentro = px[(chave == melhor).all(axis=1)]
     return tuple(int(v) for v in dentro.mean(axis=0))
+
+
+def cores_do_sprite(arquivo, quantas=5, tela=(slice(300, 1300), slice(900, 2000))):
+    """As cores mais presentes no desenho, da mais comum para a menos.
+
+       `cor_dominante` devolve so a primeira, e as vezes ela nao serve para
+       RASTREAR: o heroi do ENDESGA tem mais pele que camisa, e pele puxa para
+       o mesmo tom da moeda de ouro. Com a lista, quem monta a aula escolhe uma
+       cor que nao se confunda com a dos vizinhos."""
+    import numpy as _np
+    from PIL import Image as _I
+    im = _np.asarray(_I.open(arquivo).convert("RGB"), dtype=int)[tela]
+    px = im.reshape(-1, 3)
+    vivo = ((px.max(axis=1) - px.min(axis=1)) > 40) & (px.max(axis=1) > 60)
+    px = px[vivo]
+    if len(px) < 200:
+        return []
+    chave = (px // 32) * 32
+    contas = {}
+    for c in map(tuple, chave):
+        contas[c] = contas.get(c, 0) + 1
+    saida = []
+    for caixa, _n in sorted(contas.items(), key=lambda kv: -kv[1])[:quantas]:
+        dentro = px[(chave == caixa).all(axis=1)]
+        saida.append(tuple(int(v) for v in dentro.mean(axis=0)))
+    return saida
+
+
+def distantes(cores, minimo=90):
+    """As cores de rastreio sao distinguiveis entre si?
+
+       Guarda, nao suposicao: se dois objetos da fase tiverem cores parecidas,
+       a prova em jogo acha um pensando que achou o outro — e o numero sai
+       bonito e errado."""
+    for i, a in enumerate(cores):
+        for b in cores[i + 1:]:
+            if a is None or b is None:
+                return False
+            if sum(abs(x - y) for x, y in zip(a, b)) < minimo:
+                return False
+    return True
+
+
+def mascara_cor(im, cor, tol=46):
+    """Mascara dos pixels proximos de uma cor. `im` e array RGB inteiro."""
+    return ((abs(im[:, :, 0] - cor[0]) < tol) &
+            (abs(im[:, :, 1] - cor[1]) < tol) &
+            (abs(im[:, :, 2] - cor[2]) < tol))
+
+
+def acha_por_cor(arquivo, cor, tol=46, minimo=600):
+    """(x, y, tamanho) da MAIOR mancha daquela cor, ou None."""
+    import numpy as _np
+    from PIL import Image as _I
+    im = _np.asarray(_I.open(arquivo).convert("RGB"), dtype=int)
+    g = maior_mancha(mascara_cor(im, cor, tol))
+    return g if g and g[2] >= minimo else None
+
+
+def centro_por_cor(arquivo, cor, tol=46, minimo=60):
+    """O centro de TODOS os pixels daquela cor, nao o da maior mancha.
+
+       Com quadrado pintado, o objeto era uma mancha so de 4096 px. Com sprite
+       de verdade ele e pequeno e PARTIDO: a camisa do heroi sao 192 px em
+       pedacos de 80. Exigir mancha unica fazia a prova dizer que o boneco nao
+       estava na tela quando ele estava."""
+    import numpy as _np
+    from PIL import Image as _I
+    im = _np.asarray(_I.open(arquivo).convert("RGB"), dtype=int)
+    m = mascara_cor(im, cor, tol)
+    ys, xs = _np.nonzero(m)
+    if len(xs) < minimo:
+        return None
+    return (int(xs.mean()), int(ys.mean()), int(len(xs)))

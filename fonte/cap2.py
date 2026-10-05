@@ -77,6 +77,7 @@ def novo():
 
 @etapa
 def jogador():
+    editor.volta_ao_nivel()
     x, y = celula(COL_JOGADOR, LINHA_CHAO - 1)
     A.gesto("criar_objeto", "g01", (x, y), lambda: clique(x, y), espera=1.5)
     a, _ = nav.captura("/tmp/_c2_rad.png")
@@ -89,9 +90,8 @@ def jogador():
     pinta("azul")
     A.cap("p03_azul")
     clique(*comum.SPRITE_OK); time.sleep(2); nav.espera_parar(limite=15)
-    a, _ = nav.captura("/tmp/_c2_fis.png")
-    q = nav.acha_texto("physics", arquivo=a)
-    A.gesto("abrir_physics", "g03", q, lambda: clique(*q), espera=2.5)
+    A.gesto("abrir_physics", "g03", (0, 0),
+            lambda: comum.abre_fisica(), espera=2.5)
     A.gesto("marcar_movable", "g04", (0, 0),
             lambda: marca_caixa("movable", True), espera=1.2)
     # o peso: medido, e o que decide se ele pula
@@ -107,11 +107,12 @@ def jogador():
 
 @etapa
 def movimento():
+    editor.volta_ao_nivel()
     x, y = celula(COL_JOGADOR, LINHA_CHAO - 1)
     editor.objeto_ou_abre(x, y)
     editor.abre_comportamentos()
     blocos.abre_categoria("Behavior Bundles")
-    b = blocos.solta("Run & Jump", 1400, 700)
+    b = blocos.bloco_ou_solta("Run & Jump", 1500, 760)
     A.cap("p05_run_and_jump")
     print("   pacote:", b, flush=True)
     time.sleep(2.5)
@@ -122,6 +123,7 @@ def movimento():
 
 @etapa
 def plataformas():
+    editor.volta_ao_nivel()
     faz_peca(COLS_CHAO[0], LINHA_CHAO, "Chao", "verde", COLS_CHAO[1:])
     A.cap("p06_chao")
     faz_peca(COLS_MEIO[0], LINHA_MEIO, "Plataforma", "verde", COLS_MEIO[1:])
@@ -149,6 +151,7 @@ def plataformas():
 
 @etapa
 def lava():
+    editor.volta_ao_nivel()
     faz_peca(COLS_LAVA[0], LINHA_LAVA, "Lava", "vermelho", COLS_LAVA[1:])
     A.cap("p09_lava")
     x, y = celula(COLS_LAVA[0], LINHA_LAVA)
@@ -169,6 +172,7 @@ def lava():
 
 @etapa
 def estrela():
+    editor.volta_ao_nivel()
     x, y = celula(COL_ESTRELA, LINHA_ALTA - 1)
     editor.objeto_ou_abre(x, y)
     nomeia("Estrela")

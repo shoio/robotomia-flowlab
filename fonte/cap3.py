@@ -105,9 +105,8 @@ def jogador():
     pinta("azul")
     A.cap("p03_azul")
     clique(*SPRITE_OK); time.sleep(2); nav.espera_parar(limite=15)
-    a, _ = nav.captura("/tmp/_c3_fis.png")
-    q = nav.acha_texto("physics", arquivo=a)
-    A.gesto("abrir_physics", "g03", q, lambda: clique(*q), espera=2.5)
+    A.gesto("abrir_physics", "g03", (0, 0),
+            lambda: comum.abre_fisica(), espera=2.5)
     A.gesto("marcar_movable", "g04", (0, 0),
             lambda: marca_caixa("movable", True), espera=1.2)
     pd = nav.acha_texto("density", arquivo=nav.captura("/tmp/_c3_d.png")[0],
@@ -126,7 +125,7 @@ def movimento():
     editor.objeto_ou_abre(x, y)
     editor.abre_comportamentos()
     blocos.abre_categoria("Behavior Bundles")
-    b = blocos.solta("Run & Jump", 1400, 700)
+    b = blocos.bloco_ou_solta("Run & Jump", 1500, 760)
     A.cap("p05_run_and_jump")
     print("   pacote:", b, flush=True)
     time.sleep(2.5)
@@ -163,9 +162,8 @@ def lava_fisica():
     editor.objeto_ou_abre(x, y)
     # para a lava se mexer ela precisa de fisica — e SEM gravidade, senao ela
     # cai em vez de subir
-    a, _ = nav.captura("/tmp/_c3_lf.png")
-    q = nav.acha_texto("physics", arquivo=a)
-    A.gesto("fisica_da_lava", "g06", q, lambda: clique(*q), espera=2.5)
+    A.gesto("fisica_da_lava", "g06", (0, 0),
+            lambda: comum.abre_fisica(), espera=2.5)
     marca_caixa("movable", True)
     A.gesto("desligar_gravidade", "g07", (0, 0),
             lambda: marca_caixa("affected by gravity", False), espera=1.2)

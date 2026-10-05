@@ -30,6 +30,58 @@ comum.pasta("aula1")
 ETAPAS.clear()      # a lista vive em comum.py: cada aula comeca a sua
 D = "aula1"
 
+def _cor_de(quem, indice=0):
+    """A cor de rastreio de um objeto. Vem do arquivo, para a PROVA poder rodar
+       sozinha depois, sem ter acabado de escolher o sprite."""
+    import json
+    if quem in CORES and CORES[quem]:
+        return tuple(CORES[quem][indice])
+    caminho = os.path.join(D, "cores.json")
+    if os.path.exists(caminho):
+        guardado = json.load(open(caminho))
+        if quem in guardado:
+            return tuple(guardado[quem][indice])
+    raise RuntimeError(f"nao sei a cor de `{quem}` — rode a captura do sprite "
+                       "antes, ou apague aulaN/cores.json e refaca")
+
+
+def _cor_mais_distinta(quem, longe_de):
+    """Entre as cores do sprite, a que mais se afasta das dos vizinhos."""
+    opcoes = []
+    for i in range(5):
+        try:
+            opcoes.append(_cor_de(quem, i))
+        except (RuntimeError, IndexError):
+            break
+    if not opcoes:
+        raise RuntimeError(f"nao tenho cor nenhuma de `{quem}`")
+    def dist(c):
+        return min(sum(abs(a - b) for a, b in zip(c, o)) for o in longe_de)
+    return max(opcoes, key=dist)
+
+
+def _poe_sprite(quem, so_clique=False):
+    """Escolhe o desenho do objeto e guarda a cor com que a prova vai acha-lo.
+
+       A cor nao e mais suposta: ela sai do sprite. E a lista toda e guardada,
+       nao so a dominante — a pele do heroi puxa para o mesmo tom da moeda de
+       ouro, e rastrear os dois por ai daria numero bonito e errado."""
+    pacote, sub, lin, col = SPRITES[quem]
+    if so_clique:
+        ponto = comum.clica_sprite(lin, col)
+    else:
+        ponto = comum.escolhe_sprite(pacote, sub, lin, col)
+    CORES[quem] = comum.cores_do_sprite("/tmp/_sp_dep.png")
+    import json
+    os.makedirs(D, exist_ok=True)
+    caminho = os.path.join(D, "cores.json")
+    guardado = json.load(open(caminho)) if os.path.exists(caminho) else {}
+    guardado[quem] = CORES[quem]
+    json.dump(guardado, open(caminho, "w"), indent=1)
+    print(f"   sprite de {quem}: cores {CORES[quem][:3]}", flush=True)
+    return ponto
+
+
 @etapa
 def novo():
     A.url = editor.jogo_novo()
@@ -52,12 +104,16 @@ def jogador():
     A.cap("p03_nome")
     abre_sprite()
     A.cap("p04_sprite")
-    pinta("azul")
+    # a navegacao ate a grade NAO entra no clipe: o gesto atravessa quatro
+    # telas e um clipe e um par antes-e-depois. Gravo o clique no boneco.
+    pacote, sub, lin, col = SPRITES["Jogador"]
+    comum.abre_grade_sprite(pacote, sub)
+    A.gesto("escolher_sprite", "g13", (0, 0),
+            lambda: _poe_sprite("Jogador", so_clique=True), espera=2.0)
     A.cap("p05_azul")
     clique(*SPRITE_OK); time.sleep(2); nav.espera_parar(limite=15)
-    a, _ = nav.captura("/tmp/_fis.png")
-    q = nav.acha_texto("physics", arquivo=a)
-    A.gesto("abrir_physics", "g03", q, lambda: clique(*q), espera=2.5)
+    A.gesto("abrir_physics", "g03", (0, 0),
+            lambda: comum.abre_fisica(), espera=2.5)
     A.gesto("marcar_movable", "g04", (1681, 476),
             lambda: marca_caixa("movable", True), espera=1.2)
     A.cap("p06_movable")
@@ -67,6 +123,16 @@ def jogador():
 
 
 DENSIDADE = 30     # medido: pega a moeda E ainda pula. Ver peso() abaixo.
+
+# OS DESENHOS. Ate aqui todo objeto era um quadrado pintado com a latinha:
+# funcionava e era facil de medir, mas um jogo de quadrados azuis nao motiva
+# ninguem de 10 anos. Agora vem da biblioteca do Flowlab (pacote do ENDESGA).
+SPRITES = {
+    "Jogador": ("Flowlab Sprites", "Characters", 0, 0),   # o menino de camisa azul
+    "Moeda":   ("Flowlab Sprites", "Objects", 1, 2),      # a moeda de ouro
+    "Chao":    ("Flowlab Sprites", "Blocks", 0, 0),       # o bloco de grama
+}
+CORES = {}          # a cor de rastreio de cada um, MEDIDA do proprio sprite
 
 
 @etapa
@@ -84,11 +150,11 @@ def peso():
        uma casa, entao a colisao com a moeda continua valendo.
 
        A friccao fica no maximo: e ela que impede o boneco de deslizar."""
+    editor.volta_ao_nivel()
     x, y = celula(COL_JOGADOR, LINHA_ANDAR)
     editor.objeto_ou_abre(x, y)
-    a, _ = nav.captura("/tmp/_c1_fis.png")
-    q = nav.acha_texto("physics", arquivo=a)
-    A.gesto("abrir_physics2", "g07", q, lambda: clique(*q), espera=2.5)
+    A.gesto("abrir_physics2", "g07", (0, 0),
+            lambda: comum.abre_fisica(), espera=2.5)
     marca_caixa("movable", True)      # sem isto a Densidade fica desabilitada
     pd = nav.acha_texto("density", arquivo=nav.captura("/tmp/_c1_d.png")[0],
                         regiao=(0.45, 0.1, 1.0, 0.85))
@@ -105,13 +171,14 @@ def peso():
 
 @etapa
 def movimento():
+    editor.volta_ao_nivel()
     x, y = celula(COL_JOGADOR, LINHA_ANDAR)
     editor.objeto_ou_abre(x, y)
     editor.abre_comportamentos()
     A.cap("p08_comportamentos")
     blocos.abre_categoria("Behavior Bundles")
     A.cap("p09_pacotes")
-    b = blocos.solta("Run & Jump", 1400, 700)
+    b = blocos.bloco_ou_solta("Run & Jump", 1500, 760)
     A.cap("p10_run_and_jump")
     print("   pacote:", b, flush=True)
     time.sleep(2.5)                     # o Flowlab precisa de tempo para guardar
@@ -148,11 +215,12 @@ def movimento():
 def chao():
     """Chao CONTIGUO: pecas coladas, de 64 em 64 px. Na primeira montagem elas
        sairam espacadas e o jogador caiu pelo vao."""
+    editor.volta_ao_nivel()
     x, y = celula(COLS_CHAO[0], LINHA_CHAO)
     editor.objeto_ou_abre(x, y)
     nomeia("Chao")
     abre_sprite()
-    pinta("verde")
+    _poe_sprite("Chao")
     A.cap("p11_chao_verde")
     clique(*SPRITE_OK); time.sleep(2); nav.espera_parar(limite=15)
     fecha_painel_objeto()
@@ -172,11 +240,12 @@ def chao():
 
 @etapa
 def moeda():
+    editor.volta_ao_nivel()
     x, y = celula(COL_MOEDA, LINHA_ANDAR)
     editor.objeto_ou_abre(x, y)
     nomeia("Moeda")
     abre_sprite()
-    pinta("amarelo")
+    _poe_sprite("Moeda")
     A.cap("p14_moeda_amarela")
     clique(*SPRITE_OK); time.sleep(2); nav.espera_parar(limite=15)
     editor.abre_comportamentos()
@@ -198,21 +267,35 @@ def prova():
     from PIL import Image
     import numpy as np
 
+    # AS CORES VEM DOS SPRITES, nao de um palpite meu. E antes de usar, confiro
+    # que elas se distinguem: com dois objetos de cor parecida, a prova acha um
+    # pensando que achou o outro, e o numero sai bonito e errado.
+    cor_moeda = _cor_de("Moeda")
+    # A MAIS DISTINTA, nao a primeira: a cor mais comum do heroi e a PELE, que
+    # puxa para o mesmo tom da moeda de ouro. A camisa azul distingue.
+    cor_jog = _cor_mais_distinta("Jogador", [cor_moeda])
+    if not comum.distantes([cor_moeda, cor_jog]):
+        raise RuntimeError(f"a moeda {cor_moeda} e o jogador {cor_jog} tem cores "
+                           "parecidas demais para a prova distinguir")
+    print(f"   rastreando moeda por {cor_moeda} e jogador por {cor_jog}", flush=True)
+
     def amarelo(f):
         im = np.asarray(Image.open(os.path.join(D, f)).convert("RGB"), dtype=int)
-        return int(((im[:, :, 0] > 200) & (im[:, :, 1] > 140) &
-                    (im[:, :, 1] < 200) & (im[:, :, 2] < 110)).sum())
+        return int(comum.mascara_cor(im, cor_moeda).sum())
 
     def azul():
         """Onde esta o boneco agora, em pixels da tela."""
         a, _ = nav.captura("/tmp/_c1_j.png")
-        im = np.asarray(Image.open(a).convert("RGB"), dtype=int)
-        m = ((im[:, :, 2] > 100) & (im[:, :, 2] - im[:, :, 0] > 40) &
-             (im[:, :, 1] < 120))
-        ys, xs = np.nonzero(m)
-        return (int(xs.mean()), int(ys.mean())) if len(ys) > 100 else None
+        # O CENTRO DE TODOS OS PIXELS da cor, e com minimo baixo: no jogo o
+        # sprite e desenhado pequeno e a camisa sai PARTIDA — 192 px em
+        # pedacos de 80. Exigir uma mancha de 600 px dizia que o boneco nao
+        # estava na tela com ele na tela.
+        g = comum.centro_por_cor(a, cor_jog, minimo=60)
+        return (g[0], g[1]) if g else None
 
-    confere_fase()
+    editor.volta_ao_editor(); time.sleep(2)
+    editor.volta_ao_nivel()
+    confere_fase({"chao": _cor_de("Chao"), "jogador": cor_jog, "moeda": cor_moeda})
     p = nav.acha_texto("play")
     A.gesto("jogar", "g06", p, lambda: clique(*p), espera=6)
     editor.exige_jogo()

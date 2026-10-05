@@ -119,29 +119,41 @@ def item_palheta(nome, tentativas=3):
 
 def solta(nome, x, y, tentativas=3, titulo=None):
     """Arrasta um bloco da palheta para (x, y) e CONFERE que ele nasceu ali.
-       Sem conferir, um arrasto que nao pegou deixa a tela igual e o resto da
-       aula e capturado em cima de um bloco que nao existe."""
-    J = nav.janela(nav.titulo())
+
+       A conferencia e por PIXEL, nao por leitura do titulo. Ler o titulo
+       falhava de dois jeitos: num recorte pequeno de tela escura o tesseract
+       volta lixo, e o painel de ajustes — que o proprio arrasto lento abre ao
+       terminar com uma pressao demorada — cobria a mesa e fazia o OCR ler
+       'Help / Note'. Nos dois casos eu dava por falhado um bloco que tinha
+       nascido certo, desfazia e tentava de novo: tres pacotes empilhados.
+
+       O invariante e simples: ONDE EU SOLTEI, a mesa tem de ter mudado."""
+    import numpy as _np
     for k in range(tentativas):
+        antes, _ = nav.captura("/tmp/_bl_antes_solta.png")
         p = item_palheta(nome)
-        rs.arrasta_img(p[0], p[1], x, y, escala=2.0, janela=J)
-        time.sleep(1.4)
-        # A conferencia e feita na MESA INTEIRA, nao num recorte em volta do
-        # ponto onde eu soltei. Num recorte pequeno de uma tela escura com uma
-        # palavra so, o tesseract volta lixo: ele lia 'EM' onde estava escrito
-        # 'Always', e o solta() desfazia um bloco que tinha nascido certo —
-        # tres vezes seguidas, e a captura parava ali.
-        try:
-            achado = acha_bloco(titulo or nome)
-        except RuntimeError:
-            achado = None
-        if achado and abs(achado.x - x) < 600 and abs(achado.y - y) < 400:
-            return achado
-        # DESFAZ antes de tentar de novo: repetir sem desfazer empilha blocos
-        # invisiveis para mim e visiveis para a crianca na foto da aula
-        rs.tecla(6, cmd=True)          # 6 = Z
+        # ARRASTO LENTO sempre: o rapido nao pega os pacotes de
+        # `Behavior Bundles` — a mesa ficava vazia e a captura parava ali.
+        arrasta_devagar(p[0], p[1], x, y, passos=40, segura=0.45)
+        time.sleep(1.2)
+        fecha_ajustes()          # o arrasto lento costuma abrir os ajustes
+        time.sleep(0.6)
+        dep, _ = nav.captura("/tmp/_bl_dep_solta.png")
+        A = _np.asarray(Image.open(antes).convert("L"), dtype=int)
+        B = _np.asarray(Image.open(dep).convert("L"), dtype=int)
+        y0, y1 = max(0, y - 160), min(A.shape[0], y + 220)
+        x0, x1 = max(0, x - 220), min(A.shape[1], x + 320)
+        mudou = int((_np.abs(A[y0:y1, x0:x1] - B[y0:y1, x0:x1]) > 30).sum())
+        if mudou > 3000:
+            try:
+                return acha_bloco(titulo or nome)
+            except RuntimeError:
+                return Bloco(titulo or nome, x, y)
+        # so desfaz quando NADA mudou — desfazer um bloco que nasceu e o que
+        # empilhava copias
+        rs.tecla(6, cmd=True)
         time.sleep(1.0)
-    raise RuntimeError(f"soltei '{nome}' em ({x},{y}) e ele nao apareceu ali")
+    raise RuntimeError(f"soltei '{nome}' em ({x},{y}) e a mesa nao mudou ali")
 
 
 def liga(origem, pino_saida, destino, pino_entrada):

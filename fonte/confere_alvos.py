@@ -77,10 +77,16 @@ def confere(pastas=None):
             if total < 200:
                 problemas.append(f"{pasta}/{chave}: a tela nao mudou entre os "
                                  f"dois quadros ({total} px) — clipe sem gesto")
-            elif perto < MINIMO:
+            elif perto < MINIMO and not dados.get("clicado"):
+                # Quando o gesto REGISTROU o clique, o alvo e o lugar onde a
+                # maquina clicou — invariante melhor do que "ali mudou". Ha
+                # gesto em que o que muda fica do outro lado da tela: ao
+                # escolher um boneco na grade de sprites, muda o DESENHO, e a
+                # celula clicada continua igual.
                 problemas.append(f"{pasta}/{chave}: a seta aponta para {alvo}, "
                                  f"onde quase nada mudou ({perto} px num raio de "
-                                 f"{RAIO}; a tela toda mudou {total})")
+                                 f"{RAIO}; a tela toda mudou {total}) e o gesto "
+                                 "nao registrou clique ali")
     return problemas
 
 
