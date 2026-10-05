@@ -193,8 +193,23 @@ def volta_ao_nivel(limite=20):
         fecha_comportamentos()
         time.sleep(1.5)
     import comum
-    for _ in range(3):
+    for _ in range(4):
         a, _ = nav.captura("/tmp/_ed_nivel.png")
+        txt0 = " ".join(t for t, *_ in rs.ocr_forte(a, psm="6")).lower()
+        # o EDITOR DE DESENHO tambem fica por cima do nivel, e o OK dele nao e
+        # o azul do painel do objeto: e o do canto de baixo a esquerda. Sem
+        # isto, `volta_ao_nivel` clicava no lugar errado tres vezes e desistia
+        # dizendo que o painel do objeto nao fechava — com o painel do objeto
+        # nem aberto.
+        # QUALQUER marca do editor de desenho serve: exigir duas palavras
+        # fazia a deteccao depender de o OCR ler as duas, e numa captura ele
+        # leu `Upload Download` e nao leu `Browse`.
+        if "edit sprite" in txt0 and any(w in txt0 for w in
+                                         ("browse", "upload", "download",
+                                          "animation editor", "snap to grid")):
+            comum.clique(*comum.SPRITE_OK)
+            time.sleep(2.5); nav.espera_parar(limite=15)
+            continue
         # o painel do objeto tem duas caras: a de cima ('edit sprite', Name,
         # Type) e a da FISICA ('Collision Shape', 'Density'). Fechar so pela
         # primeira deixava a fisica aberta, e o clique seguinte na casa caia

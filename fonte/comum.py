@@ -486,7 +486,33 @@ def abre_fisica(tentativas=4):
 # A LISTA SE REORGANIZA conforme o pacote aberto, entao pacote e sub-pacote se
 # acham pelo TEXTO. So a grade de bonecos e por coordenada, e ela e regular.
 
-GRADE_SPRITE = (2307, 180, 87, 85)      # x0, y0, passo em x, passo em y
+GRADE_SPRITE = (2307, 180, 87, 89)      # x0, y0, passo em x, passo em y
+
+
+def linhas_da_grade():
+    """As alturas REAIS das fileiras de bonecos, medidas na tela.
+
+       O passo que eu supunha (85 px) estava errado por 4 px, e o erro
+       acumula: na nona fileira o clique caia no VAO entre duas, nao aplicava
+       nada — e a estrela da Aula 2 ficou com o desenho padrao do Flowlab sem
+       ninguem perceber. Medir cada corrida custa uma captura e nao erra."""
+    import numpy as _np
+    from PIL import Image as _I
+    a, _ = nav.captura("/tmp/_sp_grade.png")
+    im = _np.asarray(_I.open(a).convert("RGB"), dtype=int)[:, 2270:2680]
+    fundo = _np.median(im.reshape(-1, 3), axis=0)
+    m = (_np.abs(im - fundo).sum(axis=2) > 60)
+    conta = m.sum(axis=1)
+    faixas, ini = [], None
+    for i, n in enumerate(list(conta) + [0]):
+        if n > 12 and ini is None:
+            ini = i
+        elif n <= 12 and ini is not None:
+            if i - ini > 15:
+                faixas.append((ini + i) // 2)
+            ini = None
+    # a primeira faixa pode ser o botao `< Menu`, acima da grade
+    return [y for y in faixas if y >= GRADE_SPRITE[1] - 20]
 
 
 def _botao_menu():
@@ -577,29 +603,50 @@ def abre_grade_sprite(pacote, subpacote):
     return True
 
 
-def clica_sprite(linha, coluna):
+def clica_sprite(linha, coluna, exige_mudanca=True):
     """Clica num boneco da grade ja aberta e CONFERE que o desenho mudou.
-       Devolve o ponto do clique — e ele que a seta do clipe aponta."""
+       Devolve o ponto do clique — e ele que a seta do clipe aponta.
+
+       `exige_mudanca=False` para quando a captura esta sendo RETOMADA: o
+       objeto ja pode ter o desenho certo da corrida anterior, e ai nada muda.
+       Para gravar CLIPE o padrao vale — um clipe cujo antes e igual ao depois
+       e uma figura parada."""
     import numpy as _np
     from PIL import Image as _I
     antes, _ = nav.captura("/tmp/_sp_antes.png")
     x0, y0, px, py = GRADE_SPRITE
-    ponto = (x0 + px * coluna, y0 + py * linha)
+    ys = linhas_da_grade()
+    # a altura MEDIDA da fileira, quando ela existe; o passo suposto so como
+    # reserva
+    cy = ys[linha] if linha < len(ys) else y0 + py * linha
+    ponto = (x0 + px * coluna, cy)
     clique(*ponto); time.sleep(2.5)
     dep, _ = nav.captura("/tmp/_sp_dep.png")
     A_ = _np.asarray(_I.open(antes).convert("RGB"), dtype=int)
     B_ = _np.asarray(_I.open(dep).convert("RGB"), dtype=int)
     tela = (slice(300, 1300), slice(900, 2000))
     if int((_np.abs(A_[tela] - B_[tela]).sum(axis=2) > 40).sum()) < 2000:
-        raise RuntimeError(f"cliquei no sprite ({linha},{coluna}) e o desenho "
-                           "nao mudou — ja era esse?")
+        if exige_mudanca:
+            raise RuntimeError(f"cliquei no sprite ({linha},{coluna}) e o "
+                               "desenho nao mudou — ja era esse?")
+        print(f"   (o sprite ({linha},{coluna}) ja era esse)", flush=True)
     return ponto
 
 
 def escolhe_sprite(pacote, subpacote, linha, coluna, tentativas=3):
     """O gesto inteiro: navegar ate a grade e escolher o boneco."""
     abre_grade_sprite(pacote, subpacote)
-    return clica_sprite(linha, coluna)
+    try:
+        return clica_sprite(linha, coluna)
+    except RuntimeError:
+        # Nao mudou. Pode ser que o objeto JA tivesse esse desenho (retomada)
+        # — ou que eu tenha clicado na celula errada. Aceitar calado esconde o
+        # segundo caso: foi assim que a estrela saiu bege e eu so descobri
+        # quando a prova em jogo nao achou amarelo nenhum.
+        # Entao: ponho o vizinho, volto ao alvo, e EXIJO a mudanca.
+        clica_sprite(linha, coluna + 1, exige_mudanca=False)
+        time.sleep(0.8)
+        return clica_sprite(linha, coluna)
 
 
 def cor_dominante(arquivo, tela=(slice(300, 1300), slice(900, 2000))):
@@ -696,3 +743,39 @@ def centro_por_cor(arquivo, cor, tol=46, minimo=60):
     if len(xs) < minimo:
         return None
     return (int(xs.mean()), int(ys.mean()), int(len(xs)))
+
+
+def clica_sprite_por_cor(cor, tol=60, minimo=150):
+    """Clica no boneco da grade que tem MAIS daquela cor.
+
+       Contar linha e coluna no olho erra: a grade rola, e um clique entre
+       celulas nao aplica nada — a estrela ficou com o desenho PADRAO do
+       Flowlab (o losango bege) e eu so descobri quando a prova em jogo nao
+       achou amarelo. Aqui o alvo e medido na propria grade."""
+    import numpy as _np
+    from PIL import Image as _I
+    antes, _ = nav.captura("/tmp/_sp_antes.png")
+    im = _np.asarray(_I.open(antes).convert("RGB"), dtype=int)
+    x0, y0, px, py = GRADE_SPRITE
+    melhor = None
+    for lin in range(16):
+        for col in range(4):
+            cx, cy = x0 + px * col, y0 + py * lin
+            if cy + 30 >= im.shape[0] or cx + 30 >= im.shape[1]:
+                continue
+            rec = im[cy - 30:cy + 30, cx - 30:cx + 30]
+            n = int(mascara_cor(rec, cor, tol).sum())
+            if n >= minimo and (melhor is None or n > melhor[0]):
+                melhor = (n, cx, cy, lin, col)
+    if not melhor:
+        raise RuntimeError(f"nenhum boneco da grade tem a cor {cor}")
+    n, cx, cy, lin, col = melhor
+    print(f"   boneco com {cor}: linha {lin} coluna {col} ({n} px)", flush=True)
+    clique(cx, cy); time.sleep(2.5)
+    dep, _ = nav.captura("/tmp/_sp_dep.png")
+    A_ = _np.asarray(_I.open(antes).convert("RGB"), dtype=int)
+    B_ = _np.asarray(_I.open(dep).convert("RGB"), dtype=int)
+    tela = (slice(300, 1300), slice(900, 2000))
+    if int((_np.abs(A_[tela] - B_[tela]).sum(axis=2) > 40).sum()) < 2000:
+        raise RuntimeError(f"cliquei no boneco de cor {cor} e o desenho nao mudou")
+    return (cx, cy)

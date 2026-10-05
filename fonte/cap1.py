@@ -45,8 +45,14 @@ def _cor_de(quem, indice=0):
                        "antes, ou apague aulaN/cores.json e refaca")
 
 
-def _cor_mais_distinta(quem, longe_de):
-    """Entre as cores do sprite, a que mais se afasta das dos vizinhos."""
+def _cor_mais_distinta(quem, longe_de, minimo=120):
+    """A cor mais ABUNDANTE que ainda se distingue dos vizinhos.
+
+       Pegar simplesmente a mais distante escolhia um ciano que existe em
+       pouquissimos pixels do sprite: distingue bem e mede pessimo — o pulo
+       saiu 50 px porque o centro de uma dúzia de pixels pula sozinho. A lista
+       vem ordenada da cor mais comum para a menos; fico com a primeira que
+       passa da distancia minima."""
     opcoes = []
     for i in range(5):
         try:
@@ -55,8 +61,13 @@ def _cor_mais_distinta(quem, longe_de):
             break
     if not opcoes:
         raise RuntimeError(f"nao tenho cor nenhuma de `{quem}`")
+
     def dist(c):
         return min(sum(abs(a - b) for a, b in zip(c, o)) for o in longe_de)
+
+    for c in opcoes:                       # da mais comum para a menos
+        if dist(c) >= minimo:
+            return c
     return max(opcoes, key=dist)
 
 

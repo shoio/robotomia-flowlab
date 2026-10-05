@@ -6,7 +6,8 @@
    1246,
    895
   ],
-  "botao": "esq"
+  "botao": "esq",
+  "clicado": true
  },
  "escolher_create": {
   "antes": "g02_a.jpg",
@@ -15,16 +16,28 @@
    1126,
    892
   ],
-  "botao": "esq"
+  "botao": "esq",
+  "clicado": true
+ },
+ "escolher_sprite": {
+  "antes": "g13_a.jpg",
+  "depois": "g13_b.jpg",
+  "alvo": [
+   2307,
+   180
+  ],
+  "botao": "esq",
+  "clicado": true
  },
  "abrir_physics": {
   "antes": "g03_a.jpg",
   "depois": "g03_b.jpg",
   "alvo": [
-   1876,
+   1878,
    1270
   ],
-  "botao": "esq"
+  "botao": "esq",
+  "clicado": true
  },
  "marcar_movable": {
   "antes": "g04_a.jpg",
@@ -33,16 +46,18 @@
    1434,
    545
   ],
-  "botao": "esq"
+  "botao": "esq",
+  "clicado": true
  },
  "peso_do_pulo": {
   "antes": "g05_a.jpg",
   "depois": "g05_b.jpg",
   "alvo": [
    1718,
-   688
+   690
   ],
-  "botao": "esq"
+  "botao": "esq",
+  "clicado": true
  },
  "jogar": {
   "antes": "g06_a.jpg",
@@ -51,6 +66,7 @@
    1051,
    1586
   ],
-  "botao": "esq"
+  "botao": "esq",
+  "clicado": true
  }
 }
