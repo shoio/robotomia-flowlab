@@ -478,6 +478,7 @@ def _subpacotes(abaixo, cor=(122, 170, 224), tol=45):
     import numpy as _np
     from PIL import Image as _I
     a, _ = nav.captura("/tmp/_sp_sub.png")
+    _ = rs
     im = _np.asarray(_I.open(a).convert("RGB"), dtype=int)
     rec = im[:, 2300:2700]
     m = ((abs(rec[:, :, 0] - cor[0]) < tol) & (abs(rec[:, :, 1] - cor[1]) < tol) &
@@ -491,7 +492,19 @@ def _subpacotes(abaixo, cor=(122, 170, 224), tol=45):
             if 30 <= (y - ini) <= 90 and ini > abaixo:
                 faixas.append((ini + y) // 2)
             ini = None
-    return [(2500, y) for y in faixas]
+    # o NOME de cada botao: texto BRANCO sobre azul claro, que o OCR comum nao
+    # le. Binarizo guardando so o muito claro e leio uma linha de cada vez.
+    im_rgb = _I.open(a).convert("L")
+    saida = []
+    for y in faixas:
+        rec = _np.asarray(im_rgb.crop((2320, y - 22, 2680, y + 22)), dtype=int)
+        bn = _I.fromarray(_np.where(rec > 225, 0, 255).astype("uint8"), "L")
+        bn = bn.resize((bn.width * 2, bn.height * 2), _I.LANCZOS)
+        bn.save("/tmp/_sp_nome.png")
+        nome = " ".join(t for t, *_ in rs.ocr("/tmp/_sp_nome.png", psm="7",
+                                              escala=1, idioma="eng")).strip()
+        saida.append((nome, (2500, y)))
+    return saida
 
 
 def escolhe_sprite(pacote, subpacote, linha, coluna, tentativas=3):
@@ -522,19 +535,32 @@ def escolhe_sprite(pacote, subpacote, linha, coluna, tentativas=3):
         if m:
             clique(m[0], m[1]); time.sleep(3)
 
-    p = _na_tela(pacote)
-    if not p:
-        raise RuntimeError(f"nao achei `{pacote}` na biblioteca de sprites")
-    clique(*p); time.sleep(3.5)
-
-    # O SUB-PACOTE E ESCOLHIDO PELA ORDEM, nao pelo nome: os botoes sao texto
-    # BRANCO sobre azul claro, e o OCR nao le isso (o mesmo que acontece com os
-    # botoes do dialogo do Chrome). A ordem dentro de cada pacote e estavel.
-    botoes = _subpacotes(abaixo=p[1])
-    if subpacote >= len(botoes):
-        raise RuntimeError(f"`{pacote}` mostrou {len(botoes)} sub-pacotes e eu "
-                           f"queria o {subpacote + 1}o")
-    clique(*botoes[subpacote]); time.sleep(3.5)
+    # CLICAR NUM PACOTE JA ABERTO O FECHA. Entao eu clico e CONFIRO se os
+    # sub-pacotes apareceram; se nao apareceram, clico de novo. Sem isso eu
+    # fechava o pacote e ficava procurando sub-pacote numa lista que nao
+    # estava mais la.
+    botoes = []
+    for tentativa in range(3):
+        p = _na_tela(pacote)
+        if not p:
+            raise RuntimeError(f"nao achei `{pacote}` na biblioteca de sprites")
+        botoes = _subpacotes(abaixo=p[1])
+        if botoes:
+            break
+        clique(*p); time.sleep(3.5)
+    if isinstance(subpacote, int):
+        if subpacote >= len(botoes):
+            raise RuntimeError(f"`{pacote}` mostrou {len(botoes)} sub-pacotes e "
+                               f"eu queria o {subpacote + 1}o")
+        alvo = botoes[subpacote][1]
+    else:
+        casa = [pt for nome, pt in botoes
+                if subpacote.lower()[:6] in nome.lower()]
+        if not casa:
+            raise RuntimeError(f"`{subpacote}` nao esta em `{pacote}` — ha "
+                               f"{[n for n, _ in botoes]}")
+        alvo = casa[0]
+    clique(*alvo); time.sleep(3.5)
 
     x0, y0, px, py = GRADE_SPRITE
     clique(x0 + px * coluna, y0 + py * linha); time.sleep(2.5)
