@@ -1,0 +1,2966 @@
+Games
+Resources
+Community
+Flowjam
+Our twice-yearly game jam
+Community Forum
+Questions & answers or share your work
+Flowlab Discord
+A community to discuss game creation
+Blog
+Articles about game development
+Features
+Pricing
+Teachers
+My Games
+D
+ Log Out
+ Profile
+/
+TRIGGERS
+14
+Once
+Always
+Timer
+Mouse Click
+Mouse Move
+Mouse Wheel
+Gesture
+LockedMouse
+Keyboard
+Controller
+Collision
+In View
+Sensor
+Mailbox
+LOGIC & MATH
+13
+Number
+Expression
+Custom Behavior
+Global Variable
+Object Variable
+Ease
+Repeater
+Random
+Filter
+Switch
+Toggle Switch
+Router
+Logic Gate
+COMPONENTS
+16
+Sound
+Emit
+Spawn
+Attacher
+Physics Joint
+Proximity
+Push Motor
+Spin Motor
+Impulse
+Point At
+Destroyer
+Camera
+Message
+RayCast
+Calendar
+Clock
+PROPERTIES
+15
+Position
+Rotation
+Alpha
+Size
+Enabled
+Animation
+Velocity
+Spin
+Material
+Flip
+Extractor
+Display Order
+Blending
+Colors
+Shader
+TEXT & LISTS
+12
+Text
+Text Case
+Text Length
+To Number
+Text Compare
+Text Sanitize
+Text List
+Number List
+List Modify
+List Order
+List Each
+List Count
+GUI
+4
+Alert
+Bar
+Label
+Cursor
+GAME FLOW
+13
+Pause Game
+Load Level
+Restart Game
+Fetch URL
+Save Value
+Game Save
+Leaderboard
+Achievement
+Level Physics
+User Info
+Clipboard
+Cloud
+Full Screen
+MOBILE DEVICE
+8
+Shake
+Ad
+Vibrate
+Accelerometer
+Game Center
+Device Check
+Touch Check
+Exit Game
+BEHAVIOR BUNDLES
+3
+New Bundle
+New Input
+New Output
+Behavior Handbook
+
+A detailed reference for all Flowlab behaviors with descriptions and tips
+
+Every entry lists the behavior's Properties (set in its panel in the editor), its Inputs and Outputs (the ports you connect), and Tips. Behaviors that are only offered to objects on certain layers say so beside their name. First time using behaviors? Start with Programming with Behaviors. Need the details under the hood? The Technical Reference covers execution order, timing, and the clipboard JSON format.
+
+Triggers
+14
+Logic & Math
+13
+Components
+16
+Properties
+15
+Text & Lists
+12
+GUI
+4
+Game Flow
+13
+Mobile Device
+8
+Behavior Bundles
+3
+Port types
+Number
+Text
+List
+Any
+CATEGORY 1 OF 9
+Triggers 14 behaviors
+
+Triggers start a chain of logic. Each one watches for something to happen (a click, a key, a collision, a timer running out) and sends a value out of its port when it does. Most triggers have no inputs of their own, so the usual way to switch one off is to connect its output to a Switch and turn the Switch off.
+
+Once
+#once
+TRIGGERS
+
+Once triggers only activate a single time, on the first frame the object exists. For objects placed in the level, that is the first frame after the level loads. Objects created by Spawn, Emit, or Attacher fire it when they appear.
+
+PROPERTIES
+Reset on Level Start
+When on, this trigger will be reset when the game level is restarted. When off, this trigger will only fire once, even if the level is restarted. 
+Only available when object containing the behavior is set to
+keep on level restart
+or
+keep between levels
+OUTPUTS
+out
+This output activates once when the object spawns, sending out the value "1"
+TIPS
+This is useful for triggering behavior that should only happen once, such as playing a startup sound, or starting an animation.
+Once fires again each time the level loads. To run something only once per game, store a flag in a Global Variable and check it with a Filter.
+Always
+#always
+TRIGGERS
+
+Always triggers activate on every frame of the game
+
+OUTPUTS
+out
+This output activates every frame, sending out the value "1"
+TIPS
+Note: the game runs at its frame rate setting: 60 frames per second unless you change it in the game settings. Anything connected to an Always trigger activates that many times every second
+This trigger is useful for behaviors that should always occur, for example an object following the mouse pointer
+Always is the most expensive trigger, since everything connected to it runs every frame. When something only needs to happen a few times a second, a repeating Timer with a small delay is cheaper, and when it only needs to happen in response to something, an event trigger such as Collision or Mailbox is cheaper still.
+Timer
+#timer
+TRIGGERS
+
+Timer triggers activate after a specified delay value. These are useful any time you wish to trigger an action after a delay, or to repeatedly trigger an action at a consistent interval, or for a certain number of times.
+
+PROPERTIES
+Delay
+How long the timer waits before activating. Delay is set in tenths of a second, so if the delay is set to "30", then the timer will activate in 3 seconds. If the timer is set to repeat, then the timer will wait this long each time it activates.
+Repeat Forever
+When this checkbox is on, the timer will continue running after it activates, and trigger again after the delay expires. This will continue as long as the game is running, or until the timer is stopped (see the "reset" input). When this checkbox is off, the timer will activate only once.
+Repeat
+A count of how many times the Timer will activate before automatically disabling itself. 
+Only available when
+"Repeat Forever"
+is
+off
+INPUTS
+delay
+Updates the delay property
+reset
+Cancel the current countdown, and set the repeated count back to zero. For example: if the timer’s repeat count property is set to "10" but it has already activated 5 times, then it has only 5 loops left before it will stop running. If the Reset input is activated, the next time the timer starts it will run 10 times. What happens next depends on the start input: if something is connected to start, the timer stops and waits for the next start. If nothing is connected to start, the timer starts itself again on the next frame, so reset restarts the countdown rather than stopping it. To be able to stop a timer, connect something to its start input.
+start
+Activating this input will start the timer. If the timer is already running, start is ignored (it does not restart or extend the countdown). If nothing is connected to the start input, the timer will begin running automatically
+OUTPUTS
+out
+The timer activates this output each time it fires, sending out the value "1"
+done
+This output activates when the timer has finished all of its repeats, sending out the value "1". This only fires once, after the final repeat.
+TIPS
+Remember that a Timer will start automatically, unless a link is connected to the start input
+If you want an event to happen every frame, consider using an Always trigger instead
+To activate the Timer in less than 1/10 of a second, use a delay smaller than 1, e.g. "0.5"
+To build a sequence of timed steps, connect one Timer's done output to the next Timer's start input.
+Mouse Click
+#mouse-click
+TRIGGERS
+
+Mouse Click triggers are activated by the player clicking the mouse button, or by tapping the screen on mobile devices.
+
+Clicking Through See-Through Pixels
+
+Flowlab only counts a click on the parts of your sprite that you can actually see. The fully see-through (transparent) pixels around the edges of your sprite are treated like empty space, so clicks pass right through them.
+
+This means transparent pixels act like little holes in your object:
+
+If you click on a see-through pixel, the object behind it gets the click instead.
+If nothing is behind it, the click just doesn't trigger anything.
+Even pixels that are only a tiny bit visible will still catch a click — only fully invisible pixels let clicks pass through.
+When two objects overlap, the one on top (highest layer) gets the click first. The click only "falls through" to the object below if the top object's pixel at that spot is fully transparent.
+The clickable shape is taken from the object's default sprite — animation frames don't update it. If the animated frames extend outside the default sprite's opaque pixels, those parts won't catch clicks even though they're visible.
+
+Tip: This is great for irregular shapes like a star, a tree, or a speech bubble — players can click through the empty corners to reach whatever is behind.
+
+PROPERTIES
+Left/Right Click
+You can select whether to activate when either the left or right mouse button is clicked. Touch screens have no right button, so a Right Click trigger never fires on a phone or tablet.
+Capture Clicks Anywhere
+If this property is enabled, then the trigger will activate by clicking (or tapping) anywhere on the game screen. Otherwise, it will only be activated by clicking (or tapping) directly on the object.
+OUTPUTS
+down
+Activated when the selected mouse button is pressed, or the player touches the device screen
+up
+Activated when the selected mouse button is released, or when the player stops touching the device screen
+over
+Activated when the mouse pointer hovers over the object, or when the player drags their finger onto the object on mobile
+out
+Activated when the mouse pointer leaves the object, or when the player drags their finger out of the object on mobile.
+Mouse Move
+#mouse-move
+TRIGGERS
+
+Mouse Move triggers are activated when the mouse pointer is moved, or when the player’s finger is dragged on a touchscreen device.
+
+PROPERTIES
+Coordinates
+You can select whether the mouse position uses game or screen coordinates. When using game coordinates, the returned position will correspond to the coordinates of the game world. When using screen coordinates the position will correspond to the screen, meaning that even when scrolling through the game level with a camera, the top left corner of the screen will always be 0,0. When not using a scrolling camera, both coordinate types are identical.
+INPUTS
+get
+Request the current mouse position immediately (without waiting for the next move). Connect a Timer or Always here to keep reading the position while the pointer is still.
+OUTPUTS
+x
+outputs the new X (or horizontal) position of the mouse pointer (or finger) when the mouse is moved or finger is dragged
+y
+outputs the new Y (or vertical) position of the mouse pointer (or finger) when the mouse is moved or finger is dragged
+Mouse Wheel
+#mouse-wheel
+TRIGGERS
+
+Mouse Wheel triggers are activated when the mouse scroll wheel rotates, or when the player’s drag scroll is performed on a touchscreen device.
+
+OUTPUTS
+out
+outputs a positive or negative number indicating direction and amount of scroll
+Gesture
+#gesture
+TRIGGERS
+
+Gesture triggers are activated when the player’s finger is dragged on a touchscreen device. Gestures do not trigger unless the game is running on a touch screen device
+
+There are three gesture options:
+
+Drag: this gesture outputs the position of one of the player's fingers (up to 4) touching the screen or object
+Rotate: this gesture outputs the angle of rotation between the player's first two fingers touching the screen or object
+Pinch: this gesture outputs the distance between the player's first two fingers touching the screen or object. The output starts at 100%.
+PROPERTIES
+Touch Point
+This is only available for the Drag gesture, and selects which touch point will be tracked. The first finger will be touch point 1, the second finger will be touch 2, etc. If two fingers are touching (touch points 1 and 2), and finger 1 is lifted, finger two will continue to be tracked as touch point 2. The next finger touching the screen will be reassigned to touch point 1.
+Capture Gestures Anywhere
+Checking this box means that gestures anywhere on the screen will be tracked, not only those over the current object.
+Coordinates (Drag Only)
+
+When "Capture Gestures Anywhere" is checked, you can select whether the touch position uses game or screen coordinates. When using game coordinates, the returned position will correspond to the coordinates of the game world. When using screen coordinates the position will correspond to the screen, meaning that even when scrolling through the game level with a camera, the top left corner of the screen will always be 0,0. When not using a scrolling camera, both coordinate types are identical.
+
+When "Capture Gestures Anywhere" is not checked, you can select whether the returned touch positions are relative to the screen or the current object.
+
+OUTPUTS
+7
+
+The visible outputs depend on the selected gesture:
+
+Drag mode:
+
+x
+outputs the new X (or horizontal) position of the player's finger.
+y
+outputs the new Y (or vertical) position of the player's finger.
+done
+activated when the tracked finger is lifted.
+ROTATE MODE
+rot
+outputs the angle between the player's first two fingers.
+done
+activated when either finger is lifted.
+PINCH MODE
+%
+outputs the distance between the player's first two fingers, beginning at 100%.
+done
+activated when either finger is lifted.
+TIPS
+The Pinch output starts at 100 and grows or shrinks with the fingers, so it can be sent straight into a Size behavior's % input to let the player scale an object.
+LockedMouse
+#lockedmouse
+TRIGGERS
+
+LockedMouse captures the system mouse pointer and outputs its relative motion each frame as x and y pixel amounts. This is useful for mouse-look style controls, where you want continuous motion rather than an absolute cursor position.
+
+While the mouse is captured, the system pointer is hidden and confined to the game. The browser can release the capture on its own (for example when the player presses Escape or switches tabs), and the off output activates when that happens.
+
+INPUTS
+on
+requests mouse capture. In the browser this must happen in response to a player action such as a click, or the request is rejected.
+off
+releases the capture.
+OUTPUTS
+on
+activates when the mouse is actually captured.
+off
+activates when capture ends, including a browser-forced release like pressing Escape or switching tabs.
+x
+horizontal motion since the last frame, in pixels.
+y
+vertical motion since the last frame, in pixels.
+TIPS
+Trigger the on input from a click or key press, since browsers only allow mouse capture in response to a player action.
+While the mouse is locked, Mouse Click triggers still fire but Mouse Move does not. Use this trigger's x and y outputs for movement instead.
+Keyboard
+#keyboard
+TRIGGERS
+
+Keyboard triggers are activated when the player presses a keyboard key.
+
+PROPERTIES
+Current Key
+To set the trigger’s "Current Key" property, click the “Change Key” button and then press the keyboard key you wish to use.
+Repeating
+Enabling the “Repeating” property means that the trigger will continue to activate as long as the key is held.
+Repeat Delay
+Increasing the repeat delay slows down the speed that the trigger is activated. 
+Only available when
+Repeating
+is enabled
+Activate On Any Key
+Selecting Activate On Any Key enables this trigger to activate when Any key is pressed. When this option is selected the trigger will output the character of the pressed key. For example, when the player presses the "x" key, the trigger outputs the letter "x". Keys that do not type a character, such as the arrow keys, Shift, or Enter, produce no usable character in this mode. 
+Selecting this option changes the output types to
+Text
+OUTPUTS
+down
+Activates when the keyboard key associated with this trigger is pressed. When Any key is selected, the key character is output.
+up
+Activates when the keyboard key associated with this trigger is released. When Any key is selected, the key character is output.
+TIPS
+This behavior is not available on mobile devices. Keep this in mind when designing games meant to be played on phones and tablets.
+For movement while a key is held, use down to start a Push Motor or Velocity and up to stop it, rather than Repeating. Repeating fires in bursts at the repeat delay, which makes motion stutter.
+Controller
+#controller
+TRIGGERS
+
+Controller triggers are activated when the player presses a button on a connected game controller
+
+PROPERTIES
+Controller
+The first controller to connect is controller 1, the second is controller 2, etc.
+Output
+Selects which controller button, stick, or trigger will activate the output. Options to activate on controller connect & disconnect are also available.
+Repeating
+Enabling the “Repeating” property means that the trigger will continue to activate as long as the key is held. Repeating is only available for buttons, not joystick or trigger inputs.
+OUTPUTS
+
+The first output's label changes based on what the trigger is bound to:
+
+out
+(joysticks / triggers) Activates when the joystick or trigger is moved. Sticks send a value from -100 to 100, where the sign gives the direction (negative is left or up) and the size is how far the stick is pushed. Triggers send 0 to 100.
+down
+(buttons) Activates when a button is pressed.
+up
+Activates when a button is released. Only meaningful for buttons.
+TIPS
+Web browsers do not report a controller until the player presses a button on it, so ask the player to press any button before the game needs controller input.
+Collision
+GAME LAYER ONLY
+#collision
+TRIGGERS
+
+Collision triggers are activated when the object collides with (or touches) another object in the game. In order for a collision event to trigger, both this object and the object it touches must have collisions enabled. Collisions are enabled in objects that have is solid or enable collisions selected in their physics properties. Two objects that only have enable collisions (and are not solid) pass through each other but still trigger a collision, which is useful for pickups and trigger zones.
+
+By default, colliding with any object will activate this trigger, but there are properties to change this behavior. Setting the "Object Type" property to a specific type will restrict the trigger to only activate when touching objects of that type. When an object type is selected, the “Object Name” property select box is populated with all of the instances of that object type in the current level, so that a single object instance can be selected as well. In this way, the collision trigger can be restricted to only activate when touching a specific object in the level.
+
+Collisions can also be restricted to only activate when occurring in a specific direction as well. The "Top", “Bottom”, “Left”, and “Right” check boxes allow you to restrict the trigger to only occur when a specific side of this object collides with another object.
+
+PROPERTIES
+Object Type
+By default, colliding with any object will activate this trigger. If an Object Type is selected, then the trigger will only activate when colliding with objects of that specific type.
+Object Name
+When an Object Type is selected, then the Object Name select box is populated with all of the available objects of that type. Selecting an object by name means that this trigger will only activate when colliding with that particular object
+Directions
+The collisions can be restricted to the directions Top, Bottom, Left, Right. These restrict the collision of this object to the selected directions. For example, if only Bottom is selected, then collisions will trigger when the bottom of this object touches any part of another object.
+Repeat Delay
+How many frames to wait before this trigger can activate again. Increasing it slows down how often the trigger fires while objects stay in contact.
+OUTPUTS
+hit
+this output activates once for each collision the physics simulation reports, sending the value "1". An object resting against another does not fire continuously, but bouncing or sliding contact can report a series of collisions, which is what Repeat Delay is for.
+TIPS
+If this trigger is activating more often than desired, try turning up the repeat delay.
+To react to what was hit, follow this trigger with a Message set to Send to last contacted object.
+In View
+GAME LAYER ONLY
+#in-view
+TRIGGERS
+
+In View triggers activate any time an object enters or leaves the screen.
+
+PROPERTIES
+View Buffer Pixels
+If this value is set to 0, then the trigger will activate as soon as the object enters or leaves the edge of the screen. Setting the buffer distance larger means that the trigger will activate that distance before the edge of the screen. This allows objects to activate before (or after) they leave or enter the screen, instead of instantly.
+OUTPUTS
+in
+This output activates when the object enters the screen
+out
+This output activates when the object exits the screen
+TIPS
+Disabling or destroying offscreen objects can be useful for improving performance and eliminating "lag"
+Sensor
+GAME LAYER ONLY
+#sensor
+TRIGGERS
+
+Sensor triggers activate when objects enter or leave a region around this object. The detection region follows the object as it moves.
+
+Unlike the Proximity trigger, the Sensor is event-driven: it activates the moment an object enters or leaves, instead of checking every frame. This keeps it efficient even when there are many objects in the level.
+
+The Sensor detects objects through the physics system, so both this object and the objects it detects must have collisions enabled (is solid or enable collisions in their physics properties). Objects with collisions disabled are never detected, and if this object has collisions disabled the Sensor will not trigger at all.
+
+By default the Sensor detects any collidable object, but it can be restricted to a specific object type, or to a single named object.
+
+PROPERTIES
+Object Type
+By default the Sensor detects any collidable object. Selecting an Object Type restricts it to objects of that type (and their children).
+Object Name
+When an Object Type is selected, the Object Name select box is populated with the available objects of that type, so the Sensor can be restricted to a single object.
+Shape
+The detection region can be a Circle, Box, or Polygon.
+Edit Sensor Shape
+Sets the size and offset of the detection region relative to the object.
+Rotate & Scale With Object
+This checkbox in the sensor shape editor pins the detection region to the object, so it rotates and scales along with it. When unchecked, the region keeps a fixed offset and size, and does not rotate with the object.
+OUTPUTS
+enter
+activates when a matching object enters the region.
+leave
+activates when a matching object leaves the region.
+count
+outputs the number of matching objects currently inside the region. It is sent whenever an object enters or leaves, so it needs no polling.
+TIPS
+To detect a specific object across levels, target it by name. The reference survives copy/paste and object renames.
+Mailbox
+#mailbox
+TRIGGERS
+
+Mailbox triggers activate when receiving a Message from another object. Messages and Mailboxes are how objects communicate with each other.
+
+PROPERTIES
+Message
+
+This is the name of the Message to listen for.
+
+Which objects receive a message depends on the sender's target. When a Message uses Choose object and picks only an object type, every instance of that type with a matching Mailbox receives it (the instance defaults to Any Object). When a specific instance is selected, only that object receives it.
+
+OUTPUTS
+out
+This output is activated when a Message is received. Any value sent to the Message input will be sent through this output.
+TIPS
+Use a Message/Mailbox pair any time you would like objects to communicate
+Messages are delivered immediately, so the Mailbox fires once for every Message sent - even when several arrive in the same frame
+CATEGORY 2 OF 9
+Logic & Math 13 behaviors
+
+These behaviors hold values and make decisions. Numbers, Text, and Lists are the data that flows between ports, and Filter, Switch, Router, and Logic Gate decide where it goes next.
+
+Number
+#number
+LOGIC & MATH
+
+Number blocks contain a single number value. They are a useful place to store a character’s score, health, number of items collected, or anything else that requires keeping track of an amount.
+
+PROPERTIES
+Label
+Label is an optional and arbitrary text label used to help keep your logic organized and easy to understand. For example, if this Number is used to hold the player’s current score, then it is a good idea to set the label to “Score” so that it is easier to understand at a glance. This does not affect your game's logic at all.
+Current Value
+Current Value is the starting value contained in this block.
+Rounding
+The Number block can optionally round its value to the nearest integer. Round to nearest integer rounds the value normally. Round up always rounds to the next highest integer (e.g. 2.01 will round to 3). Round down always rounds to the next lowest integer (e.g. 2.8 will round to 2). The default value of No Rounding disables rounding completely.
+INPUTS
+set
+will set the value of the number to the input value. Nothing is output.
+get
+input will not change the value, but will cause the Number’s current value to be sent to the output.
++
+adds the input value to the current value, and the result will be sent to the output.
+OUTPUTS
+out
+is activated when the Get or + inputs are activated.
+TIPS
+Use the Label property to help keep your game logic organized and easy to understand
+To subtract a value from the number, send a negative number to the "+" input. For example, if the current value is “10”, sending “-2” to the “+” input will set the value to “8”. Decimals work too.
+Set is silent: it changes the value but sends nothing out. If the new value needs to flow onward, follow it with Get.
+Expression
+#expression
+LOGIC & MATH
+
+Expression blocks contain an arithmetic or algebraic expression to evaluate.
+
+There are two properties by default, named "A" and “B”, that correspond to variables available for use in the expression. These properties can be set manually, or updated through the “A” and “B” inputs.
+
+The "Expression" property can contain an expression to be evaluated, which can optionally use the A and B variables. The following operators are available for building expressions:
+
+Addition: +
+Subtraction: -
+Parentheses/Grouping: ()
+Multiplication: *
+Division: /
+
+Modulus (or remainder): %
+Comparisons: <, >, <=, >=, ==, !=
+Boolean logic: && (and), || (or), ! (not)
+Conditional: condition ? valueIfTrue : valueIfFalse
+
+The output is always a number, so a comparison needs the conditional to turn its true or false into a value: A > B ? 1 : 0 sends 1 when A is larger, and A > 0 ? A : 0 clamps A to a minimum of zero. A bare comparison such as A > B outputs 0. Math.PI and Math.random() are also available.
+
+As an example, if the value of A is 4 and the value of B is 2, then the expression (A+B)*A/B would evaluate to 12.
+
+In addition to the operators listed above, the following functions are also available:
+
+Math.abs(x) returns the absolute value of x, e.g.: Math.abs(-16) will evaluate to 16
+
+Math.acos(v) trigonometric arc cosine of v. The result is an angle in radians.
+Math.asin(v) trigonometric arc sine of v. The result is an angle in radians.
+Math.atan(v) trigonometric arc tangent of v. The result is an angle in radians.
+Math.atan2(y,x) returns the angle, in radians, from the origin to the point (x, y). Note the order: y comes first.
+Math.ceil(v) returns the smallest integer value that is not less than v.
+Math.cos(v) trigonometric cosine of the specified angle v, in radians.
+Math.exp(v) returns Euler's number, raised to the power of v.
+Math.floor(v) returns the largest integer value that is not greater than v.
+Math.max(x,y) returns greater of values x and y, e.g.: Math.max(6,8) will evaluate to 8
+
+Math.min(x,y) returns lesser of values x and y, e.g.: Math.min(6,8) will evaluate to 6
+
+Math.pow(x,y) returns x raised to the y power, e.g.: Math.pow(4,2) will evaluate to 16
+
+Math.round(v) Rounds v to the nearest integer value.
+Math.sin(v) trigonometric sine of the specified angle v, in radians.
+Math.sqrt(v) returns the square root of v.
+Math.tan(v) trigonometric tangent of the specified angle v, in radians.
+PROPERTIES
+Label
+Label is an optional and arbitrary text label used to help keep your logic organized and easy to understand. For example, if this Expression is used to calculate the player’s current score, then it is a good idea to set the label to “Score” so that it is easier to understand at a glance. This does not affect your game's logic at all.
+Inputs
+This is the number of variable inputs on the expression. The default is 2 (A and B), but anywhere from 1 to 6 variable inputs (A through F) can be added.
+A
+The starting value of A
+B
+The starting value of B
+Expression
+This is the expression to evaluate. A simple example would be "A+B", which would simply add the current value of A to the current value of B.
+INPUTS
+A
+Sets the value of variable A. Sending a value to a variable input does not trigger an output by itself.
+B
+Sets the value of variable B. The number of variable inputs shown (A through F) depends on the Inputs property.
+eval
+Activating this input causes the expression to be evaluated, and the result to be sent to the out output.
+OUTPUTS
+out
+This output is activated with the result of the expression when the eval input is activated.
+TIPS
+Note: Expression values allow the output to be connected back to the A or B variable inputs. This enables the expression results to be stored and reevaluated with new variable contents.
+Note: When the top "Expression" label turns green, this indicates that your expression has been optimized and will run at maximum speed
+A result that is not a valid number (for example from dividing zero by zero) outputs 0.
+Each variable keeps its last value between evaluations, so eval always uses the most recent value sent to every input, not only the ones that changed this frame.
+Custom Behavior
+UPGRADED ACCOUNTS ONLY
+#custom-behavior
+LOGIC & MATH
+
+The Custom Behavior block lets you write a block of code that runs inside your game. You define the inputs and outputs it needs, write the code that processes them, and the block behaves like any other behavior in your logic.
+
+Each data input stores the most recent value sent to it. When the built-in eval trigger input is activated, the code runs with those stored values available. Read from the inputs, do your calculation, and send results out through the outputs you defined.
+
+The code is a pure function: it reads its inputs and sends values to its outputs, and has no other effects on the game. The code is written in Haxe, a typed language with JavaScript-style syntax (the same language the Flowlab engine itself is written in). For a gentle introduction, see Scripted Behaviors in the behaviors guide.
+
+PROPERTIES
+Edit Code
+Opens the code editor, where you write the body that runs each time the block is activated.
+Inputs & Outputs
+Add, name, and type the ports the block uses. Each input and output can carry a Number, Text, Number List, or Text List. The ports you add appear on the block so you can wire them to the rest of your logic.
+INPUTS
+
+The inputs are the ones you define, plus a built-in eval trigger. Sending a value to a data input stores it; activating eval runs the code with the latest stored values.
+
+in
+out
+The outputs are the ones you define. Your code sends values out through them to continue the behavior logic.
+TIPS
+Use print() in your code to log messages to the browser developer console. This is the quickest way to check what your code is doing while you build it.
+Global Variable
+#global-variable
+LOGIC & MATH
+
+Global Variable blocks contain a single value that can be updated and accessed from any object in the game. All Global Variable blocks using the same name will contain the same value. By default, changing the value does not activate the other Global blocks with the same name: each one outputs the new value the next time its get input is activated. Global blocks are useful for storing values that need to be accessed by many different unrelated objects.
+
+Global blocks do not have their values reset when changing levels
+
+PROPERTIES
+Name
+Name is an arbitrary text value that is used to share values between other Global blocks. For example, your player object might have a global named "Current Level", and other objects might use a Global "Current Level" block to alter their behavior.
+Type
+The type of global value stored, either Number, Text, Text List, or Number List. The type is chosen, together with a Default Value, when a new name is created, and is shared by every Global block using that name. The default value is the value the global starts with.
+Updates activate all globals
+Off by default. When on, set and + on this block send the new value out of this block and out of every other Global block in the game sharing the same name. When off, set sends nothing, and + sends the result out of this block only.
+INPUTS
+set
+will set the value to the input value. Nothing is output unless Updates activate all globals is on.
+get
+input will not change the value, but will cause the Global’s current value to be sent to the output.
++
+adds the input value to the current value, and the result will be sent to the output. For a Text global the input is appended to the end of the text, and for a list the input is added as a new item at the end of the list.
+OUTPUTS
+out
+is activated when the get or + inputs are activated on this block. With Updates activate all globals on, it is also activated when set or + runs on any Global block with the same name. A get on another block never activates it.
+TIPS
+Global values are useful for sharing a single value between many unrelated objects
+Global values are handy for keeping values when changing levels
+Globals reset to their starting values when the game restarts, and they are not saved between play sessions. Use a Save behavior to keep a value for the next time the game is played.
+Object Variable
+#object-variable
+LOGIC & MATH
+
+Object Variable blocks contain a single named value that is unique to a specific object. Every instance of an object type has its own copy, so two enemies of the same type can each track their own health. An Object Variable can be accessed and updated by other blocks in the same object, or extracted from an object using an Extractor block.
+
+PROPERTIES
+Name
+Name is an arbitrary text value that is used to share values between other Object Variable blocks. For example, your player object might have a value named "Health", and other Object Variable blocks in your player object can update and access that value by name.
+Type
+The type of value stored, either Number, Text, Text List, or Number List
+INPUTS
+set
+will set the value of the number to the input value. No output is evaluated.
+get
+input will not change the value, but will cause the current value to be sent to the output.
++
+adds the input value to the current value, and the result will be sent to the output.
+OUTPUTS
+out
+is activated when the Get or + inputs are activated
+Ease
+#ease
+LOGIC & MATH
+
+Ease blocks are used to generate and output a set of interpolated (or eased) values between two numbers. This is sometimes also called "Tweening" when used for animations. Easing is a great way to smoothly animate objects or their properties, for example to fade an object's transparency in or out, or to move an object smoothly to a new position.
+
+PROPERTIES
+6
+Easing Function
+The easing function property determines the rate of change over time. Different easing functions can offer drastically different animation results, so experiment to find the one that feels the best.
+Ease Mode
+Ease In will ease the start of the transition
+Ease Out will ease the end of the transition
+Ease In Out will ease the both the start and end of the transition
+Seconds
+The duration property determines how long it takes (in seconds) to complete the transition from the start to end values.
+From
+The transition starting value
+To
+The transition ending value
+Smart Rotation
+A special case for animating rotations. When smart rotation is on, Ease takes the shortest way around the circle: easing from 350 to 10 passes through 360 instead of turning back through 180.
+INPUTS
+6
+time
+The transition's duration in seconds
+from
+The starting value
+to
+The ending value
+start
+Start (or restart) the transition from the beginning.
+reverse
+Start (or restart) the transition from the end, back to the beginning.
+pause
+Pause a running transition. If the transition is already paused, it will unpause and continue.
+OUTPUTS
+out
+A newly calculated value is sent to this output every frame, until the To value is reached. Connect it directly to the input you want to animate, such as Position, Alpha, Size, or Rotation
+done
+This is activated when the easing has completed and the To value has been reached
+TIPS
+Try adding Easing to your motion animations to make them feel more natural and organic
+Repeater
+#repeater
+LOGIC & MATH
+
+A Repeater block activates its output multiple times when its input is activated. This can be used to trigger an action more than once.
+
+PROPERTIES
+Repeat Count
+The number of times the output should be activated when this block next runs.
+INPUTS
+count
+Override the Repeat Count property at runtime — incoming values set how many times the next in activation will repeat.
+in
+Begin activating the output, sending the input value to the out output the configured number of times.
+reset
+Stop an in-flight repeat early. Any further repeats from the current in activation are skipped, and done is not emitted.
+OUTPUTS
+out
+This output is activated Repeat Count times when in is activated.
+done
+This output is activated after all repeating is completed.
+TIPS
+This block is handy when the same action needs to happen multiple times, for example spawning a series of objects.
+All of the repeats happen within the same frame. To space them out over time, use a Timer with a Repeat count instead.
+Wire something into count if the number of repeats needs to vary at runtime — the wired value overrides the Repeat Count property.
+Random
+#random
+LOGIC & MATH
+
+Random blocks generate random whole numbers, and are useful for adding unpredictable behavior to game objects. For a random decimal, generate a larger whole number and divide it with an Expression. When combined with a Filter block, they provide a simple way to randomly select between various available logic flows.
+
+PROPERTIES
+Min
+The minimum value that can be generated
+Max
+The maximum value that can be generated
+INPUTS
+min
+Set the min value, no output is sent
+max
+Set the max value, no output is sent
+new
+Generate a new random whole number between Min and Max (inclusive) and send it to the output
+OUTPUTS
+out
+Activated with the resulting random number whenever a new one is generated
+TIPS
+Adding randomness to your game makes it more interesting, and can create unexpected emergent behaviors
+Filter
+#filter
+LOGIC & MATH
+
+Filter blocks are a way to make decisions based on an input. Input values are checked against an expression and if the result is true then the input value is sent to the "Pass" output, otherwise it is sent to the "Fail" output.
+
+PROPERTIES
+Expression
+The expression property has the following expressions available: Less Than, Greater Than, Equal To, Not Equal To, Less Than or Equal To, and Greater Than or Equal To. There is also a selectable property that provides a value that the input can be compared to.
+Value
+This is the initial value to be checked
+INPUTS
+set
+This updates the comparison Value, but does not cause any outputs to be activated.
+in
+This causes the input value to be evaluated using the selected expression. As an example, if the expression is set to Greater Than 4, then the value 2 sent to the input would be sent to the Fail output, since 2 is not greater than 4.
+OUTPUTS
+pass
+This is activated if the expression evaluates to true
+fail
+This is activated if the expression evaluates to false
+TIPS
+Use a Filter when you would like an object to make a decision.
+To check a range, chain two Filters: the Pass output of Greater Than 5 into a second Filter set to Less Than 10.
+Switch
+#switch
+LOGIC & MATH
+
+Switch blocks provide a mechanism to enable or disable branches of logic.
+
+Switches can be turned on or off by setting the property manually, or by activating the "On" or "Off" inputs.
+
+Any values arriving on the "In" input will be sent to the "Out" output when the switch is turned on, otherwise they will be ignored.
+
+PROPERTIES
+Current State
+The switch can be either on, in which case anything sent to the input will be forwarded on through the output, or off, in which case anything sent to the input will be ignored. New switches start off. A Switch passes any kind of value (number, text, or list) through unchanged.
+INPUTS
+off
+Turns the switch off, no output is sent.
+on
+Turns the switch on, no output is sent.
+in
+Anything sent to this input is sent to the output, if the switch is On
+OUTPUTS
+out
+Anything sent to this input is sent to the output, if the switch is On
+TIPS
+There is a blue indicator light on the behavior block that shows when it is "On", providing a quick way to see the current state of the switch.
+A Switch placed after a trigger is the standard way to turn that trigger off and on, since triggers have no inputs of their own.
+Toggle Switch
+#toggle-switch
+LOGIC & MATH
+
+Toggle Switch blocks provide a way to switch back and forth between two possible options.
+
+The "Loop" property is enabled by default. This enables the toggle to continue to switch back and forth between its two outputs. When looping is disabled, the toggle will only switch one time, and repeatedly activating the "Next" input will have no effect.
+
+By default output one will start as the currently active output, but this can be updated in the property panel.
+
+Activating the "Next" input will cause the currently active output to be switched.
+
+Any values sent to the "In" input will be sent to either "Out1" or "Out2", depending on which one is currently active.
+
+PROPERTIES
+Loop
+When this is enabled, activating the Next input will loop back to Out1 when it is on Out2. When disabled, activating the Next input when Out2 is the selected output will have no effect.
+Starting Output
+This selects which output is selected initially
+INPUTS
+next
+Activating this input selects the next output
+in
+Activating this input will activate either Out1 or Out2, depending on which is currently selected.
+OUTPUTS
+out1
+When selected, this is activated by the In input
+out2
+When selected, this is activated by the In input
+TIPS
+The green icon on the Toggle block points to the currently active output, providing a quick visual indicator of its current state.
+Router
+#router
+LOGIC & MATH
+
+Router blocks provide a mechanism to route between different logic flows
+
+Values sent to the in input will get sent to the selected outputs.
+
+PROPERTIES
+Routing Method
+There are three methods of routing, which control what the select input does. Select Specific Route enables you to select a particular output route by sending its number to the select input. Always Increment Route moves to the next route each time select is activated, no matter what value is sent, and wraps back to the first route after the last. Randomize Next Route picks a random route each time select is activated. In every method the route only changes when select is activated: values sent to in never change the route. The Router starts on out1.
+Available Routes
+This determines how many output routes are enabled.
+INPUTS
+select
+Changes the selected route according to the Routing Method. With Select Specific Route, the value is the route number, counting from 1. Values below 1 select the first route, values above the available routes select the last, and decimals are rounded down. With the other two methods the value is ignored. Nothing is output.
+in
+Anything sent to this input is sent to the currently selected output.
+OUTPUTS
+out1 - out32
+Up to 32 routes are available. Anything sent to in gets routed to one of these outputs based on the selected routing method. The number actually shown on the node is controlled by the Available Routes property.
+Logic Gate
+#logic-gate
+LOGIC & MATH
+
+Logic gates are blocks that implement Boolean functions. In other words, they activate their output depending on which of the inputs (A and B) are active, if any. For example, in an AND gate, the output is only active when both inputs are active.
+
+An input is considered active if it is being sent any value other than 0 (unless treat 0 inputs as true is enabled). Input values are rounded toward zero first, so a decimal between -1 and 1 (such as 0.5) counts as 0. The two inputs only count together when their values arrive within the time slack window, so connect both inputs to things that fire at around the same time, or increase the slack.
+
+Boolean functions are often described using Truth Tables, which can be helpful to illustrate how each function behaves. Below are the truth tables for each of the available logic gates in Flowlab:
+
+AND gate is active when both inputs are active:
+
+A	B	Out
+on	on	on
+on	off	off
+off	on	off
+off	off	off
+
+OR gate is active when either inputs are active:
+
+A	B	Out
+on	on	on
+on	off	on
+off	on	on
+off	off	off
+
+NAND gate is active unless both inputs are active
+
+A	B	Out
+on	on	off
+on	off	on
+off	on	on
+off	off	on
+
+NOR gate is active when neither input is active. There is no separate NOT gate: a NOR gate with only input A connected acts as NOT, firing when A is inactive:
+
+A	B	Out
+on	on	off
+on	off	off
+off	on	off
+off	off	on
+
+XOR gate is active when one single input is active
+
+A	B	Out
+on	on	off
+on	off	on
+off	on	on
+off	off	off
+
+XNOR gate is active when both inputs are on or off
+
+A	B	Out
+on	on	on
+on	off	off
+off	on	off
+off	off	on
+PROPERTIES
+Gate
+The available gate types are AND, OR, NAND, NOR, XOR, and XNOR. The gates whose output can be on while an input is silent (NAND, NOR, XOR, and XNOR) are checked every frame, so a NOR gate with nothing connected fires every frame.
+Time slack in milliseconds
+How long the gate remembers each input. Two inputs count together only when their values arrive within this window (40 milliseconds by default, a bit over two frames at 60 FPS); an input older than the window is forgotten. Increase this when the two signals cannot be relied on to fire in the same frame.
+Treat 0 inputs as true
+Normally an input receiving 0 counts as off. Enabling this makes any received value count as on, including 0. Useful when the arrival of a signal matters rather than its value.
+INPUTS
+a
+The first input to the Boolean function
+b
+The second input to the Boolean function
+OUTPUTS
+out
+Activated (or not) by evaluating the a and b inputs according to the selected Boolean function. It always sends the value 1: the input values are not passed through.
+TIPS
+Very complex behavior can be assembled from sets of simple gates
+CATEGORY 3 OF 9
+Components 16 behaviors
+
+Components act on the game world: they play sounds, create and attach objects, apply physics forces, move the camera, and let objects talk to each other. Angles throughout use degrees, where 0 points right and 90 points down.
+
+Sound
+#sound
+COMPONENTS
+
+Sound blocks play a sound effect or music loop.
+
+There are a few ways to select a sound to play. The simplest way of selecting a sound is to simply choose from the list of default, built in sound effects in the property panel. To add a sound or song not available in the list, a URL link can be added instead. Links must be .mp3 files, and must follow two rules:
+
+Must begin with "https://"
+Must end with ".mp3"
+
+You can also design your own sound effects and music loops with the built-in sound creator. Choose the Created Sounds tab in the sound picker to make a new sound, or to select one you have already made, and use the Edit Sound button to change it later. Created sounds are saved to your library and can be used in any of your games. Free accounts can save up to 10 created sounds.
+
+Once a sound is selected, it can be previewed using the play button. The starting position of the sound can be selected directly in the preview waveform.
+
+PROPERTIES
+9
+Loop
+The "Loop" property will cause the sound to play continuously until it is stopped.
+Stop playing on despawn
+When this is enabled the sound will automatically stop playing when the object is destroyed.
+Volume
+The Sound's playback volume can be adjusted with the volume property slider.
+Pan
+The sound's playback stereo pan (left/right) can be adjusted with the pan property slider.
+Pitch
+The sound's playback pitch (and speed) can be adjusted with the pitch property slider, from 50% to 200%, where 100% is normal.
+Mode
+
+There are two available playback modes, Sound Effect and Streamed Music.
+
+In Sound Effect mode, the sound will be downloaded before playback begins. This is best for short sound effects.
+In Streamed Music mode, the sound will be streamed from the URL as it plays. This is best for long ambient sounds and music. The pan setting has no effect on streamed sounds.
+Preload
+When this is enabled, the sound will be downloaded when the game starts. This prevents the sound from being delayed the first time it is played. Preloading is not available for streamed sounds.
+Allow Overlap
+When this is enabled, the sound can be played multiple times and will overlap. When disabled, the sound will stop playing before starting again.
+Show Extended Options
+When this is enabled, additional inputs and outputs are available.
+INPUTS
+8
+play
+This causes the selected sound to begin playing, or resume playing if paused.
+pause
+This causes the selected sound to pause.
+stop
+This causes the selected sound to stop playing.
+vol
+This sets the sound's volume from 0% to 100%.
+url
+This sets the sound's URL to download from.
+pan
+This sets the sound's stereo pan (left/right) from -100% to 100%.
+pos
+This sets the sound's starting position in seconds.
+pitch
+This sets the sound's pitch (and speed) from 50% to 200%, where 100% is normal.
+OUTPUTS
+8
+playing
+Activates once the audio is loaded and begins playing.
+pause
+Activates when playback is paused.
+stop
+Activates when playback is stopped.
+vol
+Outputs the set volume.
+done
+Activates when sound playback completes.
+pan
+Outputs the set pan.
+pos
+Outputs the input position in seconds.
+pitch
+Outputs the set pitch.
+TIPS
+Large audio files will often take some extra time to load before playing back
+When using an audio URL, it must point directly to an MP3 file
+Emit
+GAME LAYER ONLY
+#emit
+COMPONENTS
+
+Emit blocks spawn new, temporary objects into your game level and send them moving in a specific direction. This can be useful for creating projectiles or special effects like smoke, dust, or bits of debris.
+
+PROPERTIES
+9
+Type to Emit
+The "Type to Emit" property select box lists all the currently available Object Types in the game. This is the Object Type that will be emitted when the block is activated.
+Edit Emit Origin
+This button opens the Emit Origin Editor which enables you to select where on your object you intend emitted objects to start from.
+Rotate & Scale with Object
+When this is enabled, the emit origin will rotate & scale to match when the emitting object is transformed.
+Rotate Objects
+Enabling this causes newly generated objects to be rotated to match the rotation of the emitting object
+Don't expire Objects
+Enabling this prevents object from expiring and being removed
+Expire After
+How long a newly created object lives before it expires and is removed from the level, in 30ths of a second (so 30 is one second, whatever the frame rate of the game)
+Emit Force
+How much force to add to a newly created object
+Emit Angle
+The direction (in degrees, where 0 points to the right) that emitted objects will move. This angle is relative to the emitting object, meaning that an emit angle of 90 will emit objects at a 90 degree offset from the emitting object's forward direction.
+Angle is independent
+Enabling this means that the Emit Angle is independent from the emitting object. For example, an emit angle of 180 will always emit to the left side of the screen.
+INPUTS
+angle
+Sending a new value updates the Emit Angle property, but does not trigger any output.
+emit
+Activating this input causes a new object to be emitted. The number sent here becomes the new object's Starting value, which it can read with an Extractor (text or a list arrives as 0)
+OUTPUTS
+out
+This is activated whenever a new object is emitted
+TIPS
+Every object starts out with its forward direction pointing to the right. This means that it will emit objects to the right, unless you change the emit angle or change the emitting object's forward direction in its object properties panel.
+You can make objects emit "backwards" by using a negative emit force
+Use the shortest expiration times you can. Emitting many objects with long expiration times can affect the performance of your game. Each Emit behavior can have at most 200 emitted objects alive at once; emitting more while at the limit does nothing until some expire.
+Spawn
+#spawn
+COMPONENTS
+
+Spawn blocks cause new objects to be created and added to your level. This is useful for adding new objects to your game level while it is running.
+
+PROPERTIES
+Type to Spawn
+The "Type to Spawn" property select box lists all the currently available Object Types in the game. This is the Object Type that will be spawned when the block is activated.
+Spawn X
+X Position, in pixels, of the center of the newly spawned object
+Spawn Y
+Y Position, in pixels, of the center of the newly spawned object
+INPUTS
+x
+Set the block's Spawn X property
+y
+Set the block's Spawn Y property
+spawn
+Create an object of the selected type at the current x, y position. The number sent here becomes the new object's Starting value, which it can read with an Extractor. This is the usual way to hand a number to a spawned object. Only numbers are kept (text or a list arrives as 0), so use a Message to send text
+OUTPUTS
+out
+This is activated whenever a new object is spawned
+TIPS
+Spawn blocks are useful any time you want to add objects (for example Enemies, Powerups, or Obstacles) while the game is running
+Pair this with a random block to create levels that are different each time you play
+Attacher
+#attacher
+COMPONENTS
+
+Attacher blocks allow objects to be attached to each other. Attached objects are aligned by the center of their sprites and move together on the screen. When an object is attached it has no physics and cannot trigger Collisions, Proximities, or Raycasts.
+
+PROPERTIES
+Type to Attach
+The "Type to Attach" property select box lists all the currently available Object Types in the game. This is the Object Type that will be attached when the block is activated.
+Attach Point
+In the Attach Point editor, you can click to select the position of attached objects
+Rotate & Scale with Object
+When this is enabled, the attached object will rotate & scale to match when the attaching object is transformed.
+INPUTS
+on
+An object of the selected type will be created and attached. While something is already attached, further On activations are ignored
+off
+The attached object will be destroyed and removed from the level
+x
+Sets the horizontal offset of the attach point, in pixels. Values sent before on are stored and applied when the object attaches.
+y
+Sets the vertical offset of the attach point, in pixels. Values sent before on are stored and applied when the object attaches.
+in
+out
+The On and Off inputs activate their corresponding Out outputs
+TIPS
+An Attacher can be used to add optional decorations to a sprite
+Attached objects run their own behaviors. To talk to them, use a Message set to Send to all attached objects or Send to last attached object.
+Physics Joint
+GAME LAYER ONLY
+#physics-joint
+COMPONENTS
+
+Physics Joint blocks allow objects to be attached to one another using a physics connection.
+
+PROPERTIES
+9
+Joint Type
+
+There are three types of Joints:
+
+Spinning joints allows the objects to rotate in relation to each other. These are useful for wheels, arms, or similar mechanisms
+Welded joints connects the objects together so that they cannot move or rotate in relation to each other
+String joints allow the objects to rotate and move within a minimum and maximum distance from each other
+Type to Connect
+The Type to Connect property select box lists all the currently available Object Types in the game. This is the Object Type that will be attached when the block is activated.
+Joint Position
+In the Joint Position editor, you can click to select the position of connected objects
+Fragility
+If this is 0 then the joint is not breakable. If greater than 0, then the joint will break if it becomes stretched too far. Larger fragility values makes the joint break more easily.
+Flexible
+If this is disabled, the joint is "stiff". If this is enabled, then the joint connection is "springy"
+Springiness
+This setting adjusts how quickly and forcefully a flexible joint will snap back into alignment
+Stiffness
+This setting dampens & slows down the action of the return spring.
+Minimum Distance
+How close two objects joined by a String Joint can come to each other
+Maximum Distance
+How far two objects joined by a String Joint can get from each other
+INPUTS
+on
+An object of the selected type will be created and joined.
+off
+The joined object will be destroyed and removed from the level.
+break
+The joint will be destroyed, disconnecting the objects.
+OUTPUTS
+on
+Activates after the on input has been processed.
+off
+Activates after the off input has been processed.
+break
+Activates when the break input is fired, or when the joint is broken by physics forces.
+TIPS
+Use a Physics Joint to connect objects when they need to have physics interactions
+Physics Joints can be used to create mechanical contraptions such as wheels or articulations
+Proximity
+GAME LAYER ONLY
+#proximity
+COMPONENTS
+
+Proximity triggers activate when another game object gets close to the current object. The check runs only when the check input is activated, so connect a Timer or Always to it. For an event-driven alternative that needs no polling, see the Sensor trigger. The "Trigger Distance" property is the distance (in pixels) that an object must come within to activate the trigger. In order to help visualize the distance, a circle indicator is shown around the current object that changes in size to reflect the trigger distance as it changes.
+
+PROPERTIES
+8
+Object Type
+An Object Type must be selected: the trigger activates when getting close to objects of that type (or of types that inherit from it). Until a type is selected, every check sends miss.
+Object Name
+When an Object Type is selected, then the Object Name select box is populated with all of the available objects of that type. Selecting an object name means that this trigger will only activate when getting close to that particular object
+Edit Offset
+This button opens the Offset Editor which allows you to adjust the center of your proximity shape check
+Rotate & Scale with Object
+When this is enabled in the offset point editor, the proximity center will rotate & scale its position to match when the attaching object is transformed.
+Distance
+How close (in pixels) this object needs to be to another object to activate the trigger
+Shape
+The shape of the area for a proximity check, either a Circle or Box
+Object Search
+
+This selects which object positions are returned when the trigger is activated:
+
+Output First Object Found means that the position of the first object encountered is returned, no matter how many objects are within the proximity radius
+Output Closest Object Found means that all objects within the proximity are searched, and only the closest object's position is returned
+Output All Objects Found means that the positions of all objects within the proximity are returned
+Contains Targets Completely
+When selected, this trigger will only activate if the target object is completely contained within the selected proximity check area. Otherwise, it will activate as soon as an object touches the proximity area.
+INPUTS
+dist
+This input updates the size or radius of the proximity check area
+check
+This input triggers the check
+OUTPUTS
+x
+This output sends the X position of an object within the proximity radius.
+y
+This output sends the Y position of an object within the proximity radius.
+miss
+Activated when check runs but no qualifying object is in range.
+Push Motor
+GAME LAYER ONLY
+#push-motor
+COMPONENTS
+
+Push Motor blocks add a physical force to the object over time. This will cause the object to slowly speed up as its velocity increases over time (think of a car or a ship, that accelerates gradually). The more mass an object has (the larger it is), the more force will be required to move it.
+
+INPUTS
+x
+Add a force equal to the input value in the X direction
+y
+Add a force equal to the input value in the Y direction. Positive values push up and negative values push down. Note that this is the opposite of Position and Velocity, where positive Y is down
+forward
+Add a force equal to the input value in the object's current Forward direction
+in
+out
+Each input sends its input value to the corresponding output when activated.
+TIPS
+The object must be movable in order for physical forces to affect it.
+A force around 16 is a good starting point for a player-sized object; larger or denser objects need more.
+Spin Motor
+GAME LAYER ONLY
+#spin-motor
+COMPONENTS
+
+Spin Motor blocks add a physical rotation force to the object over time. This will cause the object to spin faster as its angular velocity increases over time (think of a wheel on a car). The more mass an object has (the larger it is), the more force will be required to rotate it.
+
+INPUTS
+force
+Add a force equal to the input value to the object's angular velocity (spin speed)
+OUTPUTS
+force
+This output sends the input force value
+spin
+This output sends the new rotation speed in revolutions per second
+TIPS
+The object must be movable, and allow spin must be enabled in its physics settings, for the motor to turn it.
+A force around 10 is a good starting point for a player-sized object.
+Impulse
+GAME LAYER ONLY
+#impulse
+COMPONENTS
+
+Impulse blocks add a physical force to the object immediately, instantly increasing that object's velocity (speed) like a spring. The more mass an object has (the larger it is), the more force will be required to move it. This is the usual way to make a character jump: send a positive Y impulse when the jump key is pressed.
+
+INPUTS
+x
+Add a force equal to the input value in the X direction
+y
+Add a force equal to the input value in the Y direction. Positive values push up and negative values push down. Note that this is the opposite of Position and Velocity, where positive Y is down
+forward
+Add a force equal to the input value in the object's current Forward direction
+in
+out
+Each input sends its input value to the corresponding output when activated.
+TIPS
+The object must be movable in order for physical forces to affect it.
+An impulse around 10 is a good starting point for a player-sized jump; adjust for the object's size and the level's gravity.
+Point At
+#point-at
+COMPONENTS
+
+Point At blocks cause this object's forward direction to rotation towards a given x/y position on the screen.
+
+INPUTS
+x
+position on the screen that this object should rotate towards
+y
+position on the screen that this object should rotate towards
+OUTPUTS
+rot
+The new rotation (in degrees) of this object
+TIPS
+Connect the outputs of a Mouse Move block to a Point At block to make an object that always faces the mouse
+Point At only turns the object. To move it toward the target as well, send a value into a Velocity or Push Motor forward input.
+Destroyer
+#destroyer
+COMPONENTS
+
+Destroyer blocks cause this object to be removed from the game. All behaviors in the destroyed object will stop running, and it will be removed from the level.
+
+INPUTS
+in
+Activating this input causes the object to be destroyed.
+OUTPUTS
+out
+The in input value is passed through to this output right after the object is removed, so anything connected here still runs this frame even though the object is gone.
+TIPS
+Objects set to keep between levels can be destroyed too; once destroyed they do not return until the game restarts.
+Camera
+GAME LAYER ONLY
+#camera
+COMPONENTS
+
+Camera blocks control which part of the level is visible on screen. With Autoscroll on, the view follows the current object as it moves around the level. With Autoscroll off, the view stays where it is until you position it using the inputs. The background can scroll at a different speed from the game layer (called a parallax effect) to give an illusion of depth.
+
+Camera positions are measured in pixels, and refer to the top left corner of the visible area at 100% zoom. The camera starts each level at position 0, 0.
+
+PROPERTIES
+6
+Autoscroll
+Enabling Autoscroll X or Autoscroll Y causes the view to follow the current object automatically in that direction, keeping the object centered on screen. Each direction is independent, so you can follow the object horizontally while controlling the vertical position yourself, for example.
+Infinite
+Enabling Infinite X or Infinite Y allows the camera to follow the object any distance in that direction, ignoring the Viewable Area boundary 
+Only available when Autoscroll is on for that direction
+Viewable Area
+The Left, Right, Top, and Bottom settings describe a boundary rectangle, measured in grid squares, that the autoscrolling camera will stay within. The boundary is drawn in the level editor while the Camera's settings are open. 
+Only applies when Autoscroll is on and Infinite is off for that direction
+Parallax
+This setting determines how quickly the background layer moves when the camera scrolls, as a percentage of the game layer's movement. At 100 the background scrolls together with the game layer, and at 0 it does not move at all. The slower the background moves in relation to the game layer, the farther away it appears to the player.
+Background Repeats
+Enabling this will cause the background layer to tile when the camera scrolls past its edge
+Smooth Scrolling
+Enabling Smooth Scrolling allows the autoscrolling camera to move by fractional pixel amounts. This makes motion smoother when the camera speed is not a whole number of pixels per frame, but can soften sprite edges or cause shimmer with some art styles, so it is off by default
+INPUTS
+6
+set x
+Set the X position of the camera. While Autoscroll X is on this has no lasting effect, since autoscroll repositions the camera on the next frame
+set y
+Set the Y position of the camera. While Autoscroll Y is on this has no lasting effect, since autoscroll repositions the camera on the next frame
+move x
+Offset the camera by the input value, on top of its set x or autoscroll position. Each new value replaces the previous offset rather than adding to it: send 0 to remove the offset
+move y
+Offset the camera by the input value, on top of its set y or autoscroll position. Each new value replaces the previous offset rather than adding to it: send 0 to remove the offset
+zoom
+Zoom the camera to this percentage, around the center of the screen. The default is 100, larger values zoom in, and values are limited to the range 1 to 10000
+rotate
+Rotate the camera around the center of the screen. The input value is in degrees (0 is upright, positive turns clockwise)
+OUTPUTS
+6
+out
+Paired with set x: the camera's resulting X position, including any move x offset. While Autoscroll X is on, this also fires by itself every time the camera's X position changes
+out
+Paired with set y: the camera's resulting Y position, including any move y offset. While Autoscroll Y is on, this also fires by itself every time the camera's Y position changes
+out
+Paired with move x: the camera's resulting X position (the same value the set x output sends), not the offset that was sent in
+out
+Paired with move y: the camera's resulting Y position (the same value the set y output sends), not the offset that was sent in
+out
+Paired with zoom: forwards the input value
+out
+Paired with rotate: forwards the input value
+TIPS
+Only one object in a level should have a Camera. With more than one active camera the result is undefined.
+The position outputs already include the move offset, so there is no need to add the set x and move x outputs together: either one gives the camera's actual position.
+The move inputs work together with autoscroll and are not limited by the Viewable Area, which makes them a good fit for screen shake: send a few quick offsets, then send 0 to settle the camera back in place.
+The camera never affects objects on the user interface layer: they ignore scrolling, zoom, and rotation, so HUD elements stay in place on screen.
+Message
+#message
+COMPONENTS
+
+Message blocks are a way for game objects to communicate with one another. An object can send a Message to another object, containing a value, which will show up in the other object's Mailbox.
+
+PROPERTIES
+Name
+Every message is given a Name, which is used to determine which Mailbox it is sent to. This name can be anything you like, but it's a good idea to use a descriptive name to help keep your logic organized. For example, when using a message to trigger a door to open, then using open as the message name might be a good idea.
+Target Object
+
+The message can be routed to a target object a few different ways:
+
+Send to myself routes the message to one of the object's own Mailboxes.
+Send to last contacted object routes the message to the last object collided with.
+Send to last raycast target routes the message to the last object a raycast hit.
+Send to last spawned object routes the message to the last object spawned by this one
+Send to all spawned object routes the message to all objects spawned by this one
+Send to all attached objects routes the message to all attached objects.
+Send to last attached object routes the message to the most recently attached object.
+Reply to last message routes the message to the last object that sent a message to this one.
+Choose object allows you to select a specific object by name as the message target.
+INPUTS
+send
+When the "send" input is activated, the value arriving in the input is packaged into the Message and sent into the target object's Mailbox.
+OUTPUTS
+done
+Activated after the message has been sent, whether or not any Mailbox received it. If no object has a Mailbox with this name, nothing happens.
+TIPS
+Use descriptive names for your messages
+If selecting a target object by name, give the object a descriptive name as well. For example "exit door" is a better object name than the default "Object 123"
+When using Send to last contacted object, make sure that you have a collision trigger set to that object as well - otherwise the collisions will not be tracked
+RayCast
+GAME LAYER ONLY
+#raycast
+COMPONENTS
+
+RayCast sends out an invisible ray from your object, and activates the hit or miss output depending on whether the ray intersects another object. This is useful for checking an object's surroundings, for example to see if your object is touching the ground, or near another type of game object.
+
+PROPERTIES
+6
+Object Type
+By default, the ray will activate hit for any object it intersects. If an Object Type is selected, then the ray will only activate when intersecting objects of that specific type.
+Ray Starting Point
+This opens the Ray Starting Point editor, where you can select where on your object the Ray will originate from.
+Rotate & Scale with Object
+When this is enabled in the starting point editor, the ray origin will rotate & scale its position to match when the attaching object is transformed.
+Angle
+Direction to send the ray, in degrees. A direction of '0' means to the right, '90' means straight down, etc.
+Length
+Length of the ray in pixels.
+Stop at First Object
+Enabling this means the rays do not "pass through" objects when searching, and the rays can be blocked by other objects.
+INPUTS
+angle
+update the ray direction
+length
+update the ray length
+cast
+cast a ray, and activate hit or miss
+OUTPUTS
+hit
+This output is activated when the ray intersects an object of the selected type, sending the distance in pixels between the center (origin) of this object and the center of the object that was hit. It is not the distance along the ray, nor the gap between their edges.
+miss
+This output is activated when the ray does not intersect an object of the selected type, sending the value that arrived at Cast.
+TIPS
+Use a RayCast any time you would like to check an object's surroundings
+Can be used to check if an object is on the ground before jumping
+Can be used to prevent NPC objects from walking over edges
+A visual indication is shown on the object to help visualize the length and direction of the ray
+A Ray must cross from outside of an object to inside of it in order to detect it
+The object that was hit becomes the last raycast target, so a Message set to Send to last raycast target can talk to it.
+Calendar
+#calendar
+COMPONENTS
+
+Calendar blocks allow your game to check the current date, in the local time zone of the player's device.
+
+INPUTS
+now
+Activate this input to read today's date.
+stamp
+Send a UNIX timestamp (seconds since January 1, 1970) to read the date for that specific moment instead of "now".
+OUTPUTS
+year
+The 4 digit year is sent to this output.
+month
+The month (from 1 to 12) is sent to this output.
+date
+The date (from 1 to 31) is sent to this output.
+day
+The day of week (from 1 to 7) is sent to this output.
+Clock
+#clock
+COMPONENTS
+
+Clock blocks allow your game to check the current time, in the local time zone of the player's device.
+
+INPUTS
+now
+Activate this input to read the current time.
+stamp
+Send a UNIX timestamp (seconds since January 1, 1970) to read the time for that specific moment instead of "now".
+OUTPUTS
+hour
+The current hour (0 = midnight, 12 = noon, 23 = 11pm) is sent to this output.
+min
+The current minute (0-59) is sent to this output.
+sec
+The current second (0-59) is sent to this output.
+stamp
+The current UNIX timestamp (seconds since January 1, 1970) is sent to this output.
+TIPS
+Use the timestamp to measure time differences between events in your game
+CATEGORY 4 OF 9
+Properties 15 behaviors
+
+Each Property behavior sets one attribute of this object, such as its position, rotation, size, transparency, or colors. Most pass the value they receive straight through to a matching output so several can be chained.
+
+Position
+#position
+PROPERTIES
+
+Position property blocks enable the object's position in the level to be updated. The object's origin it at its center, so setting the position of an object to x:16, y:16 will move the object so that its center is at the point 16,16.
+
+Position blocks can operate using either pixel or grid positions. When using pixel positions, input values are interpreted as pixel x/y positions in the level. When using grid positions, input values are interpreted as grid positions instead. Each grid cell is 32 x 32 pixels, and a grid position places the center of the object in the middle of that cell. So a grid position of (0,0) is equivalent to the pixel position (16,16), and a grid position of (2,2) is equivalent to the pixel position (80,80).
+
+PROPERTIES
+Coordinate System
+The object can be positioned using either Grid or Pixel coordinates
+Reset speed on update
+Enabling this causes the object's speed to be reset to 0 after it is moved
+INPUTS
+x
+Activating this input positions the center of the object at the input value on the X axis
+y
+Activating this input positions the center of the object at the input value on the Y axis
++x
+Activating this input increments the current X position of the object.
++y
+Activating this input increments the current Y position of the object.
+OUTPUTS
+x out
+Whenever the x or +x input moves the object, the new X position is sent to this output. The value is always in whole pixels, even when using grid coordinates. Movement caused by physics or by other blocks does not activate it
+y out
+Whenever the y or +y input moves the object, the new Y position is sent to this output. The value is always in whole pixels, even when using grid coordinates. Movement caused by physics or by other blocks does not activate it
+TIPS
+Even a static, non-movable object can be moved using a Position block
+Position teleports the object, so a physics object can pass through walls. For movement that respects collisions, use Velocity, Push Motor, or Impulse instead.
+Rotation
+#rotation
+PROPERTIES
+
+Rotation blocks update the current object's rotation, in degrees. Rotating an object changes its Forward direction, and rotates its Sprite. When an object is created, its rotation is 0. Rotating an object by 90 degrees would mean its new forward direction would be pointing down towards the bottom of the screen.
+
+INPUTS
+set
+Directly set the rotation of this object, ignoring its current rotation
+add
+Add the input value to the current rotation. For example: if the current rotation is 90 degrees, then sending a value of 90 to this input would set the rotation to 180 degrees (the left side of the screen)
+in
+out
+Each input sends its new rotation value to the corresponding output.
+TIPS
+A rotation of 0 points to the right side of the screen, 90 points down, 180 points to the left, and 270 points up
+Rotating a physics object rotates its collision shape too.
+Alpha
+#alpha
+PROPERTIES
+
+Alpha blocks update the alpha (or transparency) of the current object.
+
+INPUTS
+%
+Values received on the "%" input set the current object's alpha transparency to the incoming value. A value of "100" will set the object to fully opaque, and a value of "0" will set the object to fully transparent.
+OUTPUTS
+out
+The input value is passed through to the output after alpha is applied.
+TIPS
+A fully transparent object is still there: it collides and it still receives clicks. To make an object stop interacting, use Enabled, or destroy it.
+Size
+#size
+PROPERTIES
+
+Size blocks allow the current object's sprite to be resized.
+
+INPUTS
+%
+Values received on the "%" input set the current object's size to the incoming value. A value of "100" will set the object to default size, and a value of "50" will set the object to ½ of its default size.
+x
+Same as the % input, but only affects the object's X axis. This distorts the sprite.
+y
+Same as the % input, but only affects the object's Y axis. This distorts the sprite.
+in
+out
+Each input passes its value through to the matching output after the size is applied.
+TIPS
+Sprites can be scaled above 100%, but the image may look blurry when enlarged past its default resolution.
+Resizing also updates the object's physics shape and mass to match its new size, so collisions and dynamics scale with the sprite.
+Enabled
+GAME LAYER ONLY
+#enabled
+PROPERTIES
+
+Enabled blocks allow the object's physics to be turned on and off. An enabled object behaves normally, but a disabled body does not collide with other objects or move via physics forces like gravity. By default, this block is set to "enabled".
+
+INPUTS
+true
+Activating the "true" input will set the object to enabled.
+false
+Activating the "false" input will set the object to disabled.
+in
+out
+Each input passes its value through to the matching output after the new state is applied.
+TIPS
+Disabled objects continue to run their behaviors
+Use this to make a "ghost" that passes through everything, or to freeze an object in place, without removing it from the level.
+Animation
+#animation
+PROPERTIES
+
+Animation blocks can start and stop the playback of Sprite Animations that have been created in the Sprite Editor.
+
+PROPERTIES
+Animation
+The "Animation" property provides a list of all animations added to the current object's sprite. New animations can be created using the Sprite Editor's Animation tools.
+Loop
+By default the animation will play once, but enabling the "Loop Animation" checkbox forces the animation to continue playing until explicitly stopped.
+Priority
+If two animations try to play at the same time, the one with a higher priority will play and the lower priority will be ignored. The default priority is 0. A lower priority animation will not interrupt a higher priority animation, but an animation with the same or a higher priority will interrupt the one that is playing.
+Stay on last frame
+Enabling this property will cause the animation to stay on the last frame when it completes, instead of reverting back to the main sprite.
+INPUTS
+start
+When the "start" input is activated, the selected animation will begin playback. If looping is enabled, then it will play continuously, otherwise it will play once. The input value is sent to the "play" output.
+stop
+Stops this block's animation if it is the one currently playing, and returns the object to its main sprite. If a different animation is playing, nothing happens.
+go to
+Jump to a specific frame of the animation, counting from 1
+OUTPUTS
+play
+The play output is activated when the animation begins playing.
+done
+When the animation is complete, the input value will be sent to the "done" output. A looping animation never completes, so done does not fire while Loop is on. done is also activated when the stop input stops the animation, sending the value that was sent to stop.
+go to
+Passes the value sent to the "go to" input through after the frame is set.
+TIPS
+There is no need to trigger a looping animation more than once - it will continue to play on its own.
+The "Stop" input only halts the animation selected in this block. To stop a different animation, use an Animation block set to that animation.
+Velocity
+GAME LAYER ONLY
+#velocity
+PROPERTIES
+
+Velocity blocks allow the current object's velocity (speed + direction) to be set directly.
+
+INPUTS
+x
+Set the object's X velocity
+y
+Set the object's Y velocity
+forward
+Set the object's forward velocity
+in
+out
+Each input will send its value to the corresponding output.
+TIPS
+Use a Rotation block to change the object's forward direction
+It is often preferable to use forces like a Motor or Impulse to adjust an object's velocity instead of manipulating it directly, since this will give more predictable results when handling collisions.
+Spin
+GAME LAYER ONLY
+#spin
+PROPERTIES
+
+Spin blocks allow the current object's angular velocity (rotation speed) to be set directly. Speed is given in "rotations per second", so a spin speed of 1 will cause the object to start rotating at a speed of once per second (360 degrees per second).
+
+INPUTS
+set
+Set the object's spin speed in rotations per second
+OUTPUTS
+spin
+The object's spin speed in rotations per second
+TIPS
+It is often preferable to use forces like a Spin Motor to adjust an object's angular velocity instead of manipulating it directly, since this will give more predictable results when handling collisions.
+Material
+GAME LAYER ONLY
+#material
+PROPERTIES
+
+Material blocks allow the object's physical properties to updated while the game is in progress.
+
+INPUTS
+friction
+Set the object's friction, from 0 (slippery) to 100
+bounce
+Set the object's bounciness, from 0 (no bounce) to 100
+density
+Set the object's density, making it heavier or lighter. 50 is the default weight; values below 5 are treated as 5
+in
+out
+Each input will send its value to the corresponding output.
+Flip
+#flip
+PROPERTIES
+
+Flip blocks flip both object's sprite and current forward direction. For example, if the object's forward direction is pointing to the right, then if it is flipped, the forward direction will be pointing left, and the sprite will be displayed reversed on the x axis. Flip can operate either horizontally (x axis, the default) or vertically (y axis).
+
+PROPERTIES
+Vertical
+Enabling the "Vertical" property will cause the Flip to operate vertically instead of horizontally.
+Lock Flip Axis
+Enabling this flips the object on the global instead of local x or y axes.
+Only Update Sprite
+Selecting this setting prevents the object from being rotated. The sprite is flipped but the object's rotation remains unchanged.
+INPUTS
+flip
+Activating the "flip" input will cause the object to be flipped from its default direction. If it is already flipped then this will have no effect.
+back
+Activating the "back" input will cause the object to be flipped back to its default direction. If it is already flipped back then this will have no effect.
+toggle
+Activating the "toggle" input will cause the object to change from its current direction.
+in
+out
+Each input passes its value through to the matching output after the flip is applied.
+TIPS
+Keep in mind that the forward direction (and rotation) of the object is affected by this behavior, not only its sprite
+Extractor
+#extractor
+PROPERTIES
+
+Extractor blocks retrieve a property from an object and output its value. Extracting the properties of objects is useful to compare relative positions, or check an object's visibility, rotation, or speed.
+
+PROPERTIES
+Extract Property
+
+The "Extract Property" selector lists the available properties to extract. The possible options are:
+
+X (position, in pixels)
+Y (position, in pixels)
+Alpha (transparency, from 0 to 100)
+Rotation (in degrees)
+Spin Speed (in rotations per second)
+X Velocity (horizontal speed)
+Y Velocity (vertical speed)
+X Scale (horizontal size scale)
+Y Scale (vertical size scale)
+Starting value (value sent as input when this object was created using Spawn, Attacher, or Emit)
+Id (every object has a unique id number associated with it)
+Name (the object's name, as Text)
+Object Variable - any Object Variable defined for this object can be extracted
+Target Object
+The property can be extracted from either the current object, or from another specified object instance.
+INPUTS
+get
+Activating the "Get" input will cause the property to extracted from the selected object and sent to the "Value" output.
+OUTPUTS
+value
+Extracted values are sent to this output
+TIPS
+Extractors can be used any time you wish to access one of an object's properties
+Extracted values are exact and may include a decimal part (for example, an x position of 150.75). Use the Number behavior's Rounding property if you need whole numbers
+Display Order
+#display-order
+PROPERTIES
+
+Update the object's display order. Lower numbers will display behind, and higher numbers will display in front.
+
+INPUTS
+order
+Send a value between 1 and 1000 to this input to change the display order.
+OUTPUTS
+out
+new render order is forwarded to this output
+TIPS
+Very many or very large display order layers can impact your game's performance.
+Blending
+#blending
+PROPERTIES
+
+Blending block alters how an object's sprite is blended when rendering it into the game.
+
+INPUTS
+mode
+Activating the "mode" input will set the blend mode to one of the following values: * 0 - normal * 1 - add * 2 - subtract * 3 - multiply * 4 - screen
+OUTPUTS
+out
+new mode is forwarded to this output
+TIPS
+Blend modes are useful for creating interesting rendering effects for things like smoke, fire, or lighting
+Colors
+#colors
+PROPERTIES
+
+This block allows the object's sprite colors to be modified during gameplay. All input values are percentages from 0 to 100. For example, sending a value of 50 to the red input means the red channel of the sprite will be set to 50%.
+
+INPUTS
+red
+When a value is sent to this input, all pixels of the sprite have their Red channel multiplied by this value
+green
+When a value is sent to this input, all pixels of the sprite have their Green channel multiplied by this value
+blue
+When a value is sent to this input, all pixels of the sprite have their Blue channel multiplied by this value
+OUTPUTS
+out
+each input value is forwarded to its corresponding output
+TIPS
+Because black is 0, it cannot be modified with a multiplier (any value multiplied by 0 will still be 0).
+To restore the original colors, send 100 to the red, green, and blue inputs.
+Shader
+#shader
+PROPERTIES
+
+A Shader is a visual effect applied to the rendered game, to one of its layers, or to a single object. Flowlab provides a selection of shaders that can be switched on and off, and most of them have inputs so their parameters can be animated while the game runs: a Timer feeding a rising number into a Scroll shader makes a conveyor belt, an Ease into a Dissolve makes an enemy crumble away, and so on.
+
+Each shader keeps its settings in the properties panel, and the runtime inputs override those settings while the game plays. The set of inputs changes with the selected type; the on and off inputs are always present.
+
+Which target a shader draws on is set by the Mode property. Layer modes apply the effect to everything on that layer; This object only applies it to the object holding the behavior, and the effect stays inside the object's sprite, which is why a few shaders behave differently there (noted per type below).
+
+PROPERTIES
+Type
+Bloom - bright areas bleed a soft glow into their surroundings. Layer modes only: it draws outside the sprite, so This object only has no effect
+Blur - a mild, fixed-size softening. For a real adjustable blur use Gaussian Blur
+Calibration - adjusts brightness, contrast and saturation of the target
+Color Shift - rotates every color around the hue wheel. Ramp it from 0 to 100 for a continuous rainbow
+Dissolve - the image crumbles away in blocky cells as amount rises from 0 to 100, with an optional glowing burn rim; run it in reverse to materialize
+Dot Screen - a newsprint halftone of dots whose size follows brightness
+Film - old film stock: animated grain and rolling scan bands
+Gaussian Blur - a smooth blur with separate horizontal and vertical strength in pixels. Large radii cost frames on big displays
+Glitch - horizontal bands jump sideways with color fringing, like a corrupted video signal
+Grayscale - drains all color to gray
+Hexagon - rebuilds the image from a honeycomb of flat-colored hexagons
+HQ2X - a gentle smoothing filter that takes the hard edge off scaled-up pixel art
+Invert - a photographic negative; transparent areas stay transparent
+LCD - RGB subpixel stripes like a handheld screen. The stripes are locked to the display, so they do not move with the camera or the object
+LED - a grid of round glowing dots on black, like a scoreboard. Locked to the display like LCD
+Pixel Resolution - re-renders the target at a fixed low resolution, for example 80 by 60 cells across it
+Pixel Size - square blocks of a given size in art pixels, staying the same apparent size at any zoom
+Pixelize - coarse pixel blocks set in the properties panel. This one has no runtime inputs; use Pixel Size to animate block size
+Retro TV - a curved CRT picture tube with scanlines and a soft vignetted edge
+Scatter - the sprite blows apart as amount rises from 0 to 100, pixels drifting in a chosen direction and fading; reverse the amount to reassemble
+Scroll - slides the texture within its own bounds and wraps it seamlessly, for repeating backgrounds, conveyor belts, flowing water or lava. It has no panel settings; the offsets come from its x and y inputs, in pixels
+Shockwave - a circular ripple expands outward from a point. Set xpos and ypos first, then send on: the position is read when the shader is turned on
+Sphere - wraps the object's sprite, treated as an equirectangular "unwrapped planet" map, onto a lit, rotating sphere for planets, globes, rolling balls and eyes. Selecting it switches the mode to This object only
+Threshold - hard two-tone: pixels brighter than the limit become white, the rest become transparent. The original colors are discarded
+Wavy - the image ripples with a travelling wave, for underwater or heat haze
+Mode
+Everything - apply the shader to the entire game
+Background - only apply the shader to the background layer
+Game Layer - only apply the shader to the game layer
+UI Layer - only apply the shader to the user interface layer
+Labels Only - only apply the shader to labels
+This object only - only apply the shader to the current object. An object can carry one shader at a time in this mode; a second Shader behavior on the same object replaces the first
+INPUTS
+50
+
+Every type has the on and off inputs. The rest depend on the selected type and are listed by type below. Ranges given are the useful ones; only Sphere's wrap is clamped, every other input takes whatever number it is sent. Percent inputs run 0 to 100, and every input keeps its last value until it is sent again.
+
+on
+turns the shader on. Any value works, and it is passed through to the first output. Shaders that animate over time (Film, Glitch, Wavy, Shockwave) restart their clock here.
+off
+turns the shader off. The value is passed through to the second output.
+BLOOM TYPE
+limit
+brightness above which a pixel glows, 0 to 100 percent. Default 60.
+blur
+glow spread in pixels, 0 to 64. Default 16.
+power
+glow brightness in percent, where 100 is normal, 0 to 300. Default 100.
+BLUR TYPE
+focus
+the softening strength, 128 to 512, where smaller numbers blur more. Default 256.
+CALIBRATION TYPE
+brite
+brightness offset from -1 to 1, where 0 is unchanged. Default 0.15.
+contr
+contrast multiplier from -2 to 2, where 1 is unchanged. Default 1.2.
+sat
+saturation multiplier from -16 to 16, where 1 is unchanged and 0 is gray. Default 1.5.
+COLOR SHIFT TYPE
+shift
+hue rotation as a percent of a full turn, 0 to 100. 0 and 100 are both unchanged and 50 is the complementary color; values past 100 keep going around. Default 50.
+DISSOLVE TYPE
+amount
+how far the dissolve has progressed, 0 (intact) to 100 (gone). Starts at 0 whenever the game or the object resets, so this input has to be driven. Cell size, edge width, blob size and burn color are set in the properties panel.
+DOT SCREEN TYPE
+size
+dot diameter in pixels, 1 to 16. Default 3.
+angle
+rotation of the dot grid in radians, 0 to 6.28. Default 4.5.
+FILM TYPE
+noise
+grain intensity from 0 to 1. Default 0.5.
+alpha
+scan band strength from 0 to 1. Default 0.3.
+lines
+number of scan bands, 0 to 4096. Default 400.
+GAUSSIAN BLUR TYPE
+x
+horizontal blur radius in pixels, 0 to 64. Default 8.
+y
+vertical blur radius in pixels, 0 to 64. Default 8.
+GLITCH TYPE
+shake
+how far bands jump sideways, as a fraction of the target's width from 0 to 1. Default 0.03.
+rate
+how often the glitch is active, 0 to 1. Default 0.2.
+speed
+how many times per second a new random jump is rolled, 1 to 64. Default 5.
+blocks
+how many horizontal bands the image is cut into, 1 to 1028. Default 30.
+color
+color fringing offset, as a fraction of the width from 0 to 1. Default 0.02.
+HEXAGON TYPE
+size
+hexagon width in pixels, 1 to 128. Default 5.
+LCD TYPE
+size
+width of each color stripe in display pixels, 1 to 16. Default 3.
+brite
+brightness multiplier to compensate for the darkening stripes, 0 to 10, where 1 is unchanged. Default 1.5.
+LED TYPE
+grid
+size of each dot's cell in display pixels, 2 to 32. Default 6.
+lights
+dot size as a fraction of the cell, 0 to 1. Default 0.4.
+PIXEL RESOLUTION TYPE
+x
+number of cells across the target, 1 to 1024. Bigger numbers mean finer detail. Default 80.
+y
+number of cells down the target, 1 to 1024. Default 60.
+PIXEL SIZE TYPE
+size
+block edge length in art pixels, 1 to 64. Default 8. In This object only mode the block size is set from the properties panel instead.
+RETRO TV TYPE
+lines
+number of scanlines, 0 to 1024. Default 100.
+curve
+tube curvature, 2 to 16, where smaller numbers curve more. Default 6.
+SCATTER TYPE
+amount
+how far the scatter has progressed, 0 (intact) to 100 (gone). Starts at 0 on reset, so drive it.
+angle
+direction the pixels fly, in degrees, where 0 is right and 90 is down. Default 0.
+drift
+how far they travel, 0 to 100 percent of the sprite. Default 50.
+fade
+how much the edges fade first, 0 (uniform) to 100 (edges vanish first). Default 50.
+SCROLL TYPE
+x
+horizontal offset in pixels. The texture wraps at its own width, so any value works, larger ones just wrap around, and negative values scroll the other way. Feed a rising number to animate. Default 0.
+y
+vertical offset in pixels, wrapping at the texture's height. Default 0.
+SHOCKWAVE TYPE
+xpos
+horizontal center of the ripple in game pixels. Read when on fires, so set it before triggering. Default: the center of the view.
+ypos
+vertical center of the ripple in game pixels, read the same way.
+SPHERE TYPE
+speed
+rotation speed in degrees per second, -360 to 360. Default 6.
+spin
+turns the sphere to an exact longitude, in degrees, on top of the rotation. Default 0.
+tilt
+tilts the polar axis toward or away from the viewer, in degrees from -180 to 180. Default 0.
+light
+where the light comes from, in degrees: 0 is front-lit, 90 or -90 is a half phase, 180 is backlit. Default 30.
+wrap
+how far the sprite is wrapped into a ball, 0 (flat) to 100 (full sphere). Ease it from 0 to 100 to roll the image up. Default 100.
+THRESHOLD TYPE
+limit
+brightness cutoff, 0 to 100 percent. Default 50.
+WAVY TYPE
+speed
+animation rate, 1 to 200. Default 10.
+waves
+number of ripples across the target, 1 to 1024. Default 10.
+depth
+ripple size as a fraction of the target from 0.001 to 0.06. Default 0.01. Larger values tear the image apart.
+OUTPUTS
+out
+activates when on fires, passing its value through.
+out
+activates when off fires, passing its value through.
+TIPS
+The runtime inputs are the way to animate a shader. Wire a Timer or an Ease into them; the properties panel values are only the starting point.
+Scroll takes pixel offsets, not a fraction: sending the sprite's width scrolls exactly one full wrap.
+Bloom and Gaussian Blur are the expensive shaders. Blur radii of 8 and above and any Bloom run at reduced resolution to keep the frame rate up.
+Changing a shader's type rebuilds its inputs, so any links into the old inputs are dropped. Set the type before wiring it up.
+CATEGORY 5 OF 9
+Text & Lists 12 behaviors
+
+Text behaviors work with words and characters, and List behaviors work with ordered collections of numbers or text. Lists are shared between the behaviors that hold them, so a change in one place is seen everywhere unless you copy the list first.
+
+Text
+#text
+TEXT & LISTS
+
+This block holds and manipulates a Text value.
+
+PROPERTIES
+Text Value
+This is the Text value stored in this block.
+Show Extended Options
+By default the block has 3 inputs (set, get, +) and 1 output (out). Enabling this property exposes the extra char and split ports.
+INPUTS
+set
+Update the text stored in this block.
+get
+Output the text stored in this block.
++
+Append to the text value. For example, if the text value is "Hello", then sending the value " World" will result in the block having a value of "Hello World".
+EXTENDED (VISIBLE WHEN SHOW EXTENDED OPTIONS IS ON)
+char
+When a number value is sent to this input, the block will output the character at that position, counting from 1. For example if the text value is "Hello", sending an input of 5 will output the value "o".
+split
+Sending a value to this input results in the text value being split into a List using the input value as a delimiter, which is sent to the split output. Some examples to help illustrate:
+
+For the text "Hello World", splitting on a space (" ") will result in the list ("Hello", "World")
+
+For the text "Hello World", splitting on empty text ("") will result in the list ("H","e","l","l","o"," ","W","o","r","l","d")
+
+For the text "a-b-c-d", splitting on hyphen ("-") will result in the list ("a","b","c","d")
+
+OUTPUTS
+out
+Output the text value.
+split
+Output the list value after a split. (extended only)
+Text Case
+#text-case
+TEXT & LISTS
+
+This block modifies the case of a Text value.
+
+PROPERTIES
+Uppercase converts the text to uppercase, e.g. "HELLO WORLD"
+Lowercase converts the text to lowercase, e.g. "hello world"
+Uppercase first letter converts the first character of the text to uppercase, e.g. "Hello world"
+INPUTS
+in
+Input text
+OUTPUTS
+out
+Output text with modified case
+Text Length
+#text-length
+TEXT & LISTS
+
+This block returns the length of some Text.
+
+INPUTS
+in
+Input text
+OUTPUTS
+out
+Output the length of the input text
+To Number
+#to-number
+TEXT & LISTS
+
+This Block converts a Text value containing a Number into a Number value.
+
+INPUTS
+in
+Input a Text value starting with a number, like "3.1415 is pi"
+OUTPUTS
+out
+Outputs a Number value after converting the text, e.g. 3.1415. Text that does not start with a number outputs 0
+Text Compare
+#text-compare
+TEXT & LISTS
+
+Compare two Text values
+
+PROPERTIES
+A
+This property allows you to set a default value for A instead of using the input
+Comparison
+A is Equal to B This will output yes if both A and B values are the same, otherwise it will output no. Comparisons are case-sensitive, so "Bob" and "bob" are different; use Text Case first to compare regardless of case.
+A contains B This will output yes if A contains B, otherwise it will output no. For example if A is "Hello Bob" and B is "Bob" then the yes output will activate.
+B contains A This will output yes if B contains A, otherwise it will output no. For example if A is "Bob" and B is "Hello Bob" then the yes output will activate.
+A starts with B This will output yes if A starts with B, otherwise it will output no. For example if A is "Hello Bob" and B is "Hello" then the yes output will activate.
+B starts with A This will output yes if B starts with A, otherwise it will output no. For example if A is "Hello" and B is "Hello Bob" then the yes output will activate.
+INPUTS
+A
+Input to set the value of A
+B
+Input to set the value of B and trigger the comparison
+OUTPUTS
+yes
+Outputs the value of B if the comparison is true
+no
+Outputs the value of B if the comparison is false
+Text Sanitize
+#text-sanitize
+TEXT & LISTS
+
+Checks Text for characters that cannot be displayed (anything outside printable ASCII) and routes it to either the good or the bad output. The text itself is not changed.
+
+INPUTS
+in
+Input text
+OUTPUTS
+good
+Outputs the input text if it contains only valid printable ASCII
+bad
+Outputs the input text if it contains any invalid or non-printable ASCII
+Text List
+#text-list
+TEXT & LISTS
+
+A List of Text values.
+
+PROPERTIES
+
+Elements can be added by typing (or pasting) in a value and clicking Add. To remove an item, highlight it and click Remove. To insert an item in an existing list, highlight the item currently at the position to be inserted and then click Add.
+
+Copy list on set
+For performance reasons, lists are shared when being updated. This means all blocks containing that same list are updated when a modification occurs. If this is undesirable in your game logic, enabling this setting will make a copy before modifying your list, so that it is no longer shared between behavior blocks. Be aware that making many list copies can have a negative impact on game performance
+INPUTS
+7
+set
+Input a new set of List values to replace any current values
+push
+Pushes a new value onto the end of the list, lengthening the list by 1
+all
+Outputs the entire list
+one
+Sending a number to this input will output the list item at that position, counting from 1. For example if the list is ("a","b","c"), sending the value 3 to this input will output "c". Positions below 1 give the first item and positions past the end give the last.
+pop
+Pops the last value from the end of the list and outputs it, shortening the list by 1.
+join
+Joins the list together into a Text value, delimited by the input text. For example if the list contains ("a","b","c"), then sending "-" to the join input will output the text "a-b-c"
+find
+This searches the list for the input value, and returns the position where the element can be found, or 0 if the element is not found. For example if the list is ("a","b","c"), then the input value "b" will output 2, while an input value of "x" will return 0.
+OUTPUTS
+all
+Outputs the entire list
+one
+Outputs one item in the list
+pop
+Outputs the last item from the list
+join
+Outputs the list joined together as a Text value
+find
+Outputs the position where a list item was found
+TIPS
+Lists are shared. Every behavior holding this list sees changes made anywhere. Copy list on set makes a private copy of a list arriving at set, but the all output always sends this block's actual list: to protect it from behaviors connected to all, turn on Copy before modifying in those behaviors.
+pop on an empty list outputs nothing.
+Number List
+#number-list
+TEXT & LISTS
+
+A List of Number values.
+
+PROPERTIES
+
+Elements can be added by selecting a value and clicking Add. To remove an item, highlight it and click Remove. To insert an item in an existing list, highlight the item currently at the position to be inserted and then click Add.
+
+Copy list on set
+For performance reasons, lists are shared when being updated. This means all blocks containing that same list are updated when a modification occurs. If this is undesirable in your game logic, enabling this setting will make a copy before modifying your list, so that it is no longer shared between behavior blocks. Be aware that making many list copies can have a negative impact on game performance
+INPUTS
+7
+set
+Input a new set of List values to replace any current values
+push
+Pushes a new value onto the end of the list, lengthening the list by 1
+all
+Outputs the entire list
+one
+Sending a number to this input will output the list item at that position, counting from 1. For example if the list is (100,200,300), sending the value 3 to this input will output 300. Positions below 1 give the first item and positions past the end give the last.
+pop
+Pops the last value from the end of the list and outputs it, shortening the list by 1.
+join
+Joins the list together into a Text value, delimited by the input text. For example if the list contains (100,200,300), then sending "-" to the join input will output the text "100-200-300"
+find
+This searches the list for the input value, and returns the position where the element can be found, or 0 if the element is not found. For example if the list is (100,200,300), then the input value 200 will output 2, while an input value of 3.1415 will return 0.
+OUTPUTS
+all
+Outputs the entire list
+one
+Outputs one item in the list
+pop
+Outputs the last item from the list
+join
+Outputs the list joined together as a Text value
+find
+Outputs the position where a list item was found
+TIPS
+Lists are shared. Every behavior holding this list sees changes made anywhere. Copy list on set makes a private copy of a list arriving at set, but the all output always sends this block's actual list: to protect it from behaviors connected to all, turn on Copy before modifying in those behaviors.
+pop on an empty list outputs nothing.
+List Modify
+#list-modify
+TEXT & LISTS
+
+Insert, remove, or update values stored in a List.
+
+PROPERTIES
+Update Type
+Insert into List inserts the input value into the list at the position specified by the index input. For example if the list contains ("a","c") then inserting "b" at index 2 will result in a list of ("a","b","c")
+Remove from List removes the item at the position specified by the index input from the list. For example if the list contains ("a","b","c") then removing the item from index 2 would result in the list ("a","c")
+Replace item in List replaces the item at the position specified by the index input in the list. For example if the list contains ("a","b","c") then replacing the item at index 2 with the input "x" would result in the list ("a","x","c")
+Copy before modifying
+For performance reasons, lists are modified directly by default which means all blocks containing that same list are updated. If this behavior is undesirable in your game logic, enabling this setting will make a copy before modifying your list. Be aware that making many list copies can have a negative impact on game performance, however.
+INPUTS
+list
+Input list to modify
+index
+Position of the element to modify
+value
+New value to insert or update
+OUTPUTS
+out
+Outputs updated list
+List Order
+#list-order
+TEXT & LISTS
+
+Modify the order of a List.
+
+PROPERTIES
+Sort Type
+Sort List Sorts the list Alphabetically for text lists or Numerically for Number lists
+Reverse List Reverses the order of the list, so ("a","b","c") becomes ("c","b","a")
+Shuffle List Randomizes the order of the list.
+Copy before modifying
+For performance reasons, lists are modified directly which means all blocks containing that same list are updated. If this behavior is undesirable in your game logic, enabling this setting will make a copy before modifying your list. Be aware that making many list copies can have a negative impact on game performance, however.
+Sort text as numbers
+Sometimes Text lists might contain numerical values. For example, sorting the list ("2. Item Two", "100. Item One Hundred", "1. Item One") Alphabetically results in ("1. Item One", "100. Item One Hundred", "2. Item Two"), because 1 appears alphabetically before 2. This may not be what you want, so selecting Sort text as numbers causes the text to be sorted Numerically instead, resulting in ("1. Item One", "2. Item Two", "100. Item One Hundred").
+INPUTS
+in
+Input the list to be re-ordered
+OUTPUTS
+out
+Output the updated list
+List Each
+#list-each
+TEXT & LISTS
+
+Output each value in a List, one at a time. This block does not modify the list.
+
+PROPERTIES
+Delay
+How long to wait between each list item that is output.
+INPUTS
+delay
+Update the per-iteration delay at runtime, in tenths of a second. Overrides the Delay property for the current and any future iteration.
+list
+List to process. Each value is sent to the out output, one at a time.
+reset
+Stop an in-flight iteration. Any remaining list items are skipped and done is not emitted.
+OUTPUTS
+index
+The 1-based index of the current item, emitted before out.
+out
+Outputs each item in the list, optionally with a delay between each item.
+done
+This output is activated once each item has been output.
+TIPS
+Wire reset (or another node's output) back from a Filter to bail out of a loop early — for example, "stop iterating once the first matching value is found".
+List Count
+#list-count
+TEXT & LISTS
+
+Output the number of items contained in a List.
+
+INPUTS
+list
+The list to count
+OUTPUTS
+count
+Outputs how many items are in the list. For example if the input list is ("a","b","c") then the output will be 3.
+CATEGORY 6 OF 9
+GUI 4 behaviors
+
+GUI behaviors draw on the screen rather than in the level, so they stay put while the camera scrolls. Position them by dragging them in the editor.
+
+Alert
+GAME AND USER INTERFACE LAYERS ONLY
+#alert
+GUI
+
+Alert blocks display a simple dialog window with a message, and button to close. The title, message, and button text, as well as the colors of each element can be selected in the properties panel. Activating the "Show" input displays the alert window. When the player clicks the button the window will close, and the "Click" output will be activated, sending the same number that was sent to "Show".
+
+PROPERTIES
+Title
+This is the main text that shows at the top of the alert box
+Message
+This is the text that displays below the title
+Button Label
+This is the text that displays on the close button
+INPUTS
+show
+Activating this input causes the Alert box to be displayed.
+hide
+Activating this input causes the Alert box to be hidden, and the Click output to be activated.
+OUTPUTS
+click
+This output is activated when the button is clicked and the window closes. It sends the number that was received by show (or by hide, if the alert was closed that way).
+Bar
+GAME AND USER INTERFACE LAYERS ONLY
+#bar
+GUI
+
+Bar blocks display a simple progress bar element on the screen. The bar's progress value is displayed as a percentage of its maximum value. For example, if the max value is 8, and the current value is 4, then it would display as (4/8 = 0.5) 50% full.
+
+PROPERTIES
+Current Value
+This is the starting value of the Bar.
+Max Value
+This is the value at which the bar is completely filled.
+Frame Color
+The color of the bar's outline.
+Bar Color
+The color of the filled part of the bar.
+INPUTS
+value
+Sending a value to this input causes the bar's value to be updated.
+OUTPUTS
+out
+The bar's value is sent to this output when it is updated.
+TIPS
+The bar can be repositioned by dragging it
+Label
+GAME AND USER INTERFACE LAYERS ONLY
+#label
+GUI
+
+Label blocks display a text message on the screen.
+
+PROPERTIES
+15
+Text
+The text to display, type your message here
+Text Color
+The color of the label
+Outline Color
+The color of the outline if visible
+Font
+Select the font to display or Click "Upload Custom Font" to use your own fonts.
+Alignment
+Determines whether lines of text are aligned left, right, or center
+Size
+Size of the displayed text
+Weight
+The font weight (or boldness)
+Alpha
+The alpha (transparency) value of the label
+Outline Size
+Width of the text outline
+Outline Blur
+Blurs or fades the outline
+Spacing x
+The space between your characters (also called "kerning")
+Spacing y
+The space between your lines (also called "line height")
+Attach to Object
+Attaches the label to your object, so it will move, rotate, & scale along with the object. The label will also be affected by filters and shaders on the object.
+Show Extended Options
+This enables additional inputs for your behavior
+Max Width
+How wide the text can get before it wraps into a new line. Setting this value to 0 means the text will not wrap. Text will not wrap in the middle of a word, so there must be spaces in order to wrap.
+INPUTS
+10
+
+By default the label has 4 inputs. Enabling the Show Extended Options property adds 6 more (size, weight, outline, r, g, b).
+
+text
+A new value to display. Any value sent to this input replaces the display text.
+alpha
+Updates the alpha (transparency) value of the label. This value is a percentage, so 100 will be fully opaque, while 0 will be invisible. If the label is attached to an object, then the final alpha value will be a combination of the label & object's alpha values.
+x
+Sending a value to this input moves the label to that x coordinate. If the label is attached to an object, then the position is relative to the object's current position.
+y
+Sending a value to this input moves the label to that Y coordinate. If the label is attached to an object, then the position is relative to the object's current position.
+EXTENDED (VISIBLE WHEN SHOW EXTENDED OPTIONS IS ON)
+size
+Sets the size of your text.
+weight
+Sets the weight of your text.
+outline
+Sets the outline size of your text.
+r
+Sets the Red value of your text.
+g
+Sets the Green value of your text.
+b
+Sets the Blue value of your text.
+in
+out
+Each input passes its value through to the matching output after the change is applied (4 outputs by default, 10 in extended mode).
+TIPS
+The label can be repositioned by dragging it.
+Extended mode is useful when you need to drive the styling of a label at runtime — most labels work fine with just text, alpha, x, and y.
+Cursor
+GAME AND USER INTERFACE LAYERS ONLY
+#cursor
+GUI
+
+Hide or show the system mouse pointer.
+
+INPUTS
+on
+Sending a value to this input causes the mouse pointer to display.
+off
+Sending a value to this input prevents the mouse pointer from displaying.
+in
+out
+Each input passes its value through to the matching output after the cursor state is applied.
+CATEGORY 7 OF 9
+Game Flow 13 behaviors
+
+Game Flow behaviors manage the game as a whole: pausing, changing levels, saving and loading, online features, and links to the outside world.
+
+Pause Game
+GAME AND USER INTERFACE LAYERS ONLY
+#pause-game
+GAME FLOW
+
+Pause Game blocks pause the entire game, stopping all physics and game events except for mouse clicks.
+
+PROPERTIES
+Don't pause this object
+When this box is checked, objects containing this pause block will not have their logic paused (physics will still be paused).
+INPUTS
+pause
+Activating the "pause" input pauses the game.
+play
+Activating the "play" input resumes the game.
+in
+out
+Each input passes its value through to the matching output after the new state is applied.
+TIPS
+Mouse click triggers still run when paused, so that the game can be unpaused. Everything else, including Timers, waits; an object with Don't pause this object checked keeps running its behaviors while physics stays frozen.
+Load Level
+GAME AND USER INTERFACE LAYERS ONLY
+#load-level
+GAME FLOW
+
+Load Level blocks unload the current level and load a new level in its place. More than one level must be created in the Levels Panel for this block to have any effect.
+
+By default, the next level in the order specified in the levels panel will be loaded, but different level can be selected in the properties panel if preferred.
+
+PROPERTIES
+Pick Level
+
+Select one of the following options:
+
+Restart Current This will restart the current level from the beginning
+Next Level This will unload the current level and load the next one
+Previous Level This will unload the current level and load the previous one
+Use Input Value This will use the input value to select a level. For example, if the value 2 is input, then the current level will unload and level 2 will load
+Selected Level This will unload the current level, and the selected level will be loaded
+INPUTS
+go
+Activating this input causes the current level to be unloaded, and the selected level to be loaded in its place.
+get
+Activating this input fetches and outputs the current level. For example, if the first level is currently loaded it will output 1, if you are in the second level, then the resulting value will be 2.
+OUTPUTS
+out
+The first output, paired with Go: sends the value passed to Go as the level changes. It only activates when Pick Level is Selected Level or Restart Current: with Next Level, Previous Level, or Use Input Value this output does not activate
+out
+The second output, paired with Get: sends the number of the current level
+TIPS
+You can select the current level to restart it
+Loading a level removes every object in the current level except those set to keep between levels. Global Variables keep their values across levels.
+Restart Game
+GAME AND USER INTERFACE LAYERS ONLY
+#restart-game
+GAME FLOW
+
+Restart Game blocks reset all game logic and state, and restart the game from the beginning.
+
+INPUTS
+go
+Activating the "go" input will cause the game to restart immediately.
+OUTPUTS
+out
+The "go" input value is passed through to the output before the game restarts.
+TIPS
+Restarting removes every object, including those set to keep between levels, so Object Variables return to their starting values. Global Variables and values stored with a Save behavior are not reset: they keep their values through a restart. (Globals return to their defaults when you switch back to editing, which is why a restart can appear to reset them while testing in the editor.)
+Fetch URL
+GAME AND USER INTERFACE LAYERS ONLY
+#fetch-url
+GAME FLOW
+
+Fetch URL blocks load a url into a new window or browser tab, or load text or image data from a URL.
+
+PROPERTIES
+Target URL
+The link to open. It should begin with "http://" or "https://". On mobile devices, this will run the device's built in web browser to open the link.
+URL loading behavior
+Open page at URL will open the selected URL in a new browser tab
+Load Text from URL will fetch the data from the selected URL for output
+Load image from URL will replace the current sprite with the image found at the selected URL
+INPUTS
+fetch
+Activating the "fetch" input will cause the URL to be fetched and processed according to the selected URL behavior. If Text data is sent to this input, the input text will be appended to the URL exactly as sent (it is not URL-encoded) before fetching.
+OUTPUTS
+out
+With Load Text from URL, outputs the loaded text once it arrives. With Load image from URL, outputs the text 1 once the image data arrives. Otherwise outputs the input value
+fail
+Outputs only if data from the selected URL fails to load
+TIPS
+Loading text or an image from another website only works if that site allows it (a browser rule called CORS). Most sites do not, and the load reports Fail. Sites you control can allow it by sending the Access-Control-Allow-Origin header.
+Save Value
+GAME AND USER INTERFACE LAYERS ONLY
+#save-value
+GAME FLOW
+
+Save Value blocks store and load values across gameplay sessions. This is useful for saving game state such as high scores, current level, or other game progress so that it can be restored when the player returns.
+
+PROPERTIES
+Name
+Values are saved and loaded with a "Name". A value saved with a particular name can be loaded afterward using that name.
+Type
+The type of value to be saved: either Number, Text, Text List, or Number List
+INPUTS
+save
+Sending a value to the "Save" input will cause the value to be stored on the player's computer or mobile device with the specified Name so that it is accessible in later gameplay sessions.
+read
+Activating the "Read" input will cause the last value stored with this name to be retrieved and sent to the output. A name that has never been saved reads as 0, empty text, or an empty list depending on the Type.
+OUTPUTS
+done
+After a Save, the saved value is sent to the done output. After a Read, the stored value is sent (not the value that activated Read)
+Game Save
+GAME AND USER INTERFACE LAYERS ONLY
+#game-save
+GAME FLOW
+
+Game Save blocks save and load a complete snapshot of the entire game state, including all entity positions, properties, and behavior states. Unlike the Save Value block which stores individual values, Game Save captures everything needed to restore the game exactly as it was. This is useful for implementing save/load systems, save slots, or checkpoint-style saving.
+
+Game state is stored locally on the player's device. Up to 100 save slots are available per game.
+
+PROPERTIES
+Preview image size
+Select the resolution for the thumbnail screenshot captured when saving. Options range from Tiny (32px) to Full Size. Larger thumbnails use more storage but provide better previews. Only sizes smaller than the game dimensions are available.
+INPUTS
+list
+Activating this input retrieves information about all existing save slots and outputs an array to the All output.
+save
+Sending a slot number (1-100) to this input saves the current game state to that slot. A thumbnail screenshot is also captured automatically. If a save already exists in the specified slot, it will be overwritten.
+load
+Sending a slot number (1-100) to this input restores the game state from that slot. All entities and their behaviors will be returned to the state they were in when the save was created.
+image
+Sending a slot number (1-100) to this input loads the thumbnail screenshot from that save slot and applies it to the current object's sprite. This is useful for displaying save slot previews.
+delete
+Sending a slot number (1-100) to this input permanently deletes the save data and thumbnail for that slot.
+OUTPUTS
+all
+When the List input is activated, outputs a number list representing all save slots. Each position in the list corresponds to a slot number (position 1 = slot 1, etc.). Occupied slots contain a timestamp value (in seconds), and empty slots contain 0.
+saved
+When the Save input is activated, outputs the slot number that was saved to.
+image
+When the Image input is activated and the thumbnail is loaded successfully, outputs the slot number.
+deleted
+When the Delete input is activated, outputs the slot number that was deleted.
+TIPS
+Save clamps the slot number to the range 1-100 (so 0 saves to slot 1). Load, Image, and Delete ignore slot numbers outside 1-100 and send no output. If no valid save exists for a given slot, the Load and Image inputs will have no effect.
+The Image input replaces the sprite of the object containing this behavior. The original sprite is restored automatically when the game is reset or the object is despawned.
+To build a save slot menu, use the List input to check which slots are occupied, then use the Image input to show previews of each saved game.
+Leaderboard
+UPGRADED ACCOUNTS ONLY
+GAME AND USER INTERFACE LAYERS ONLY
+#leaderboard
+GAME FLOW
+
+Updates and displays a cloud-based leaderboard for your game. High scores are stored per user, and a user must be logged in to Flowlab to save their score. Every game has a single shared leaderboard, and adding multiple Leaderboard behaviors will update the same score data.
+
+PROPERTIES
+Lowest score first
+Scores are displayed in ascending order (lowest at the top), for games like golf where the lowest score wins. With this checked, a new score only replaces the player's saved score if it is lower
+Theme
+Select from a set of themes to match your game's look and feel. The login, registration, and other associated interface elements will also use this theme.
+Transparent background
+Displays the leaderboard with a slightly transparent background so that the game is less obscured.
+Max per page
+Maximum number of rows to display on each page of scores
+INPUTS
+score
+Update the current users score. Will only update if the score is an improvement on the existing score.
+get
+Fetch the current leaderboard data. Useful if you prefer to display your own leaderboard instead of using the built-in interface.
+show
+Show the leaderboard display
+hide
+Hide the leaderboard display
+OUTPUTS
+score
+outputs the updated score (if it was updated)
+get
+outputs a list of username / score pairs, separated by a space
+show
+outputs the value sent to the associated input
+hide
+outputs the value sent to the associated input
+failed
+activated when a leaderboard request couldn't reach the server (for example, no connection). It does not activate for a logged-out player: their score is kept, nothing is sent, and the leaderboard display offers a Submit your Score login button instead
+
+Because Leaderboard data is stored in the cloud, an internet connection is required for scores to update or display.
+
+Achievement
+UPGRADED ACCOUNTS ONLY
+GAME AND USER INTERFACE LAYERS ONLY
+#achievement
+GAME FLOW
+
+Updates and displays a cloud-based achievement for your game. Achievements are stored per user, and a user must be logged in to Flowlab to claim their achievements.
+
+PROPERTIES
+Select Achievement
+Select or create a new achievement. Icon can be customized by clicking on it.
+Theme
+Select from a set of themes to match your game's look and feel. The login, registration, and other associated interface elements will also use this theme.
+INPUTS
+grant
+Grant the achievement to the current user. Each achievement can only be granted once, and duplicates will be ignored.
+OUTPUTS
+out
+Sends the achievement's id number once the server confirms the achievement was newly granted. It does not activate if the player already has the achievement or is not logged in
+
+Because Achievement data is stored in the cloud, an internet connection is required to grant an Achievement
+
+Level Physics
+GAME AND USER INTERFACE LAYERS ONLY
+#level-physics
+GAME FLOW
+
+The Level Physics behavior enables you to update various physics properties for the currently running level.
+
+INPUTS
+speed
+Sending a percentage value to this input will modify the speed at which your level physics will advance each frame. A value of 100 will set the speed to the default of 100%. A value of 50 will set the speed to 50%, causing the game physics to run in "slow motion". A value of 200 will set the speed to 200%, causing the physics to advance at double speed.
+drag
+This input modifies the Drag property of the physics engine, which causes objects to slow down and stop even if they are not colliding with other objects. Higher values will cause objects in your game to come to a stop more quickly, while lower values will cause objects to take longer to slow and stop.
+gravity
+This input allows you to modify the gravity of the currently running level.
+in
+out
+Each input passes its value through to the matching output after the new physics setting is applied.
+User Info
+GAME AND USER INTERFACE LAYERS ONLY
+#user-info
+GAME FLOW
+
+Outputs the username and user id of the currently logged in player. If the player is not logged in, then the user id will be 0 and the Username will be empty
+
+INPUTS
+get
+Sending a value to this input will cause the username and id to be output
+OUTPUTS
+id
+User id, or 0 if the player is not logged in
+name
+User name, or empty if the player is not logged in
+Clipboard
+GAME AND USER INTERFACE LAYERS ONLY
+#clipboard
+GAME FLOW
+
+Copies the input to the player's system clipboard. Due to the browser security sandbox, This behavior must be triggered by a mouse click or key press.
+
+INPUTS
+copy
+Copy the input value to the player's clipboard
+OUTPUTS
+out
+Outputs the input value
+Cloud
+UPGRADED ACCOUNTS ONLY
+GAME AND USER INTERFACE LAYERS ONLY
+#cloud
+GAME FLOW
+
+Cloud blocks store and load values to the cloud, where they can be seen by all other players. This is useful for saving shared information such as high scores, or a leaderboard.
+
+Due to server communication delay, outputs will activate several frames after the input.
+
+PROPERTIES
+Name
+Values are saved and loaded with a "Name". A value saved with a particular name can be loaded afterward using that name.
+Type
+The type of value to be saved: either Number, Text, Text List, or Number List
+INPUTS
+name
+The name to use when saving or reading a value
+set
+Upload the input value to the cloud
+get
+Download the input value from the cloud
+clear
+Remove this value from the cloud
+OUTPUTS
+set
+Outputs the saved value once upload is complete
+get
+Outputs the saved value once download is complete
+clear
+Activates (sending 0) once the clear is complete
+fail
+Activates if Set, Get, or Clear fails. This could happen for example if the player has no internet connection.
+
+Keep in mind that uploading and downloading values takes time. Often the outputs will activate many frames after the input was received. Uploads and downloads are rate-limited, so avoid reading and writing in quick succession.
+
+Full Screen
+GAME AND USER INTERFACE LAYERS ONLY
+#full-screen
+GAME FLOW
+
+Toggles your game between full screen and windowed modes.
+
+PROPERTIES
+Expand Mode
+Letterbox - The game will scale until it fills the screen horizontally or vertically, and the rest of the screen will be filled with black
+
+Expand - The game will scale until it fills the screen horizontally or vertically, and then the game's visible area will be expanded to fill the rest of the screen. This means that previously invisible areas of your game may become visible.
+
+Stretch - The game is stretched to the exact size of the screen. This may cause distortion if the aspect ratio of your game does not match the aspect ratio of the viewing device.
+
+Zoom - The game is zoomed in until it fills the screen in both directions. This means some previously visible areas of your game may be hidden if they overflow the screen edge.
+
+None - The game size is not changed.
+
+INPUTS
+on
+enter full screen mode
+off
+exit full screen mode
+toggle
+toggle full screen mode
+get w
+get screen width in pixels
+get h
+get screen height in pixels
+OUTPUTS
+on
+Activates after entering full screen mode.
+off
+Activates after exiting full screen mode.
+toggle
+Activates after toggling full screen mode.
+width
+width of the game screen
+height
+height of the game screen
+
+Window width and height can change when switching to fullscreen if the fullscreen mode is Expand or Zoom
+
+CATEGORY 8 OF 9
+Mobile Device 8 behaviors
+
+These behaviors use features of phones and tablets, such as shaking, vibration, and tilt. Unless an entry says otherwise, they work only in exported mobile apps, not in a web browser.
+
+Shake
+GAME AND USER INTERFACE LAYERS ONLY
+#shake
+MOBILE DEVICE
+
+Trigger game logic when the mobile device is shaken
+
+OUTPUTS
+out
+Output is activated whenever the device is shaken
+TIPS
+Only available on mobile devices
+Ad
+GAME AND USER INTERFACE LAYERS ONLY
+#ad
+MOBILE DEVICE
+
+Make money by displaying ads in your exported Android or iOS app using Ad Mob. This requires an AdMob account. At this time Banner and Interstitial (full screen) ads are supported.
+
+PROPERTIES
+6
+iOS Banner ID
+ID for iOS banner ads
+iOS Interstitial ID
+ID for iOS interstitial ads
+Android Banner ID
+ID for Android banner ads
+Android Interstitial ID
+ID for Android interstitial ads
+Position
+Whether to display the banner ad at the top or bottom of the screen
+Test Mode
+Enabling this puts Ad Mob in Test Mode. Always use test mode for testing
+INPUTS
+banner
+Activating this input shows a banner ad.
+full
+Activating this input shows a full screen interstitial ad.
+hide
+Hides the currently displayed ad.
+reward
+Activating this input shows a rewarded ad. The reward output fires after the user successfully views it.
+OUTPUTS
+out
+Forwards the banner input value once the banner is displayed.
+close
+Activates when the full-screen interstitial closes.
+out
+The third output, paired with hide: forwards the hide input value once the ad has been dismissed.
+reward
+Activates after a reward ad has been viewed and the reward should be granted.
+TIPS
+This behavior only works in exported mobile apps (iOS and Android). It has no effect when the game runs in a web browser.
+Interstitial ads have to be spaced at least 60 seconds apart, or the display request will be ignored.
+Vibrate
+GAME AND USER INTERFACE LAYERS ONLY
+#vibrate
+MOBILE DEVICE
+
+Causes the device to vibrate for a specific number of seconds.
+
+INPUTS
+time
+Activating this input causes the device to vibrate for the number of seconds provided
+OUTPUTS
+out
+The number of seconds to vibrate
+TIPS
+This behavior only works in exported mobile apps (iOS and Android). It has no effect when the game runs in a web browser.
+Accelerometer
+GAME AND USER INTERFACE LAYERS ONLY
+#accelerometer
+MOBILE DEVICE
+
+Outputs the x,y, & z acceleration values as a mobile device is rotated.
+
+OUTPUTS
+x
+device rotation on the x axis
+y
+device rotation on the y axis
+z
+device rotation on the z axis
+TIPS
+This behavior only works in exported mobile apps (iOS and Android). It has no effect when the game runs in a web browser.
+Game Center
+GAME AND USER INTERFACE LAYERS ONLY
+#game-center
+MOBILE DEVICE
+
+Display iOS Game Center Leaderboards in your iOS mobile app. (Android not yet available)
+
+PROPERTIES
+Leaderboard ID
+The id of the leaderboard (from iTunes Connect) to be updated
+INPUTS
+score
+Activating this input sends a new score to the leaderboard, and activates the corresponding output.
+display
+Activating this input displays the leaderboard, and activates the corresponding output.
+in
+out
+Each input passes its value through to the matching output once the action completes.
+TIPS
+This behavior only works in exported iOS apps. It has no effect when the game runs in a web browser.
+Leaderboards need to be created in iTunes Connect before they can be used
+Device Check
+GAME AND USER INTERFACE LAYERS ONLY
+#device-check
+MOBILE DEVICE
+
+Check what type of device (Mobile App, Desktop App, or Web Browser) your game is currently running on. This allows you to alter behavior appropriately to handle e.g. game inputs when a touch screen or keyboard are available
+
+INPUTS
+in
+Activating this input checks the current device and activates the appropriate output.
+OUTPUTS
+browser
+Activates if the game is running as HTML5 in a web browser
+mobile
+Activates if the game is running as a native app on an iOS or Android device
+desktop
+Activates if the game is running as a native app on a Windows or Mac computer
+TIPS
+Use this check to select between touch screen or keyboard controls
+Browser includes phones and tablets playing in a web browser. To tell touch devices apart from desktops, use Touch Check.
+Touch Check
+GAME AND USER INTERFACE LAYERS ONLY
+#touch-check
+MOBILE DEVICE
+
+Check whether the device your game is currently running on supports either mouse or touchscreen inputs. This allows you to alter behavior appropriately to handle e.g. game inputs when a user has just one pointer or multitouch for gestures.
+
+INPUTS
+in
+Activating this input checks the current device and activates the appropriate output.
+OUTPUTS
+touch
+Activates if the current device has a touch screen
+mouse
+Activates if the current device has a mouse
+TIPS
+You can use this check to select between multitouch or mouse controls
+Exit Game
+GAME AND USER INTERFACE LAYERS ONLY
+#exit-game
+MOBILE DEVICE
+
+Exit the game when running on a desktop platform (PC or Mac)
+
+INPUTS
+exit
+Activating this input exits the game.
+TIPS
+This behavior only works in exported desktop apps (PC and Mac). It has no effect when the game runs in a web browser.
+Multiplayer
+
+For in depth discussion of the Multiplayer blocks, see the Multiplayer Handbook
+
+CATEGORY 9 OF 9
+Behavior Bundles 3 behaviors
+
+Bundles package a group of behaviors into a single reusable block with its own inputs and outputs. Use them to keep large behavior graphs readable and to share logic between objects and games.
+
+New Bundle
+#new-bundle
+BEHAVIOR BUNDLES
+
+Bundles are a way to create new, customized logic blocks by assembling existing blocks into a bundle. Organizing your game logic this way has many advantages:
+
+Keeps your game logic easy to understand and navigate
+Easily reuse complex logic between objects, or between games
+Share logic blocks with other game developers in the community
+
+Any time you have a large, complex chunk of logic, consider moving it into a Bundle.
+
+Clicking the New Bundle button creates a new, empty Bundle. Edit the contents of a Bundle by opening the block's property panel and clicking the Open button. When the bundle is open, behaviors can be added and connected as usual. Clicking the green check button closes the bundle again.
+
+Logic can also be grouped into a bundle by selecting a set of logic blocks and selecting Bundle in the wheel menu popup.
+
+Bundles can be nested inside of one other to build up more complex blocks.
+
+Bundles can be given custom Inputs and Outputs by using the New Input or New Output button. In this way, bundles can be linked together just like built-in behavior blocks.
+
+PROPERTIES
+Label
+It is a good idea to give your Bundle a descriptive name to make your game logic easier to understand
+Add to menu
+Enabling this property will add the bundle to the behavior editor's Behavior Bundles menu. This makes the bundle easy to access for use in other objects or games. To remove the menu item, click and hold the menu button and select Delete in the wheel menu popup.
+INPUTS
+
+Inputs can be added with the New Input button
+
+in
+out
+Outputs can be added with the New Output button
+TIPS
+Bundles are a great way to simplify complicated logic, and keep it manageable.
+New Input
+#new-input
+BEHAVIOR BUNDLES
+
+This adds a new Input to your behavior bundle, so that other blocks can send it input. Its name and the type of value it carries (Number, Text, or List) are set in its properties.
+
+TIPS
+Only available when editing the contents of a Bundle
+Give your inputs a descriptive name
+New Output
+#new-output
+BEHAVIOR BUNDLES
+
+This adds a new Output to your behavior bundle, so that it can send output to other blocks. Its name and the type of value it carries (Number, Text, or List) are set in its properties.
+
+TIPS
+Only available when editing the contents of a Bundle
+Give your outputs a descriptive name
+
+Made with  in Pensacola, FL
+
+    
+PRODUCT
+Features
+Releases
+Pricing
+Teachers
+COMPARE
+All comparisons
+Flowlab vs Scratch
+Flowlab vs Unity
+COMPANY
+About
+Merch
+Contact
+LEGAL
+Privacy
+Children's Privacy
+Terms

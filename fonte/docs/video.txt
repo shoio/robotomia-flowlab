@@ -1,0 +1,82 @@
+Games
+Resources
+Community
+Flowjam
+Our twice-yearly game jam
+Community Forum
+Questions & answers or share your work
+Flowlab Discord
+A community to discuss game creation
+Blog
+Articles about game development
+Features
+Pricing
+Teachers
+My Games
+D
+ Log Out
+ Profile
+Video Tutorials
+Follow along these tutorials to make your first game with Flowlab.
+Introduction to Flowlab, Part 1
+
+Creating and setting up your first game in Flowlab.
+
+Introduction to Flowlab, Part 2
+
+Creating some basic game objects, cloning them to populate your level, & making them movable.
+
+Introduction to Flowlab, Part 3
+
+Introduction to Behaviors, and using them to make your player character move around your level.
+
+Introduction to Flowlab, Part 4
+
+Animating your player sprite in the sprite editor, and playing the animation using behaviors.
+
+Introduction to Flowlab, Part 5
+
+Making your first level larger, and scrolling the viewable area by adding a Camera.
+
+Introduction to Flowlab, Part 6
+
+Giving your player some Health, and adding some dangerous objects to your level.
+
+Introduction to Flowlab, Part 7
+
+Adding some collectible items, sound effects, and music to your game.
+
+Introduction to Flowlab, Part 8
+
+Adding adding another level and switching between them. Using Switches & Message behaviors for more interesting game logic.
+
+Introduction to Flowlab, Part 9
+
+Adding wandering enemies that your players must avoid.
+
+Introduction to Flowlab, Part 10
+
+Giving your player a shooting star ability, and organizing your behavior logic using Bundles.
+
+Get Started Free
+
+Made with  in Pensacola, FL
+
+    
+PRODUCT
+Features
+Releases
+Pricing
+Teachers
+COMPARE
+All comparisons
+Flowlab vs Scratch
+Flowlab vs Unity
+COMPANY
+About
+Merch
+Contact
+LEGAL
+Privacy
+Children's Privacy
+Terms

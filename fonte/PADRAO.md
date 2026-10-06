@@ -62,7 +62,66 @@ E a tabela de velocidade, já medida: `-1` sobe 55 px/s (a tela em 14 s),
 
 ---
 
-## 2b. A biblioteca de desenhos (o que custou a Aula 2 inteira)
+## 2a. ⚠️ LEIA A DOCUMENTAÇÃO ANTES DE MEDIR
+
+O Flowlab **tem documentação**, e eu passei uma noite inteira descobrindo por
+tentativa coisas que estão escritas. Está tudo em `fonte/docs/`, baixado pela
+bancada (o site devolve 403 para requisição direta; `docs/le_docs.py` passa
+pelo navegador logado e usa `document.body.innerText`):
+
+| arquivo | o que é |
+|---|---|
+| `handbook.txt` | **Behavior Handbook** — toda propriedade, entrada e saída de cada bloco |
+| `guia_essencial.txt` | o guia oficial em PDF, convertido |
+| `behaviors.txt` | programação com behaviors |
+| `features.txt`, `resources.txt`, `video.txt` | recursos e lista de vídeos |
+
+**A regra:** antes de medir o comportamento de um bloco na tela, procure-o no
+handbook. `grep -i "camera" fonte/docs/handbook.txt` responde em um segundo o
+que me custou horas.
+
+---
+
+## 2b. Tela, nível e câmera — o que eu entendi errado
+
+Isto é o erro mais caro que cometi no curso, e vale a seção inteira.
+
+**`Width`/`Height` em Settings é o tamanho da TELA, não do nível.** O guia diz
+«change the *screen* width and height». O nível é tão grande quanto você
+construir: **dá para pôr peça fora da folha branca** — provado, a folha ficou
+uma tira estreita e o chão continuou inteiro, fora dela.
+
+Eu vi a folha mudar de tamanho junto com o número e concluí «nível = tela,
+logo a câmera não tem o que rolar». A observação era verdadeira; a conclusão eu
+nunca testei, e foi ela que me fez descartar a câmera e alargar a Aula 2 pelo
+lado errado — eu alarguei a JANELA, e por isso as peças ficaram menores.
+
+### O jeito certo de fazer fase comprida
+
+1. **Tela fica em 16×12.** É o tamanho em que o sprite de 32 px aparece bem.
+2. **Construa além da folha branca.** O nível cresce com as peças.
+3. **Um bloco `Camera` no jogador.** `Autoscroll X/Y` já vem marcado: a vista
+   segue o objeto, centralizando-o.
+4. **A `Viewable Area`** (left/top/right/bottom, em casas da grade) limita até
+   onde a câmera vai — ajuste para cobrir o nível inteiro.
+
+### O que o handbook diz, e eu não sabia
+
+| fato | consequência |
+|---|---|
+| O `Camera` é **`GAME LAYER ONLY`** | não funciona em objeto do fundo nem da interface |
+| **Só UM objeto por nível deve ter `Camera`** | «com mais de uma câmera ativa o resultado é indefinido» |
+| `zoom` é **porcentagem**, padrão **100**, **maior aproxima**, faixa 1 a 10000 | eu mandei 3 e 0,33 — isto é, 3% e 0,33% — e li o afastamento extremo como «o pino não serve» |
+| `set x`/`set y` **não têm efeito** com Autoscroll ligado | o autoscroll reposiciona no quadro seguinte |
+| `move x`/`move y` **substituem** o deslocamento anterior, não somam | mandar 0 remove; é o jeito de fazer tremor de tela |
+| `Parallax` é a % da velocidade do fundo | 100 = junto com o jogo, 0 = parado; menor = mais longe |
+| `Background Repeats` ladrilha o fundo | o fundo não acaba quando a câmera passa da beirada |
+| A camada **`Background`** não tem física **nem comportamentos** | céu e montanhas são decoração pura; nada de blocos neles |
+| A camada **`User Interface`** não rola com a câmera | é onde ficam placar, vidas e botões |
+
+---
+
+## 2c. A biblioteca de desenhos (o que custou a Aula 2 inteira)
 
 Objeto de aula **não é quadrado pintado**: o Flowlab tem sete bibliotecas
 prontas (`edit sprite` → `Browse`), e a da casa é `Flowlab Sprites`
@@ -127,6 +186,9 @@ aconteceu, neste curso ou nos anteriores:
       não outra tirada depois.
 - [ ] **A sonda está medindo o ator certo?** Uma série constante em 447 era a
       ESTRELA sendo lida como lava.
+- [ ] **Isto está no handbook?** `grep -i "<bloco>" fonte/docs/handbook.txt`
+      antes de medir na tela. Medir o que está escrito é o jeito mais caro de
+      aprender — e o mais sujeito a eu concluir errado com dados certos.
 - [ ] **O defeito pode estar no INSTRUMENTO, e não na aula?** Quatro medidas
       consistentes diziam «o boneco não pula correndo», e a leitura natural
       era que a fase não tinha saída. Estavam todas certas sobre o que mediam

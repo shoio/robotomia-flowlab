@@ -1,0 +1,98 @@
+Games
+Resources
+Community
+Flowjam
+Our twice-yearly game jam
+Community Forum
+Questions & answers or share your work
+Flowlab Discord
+A community to discuss game creation
+Blog
+Articles about game development
+Features
+Pricing
+Teachers
+My Games
+D
+ Log Out
+ Profile
+Flowlab Resources
+
+Get up and running quickly with documentation & examples to help you get started.
+
+VIDEOS
+Video Tutorials
+
+Make your first game by following along these step-by-step video guides.
+
+DOCUMENTATION
+Getting Started with Behaviors
+
+A complete guide to building game logic in Flowlab — no coding experience needed.
+
+VIDEOS NEW VIDEO!
+Exploring Flowlab
+
+Videos with example games, highlighting useful tips & tricks.
+
+VIDEOS
+Making a Mobile Game
+
+Video tutorial illustrating how to make an endless touch-screen mobile game.
+
+EXAMPLES
+Small Helpful Examples
+
+Examples of common game mechanics and effects implemented with Flowlab
+
+DOCUMENTATION
+Essential Guide
+
+Flowlab's main concepts as a downloadable PDF
+
+DOCUMENTATION
+User Interface
+
+Flowlab's User Interface explained
+
+DOCUMENTATION
+Behavior Handbook
+
+Featuring a detailed description of each behavior block
+
+DOCUMENTATION
+Mobile & Desktop Exporting Guide
+
+Export your games to Apple devices and App Store, Android devices for Google Play, Mac and PC computers.
+
+DOCUMENTATION
+Multiplayer Handbook
+
+Online multiplayer games in Flowlab for advanced users.
+
+Get Game Ideas in your Inbox!
+
+See what people are building with Flowlab and get weekly dev tips.
+
+Send Me Game Ideas
+
+Made with  in Pensacola, FL
+
+    
+PRODUCT
+Features
+Releases
+Pricing
+Teachers
+COMPARE
+All comparisons
+Flowlab vs Scratch
+Flowlab vs Unity
+COMPANY
+About
+Merch
+Contact
+LEGAL
+Privacy
+Children's Privacy
+Terms

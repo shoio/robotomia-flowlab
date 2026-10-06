@@ -1,0 +1,667 @@
+Games
+Resources
+Community
+Flowjam
+Our twice-yearly game jam
+Community Forum
+Questions & answers or share your work
+Flowlab Discord
+A community to discuss game creation
+Blog
+Articles about game development
+Features
+Pricing
+Teachers
+My Games
+D
+ Log Out
+ Profile
+Programming with Behaviors
+
+A complete guide to building game logic in Flowlab, from your first visual behaviors to scripted Custom Behaviors. No coding experience needed
+
+← Back to Resources
+GETTING STARTED
+1. What Are Behaviors?
+2. Opening the Editor
+3. Your First Behavior
+4. Connecting with Links
+FUNDAMENTALS
+5. How Logic Flows
+6. Triggers
+7. Sending Data
+8. Configuring Behaviors
+LOGIC & DATA
+9. Making Decisions
+10. Working with Numbers
+11. Building Bigger Logic
+12. Between Objects
+TESTING & DEBUGGING
+13. Testing Your Game
+14. Live Mode
+15. Step Mode
+ADVANCED TOPICS
+16. Working with Text
+17. Working with Lists
+18. Port Types
+19. Staying Organized
+20. Keyboard Shortcuts
+21. Tips & Best Practices
+GOING FURTHER
+22. Scripted Behaviors
+What Are Behaviors?
+
+Behaviors are how you bring your game objects to life. Every object in your game (your player, enemies, coins, walls) can have its own set of behaviors that tell it what to do.
+
+Think of it like giving instructions to a robot. Each behavior is one simple instruction, like “listen for a key press” or “move to the right.” On their own, these instructions don’t do much. But when you connect them together, you can build anything: a player that runs and jumps, enemies that chase you, coins that add to your score, doors that open with keys.
+
+The best part? You don’t need to type any code. You build all your game logic by dragging blocks onto a workspace and drawing lines between them. You also have the option to script your own custom behaviors: see Scripted Behaviors.
+
+A simple behavior chain: Mouse Move → Position makes an object follow your cursor
+Opening the Behavior Editor
+
+To add behaviors to an object:
+
+Click on any game object in your level
+Select “Edit” to open that object’s edit panel
+Click the “Behaviors” button to open the behavior editor
+Click an object → Click Edit → Click Behaviors
+
+The behavior editor has two main areas:
+
+Left Panel
+
+A menu of all available behaviors, organized into categories (Triggers, Logic & Math, Components, and more). Tool buttons, the speed slider, and the play button are at the bottom.
+
+Workspace
+
+The large area on the right where you build your logic by placing and connecting behaviors. Find, undo, and redo buttons are in the bottom right corner.
+
+The behavior editor: categories on the left, workspace on the right
+Getting help for any behavior: Every behavior has a ( ? ) button in its properties panel. Click it to open that behavior’s detailed documentation page, which includes a description of every port, how the behavior works, and a video demonstration showing it in action. If you’re ever unsure what a behavior does or how to use it, the ( ? ) button is the fastest way to find out.
+Your First Behavior: Making Something Happen
+
+Let’s make an object follow your mouse cursor. This only takes two behaviors!
+
+In the left panel, find the Triggers category and click “Mouse Move”. A Mouse Move behavior block appears on your workspace.
+Find the Properties category and click “Position”. A Position block appears next to the Mouse Move.
+Now connect them. We’ll cover exactly how in the next section.
+
+Right now you have two behaviors sitting on your workspace, but they’re not connected. They don’t know about each other. The Mouse Move block is tracking your cursor position, and the Position block can set where your object is, but nothing links them together yet.
+
+That’s it. No settings to configure! The Mouse Move outputs the cursor’s X and Y coordinates, and the Position inputs set the object’s X and Y location. Once they’re linked, the object will follow your mouse wherever it goes.
+
+Two behaviors on the workspace, not yet connected
+Connecting Behaviors with Links
+
+Every behavior block has small dots on its left and right sides. These are called ports.
+
+Ports on the left
+
+Inputs — where signals come in
+
+Ports on the right
+
+Outputs — where signals go out
+
+To connect two behaviors:
+
+Click on an output port (right side of a behavior)
+Drag toward an input port (left side of another behavior)
+When the link turns green, you can release. The connection is made!
+
+To remove a link you don’t want, just click on it.
+
+Drag from an output port to an input port. Green means connected!
+
+Now your two behaviors are linked. When you move your mouse, Mouse Move sends the cursor’s X and Y coordinates through the links to Position, which moves the object to match. Press play and try it out!
+
+How Logic Flows
+
+Here’s one of the most important ideas in Flowlab: logic flows from left to right, like reading a sentence.
+
+Every behavior chain starts on the left with a Trigger — something that detects an event in your game (a key press, a collision, the game starting). When that event happens, the trigger sends a signal out through its output port, along the connecting link, and into the next behavior’s input port.
+
+That behavior does its job (plays a sound, moves the object, checks a number), and then sends a signal out its own output to whatever comes next. This keeps going, link by link, until the chain ends.
+
+Trigger
+(event)
+→
+Behavior
+(action)
+→
+Behavior
+(action)
+→
+Behavior
+(action)
+
+Think of it like dominoes: when the first one falls, it knocks over the second, which knocks over the third, and so on.
+
+Signals flow left to right through a chain of behaviors
+
+What if one output connects to multiple behaviors? They activate from top to bottom, like reading lines on a page. The behavior closest to the top of the workspace activates first, then the one below it, and so on.
+
+When one output connects to many: top activates first, then bottom
+Triggers: How Things Get Started
+
+Triggers are special behaviors. They’re the only ones that can start a chain on their own. They sit on the left side of your logic and listen for something to happen in the game.
+
+Here are the triggers you can use:
+
+Trigger	What It Detects
+	Always	Activates every single frame (60 times per second!), used for continuous actions
+	Once	Activates one time when the game level starts
+	Keyboard	Activates when a specific key is pressed or released
+	Mouse Click	Activates when the mouse button is clicked
+	Mouse Move	Activates whenever the mouse moves, with the cursor’s X and Y position as outputs
+	Mouse Wheel	Activates when the mouse wheel is scrolled up or down
+	Controller	Activates when a gamepad button is pressed or a stick is moved
+	Gesture	Activates on touchscreen gestures like taps, swipes, and pinches
+	Collision	Activates when this object bumps into another object
+	Sensor	Activates when another object enters or leaves a region around this object
+	Timer	Activates after a set amount of time passes
+	Mailbox	Activates when this object receives a message from another object
+	In View	Activates when this object enters or leaves the screen
+	Locked Mouse	Captures the mouse cursor and reports its motion as X/Y deltas each frame
+
+Every chain of logic needs a trigger to get it started. If a behavior isn’t connected to a trigger (directly or through other behaviors), it will never activate.
+
+Sending Data Through Links
+
+Links don’t just send a “go” signal. They can also carry data along with them. This data is usually a number.
+
+Let’s try an example. We’ll make an object grow to 200% size when the game starts:
+
+Add a Once trigger (activates when the level starts)
+Add a Number behavior and set its value to 200
+Add a Size behavior (found in Properties)
+Connect Once to the Number’s “get” input, and the Number’s “out” output to the Size’s “%” input
+
+When the game starts, Once activates the Number, which sends the value 200 along the link to Size. The Size behavior receives that number and scales the object to 200%. The key idea here is that the number 200 travels through the link from Number to Size. The link carries the data, not just a “go” signal.
+
+Once → Number (200) → Size: the value “200” travels along the link
+Configuring Behaviors
+Click any behavior to open its properties panel
+
+Every behavior has settings you can customize. Click on any behavior block to open its properties panel.
+
+What you can configure depends on the behavior:
+
+Keyboard: Which key to listen for
+Timer: How long to wait before firing
+Sound: Which sound effect to play
+Filter: What comparison to make (greater than, less than, equals)
+
+At the bottom of every properties panel is a Delete button to remove that behavior and all its links.
+
+Remember the ( ? ) button. It’s in every properties panel and opens detailed documentation with a video demo for that behavior.
+
+Making Decisions
+
+Games need to make decisions: Is the score high enough to win? Is the player’s health at zero? Did the player pick up the right key?
+
+The Filter behavior is the most important tool for making decisions. It takes in a number and asks a question like “is this greater than 5?” Based on the answer:
+
+Yes → “pass” output
+
+The signal continues down the pass path
+
+No → “fail” output
+
+The signal goes down the fail path instead
+
+Example: Check if the score is greater than 10 to win the game.
+
+Filter behavior: pass and fail outputs lead to different results
+Other Decision-Making Behaviors
+Switch
+
+Like a light switch. Turn it on or off to block or allow signals through
+
+Toggle Switch (Flip Flop)
+
+Alternates between two outputs each time it’s triggered. Great for on/off mechanics
+
+Logic Gate
+
+Combines multiple conditions. AND = “both must be true.” OR = “at least one must be true.”
+
+Router
+
+Lets you choose which of several outputs to send the signal to
+
+Working with Numbers
+
+Numbers are everywhere in games: scores, health, speed, position, time. Here are the key behaviors for working with numbers:
+
+Number
+
+Stores a fixed number value
+
+Expression
+
+Does math! a + b * 2
+
+Random
+
+Picks a random number in a range
+
+Ease
+
+Smoothly transitions between values
+
+Variables: Remembering Numbers
+
+Two special behaviors let your game remember numbers:
+
+Object Variable
+
+A number that belongs to this specific object. Every copy of this object gets its own value. Use it for things like individual health or ammo count.
+
+Global Variable
+
+A number that’s shared across your entire game. Every object can read and change it. Perfect for a score counter, number of lives, or any value the whole game needs.
+
+A Global Variable used as a score counter, connected to a Label
+Building Bigger Logic
+
+The real power of behaviors comes from combining simple pieces into complex systems. Each behavior does one small thing, but together they create sophisticated game mechanics.
+
+Example: Collecting Coins
+
+Here’s how you might build a coin collection system:
+
+Collision
+player touches coin
+→
+Global Variable
+add 1 to score
+→
+Sound
+play “ding”
+→
+Destroyer
+remove coin
+Four simple behaviors create a satisfying coin collection system
+
+Four simple behaviors, each doing one obvious thing. But together, they create the satisfying experience of collecting coins with sound and a score counter.
+
+Branching
+
+One output can connect to several inputs. After Collision activates, the score updates AND a sound plays AND the coin disappears, all from the same signal.
+
+Merging
+
+Multiple outputs can connect to the same input. Both a Collision and a Keyboard trigger can cause the same sound to play.
+
+Branching (one output to many) and merging (many outputs to one)
+Communicating Between Objects
+
+So far, all our behaviors happen within a single object. But what if you need objects to talk to each other? For example, when the player touches a key, you want a door to open.
+
+This is where Message and Mailbox come in:
+
+Key Object
+
+Message — sends a signal to another object type
+
+→
+Door Object
+
+Mailbox — listens for incoming messages
+
+When the player touches the key, it sends a message to all Door objects. Each Door’s Mailbox receives it and triggers the Destroyer to remove the door.
+
+Messages can also carry data. You can send a number or text along with the message.
+
+Message on one object sends to Mailbox on another
+Testing Your Game
+
+Building a game is all about the build-test-fix cycle:
+
+1
+Build
+
+Add some behaviors
+
+2
+Play
+
+Test your logic
+
+3
+Fix
+
+Adjust what’s wrong
+
+To play your game from the behavior editor, click the Play button. Your game will start running and you can test your logic in action.
+
+Press Escape (or click Stop) to stop playing and return to the editor. Make your changes, then play again.
+
+Test often! Don’t build 20 behaviors and then test. Build a few, test them, make sure they work, then add more. This makes it much easier to find problems.
+Click Play to test your game right from the behavior editor
+Debugging with Live Mode
+
+Sometimes your behaviors don’t do what you expect. Maybe your player won’t jump, or your score isn’t counting right. Live Mode lets you watch your logic run in real time so you can see exactly what’s happening.
+
+When you click Play in the behavior editor, your game enters Live Mode. You’ll see:
+
+Behaviors light up when they activate. Their border highlights to show they’re active
+Links glow and animate to show signals flowing between behaviors
+Values appear on links showing you the actual numbers or text being sent
+Live Mode: watch behaviors light up and see values flow through links
+Speed Control
+
+The speed slider at the bottom of the behavior menu lets you control how fast your game runs:
+
+0x
+Step
+0.25x
+Slow
+0.5x
+Half speed
+1x
+Full speed
+The speed slider: slow things down to watch complex logic in action
+Step Mode: One Step at a Time
+
+Step Mode is the most powerful debugging tool in Flowlab. Set the speed slider to 0x and you’ll see it change to “Step”.
+
+Now click the Step button to advance your logic one behavior at a time.
+
+With each step, you’ll see:
+
+Which behavior is executing: it lights up with a highlighted border
+Which link is active: the connecting line glows and animates
+What data is being sent: the actual value appears right on the link
+Where the signal came from: for Mailbox behaviors, you’ll see which object sent the message
+Step Mode: advance one behavior at a time and see exactly what’s happening
+
+Hold the Step button to auto-advance through steps faster. It starts slow and speeds up the longer you hold it.
+
+Step Mode lets you trace the exact path a signal takes through your logic. If something isn’t working, step through it and look for where the chain breaks or where an unexpected value appears.
+
+Common Things to Look For
+⚠
+A link that never lights up: the signal isn’t reaching that behavior
+✗
+An unexpected value on a link: the wrong number is being sent
+⇆
+A Filter sending signals down “fail” when you expected “pass”: check your comparison settings
+◌
+A behavior that’s missing a link back to a trigger: it has no way to activate
+Working with Text
+
+So far we’ve mostly worked with numbers, but games also need text: player names, dialog, item descriptions, and more.
+
+Text behaviors work just like number behaviors, but they carry words instead of numbers. You can spot text ports by their purple color.
+
+Key text behaviors:
+
+Text
+
+Stores a text value like “Hello!” or “Game Over”
+
+Label
+
+Displays text on screen for the player
+
+To Number
+
+Converts text into a number (“42” → 42)
+
+Text Length
+
+How many characters are in the text
+
+Text Compare
+
+Checks if two texts are the same
+
+Text Case & Sanitize
+
+Change case or clean up text
+
+A Text behavior connected to a Label, showing “Score: 1” on screen
+
+Example: Connect a Global Variable (your score) to a Label that shows “Score: 42” on screen. The Label can combine text and numbers to create a display.
+
+Working with Lists
+
+A List is a collection of values, like a backpack that can hold multiple items.
+
+Number List
+
+Holds multiple numbers (e.g., high scores: 100, 85, 72, 50)
+
+Text List
+
+Holds multiple text values (e.g., inventory: “Sword”, “Shield”, “Potion”)
+
+List ports are shown in green, so you can easily tell them apart from number and text ports.
+
+List Modify
+
+Add or remove items
+
+List Order
+
+Sort or shuffle
+
+List Each
+
+Do something with each item
+
+List Count
+
+How many items?
+
+A Text List behavior connected to a List Count showing “4”
+Example: Random Enemy Spawner
+
+Create a Text List with enemy type names. Use Random to pick an index and pull out that name to spawn a different enemy every time!
+
+Example: Inventory System
+
+Use a Text List to track collected items. List Modify adds them, List Count checks how many, List Each displays them all.
+
+Heads up: Lists are shared, not copied. One of the most confusing things about lists is that they pass by reference. That means when you send a list from one behavior to another, both behaviors are looking at the same list, not separate copies. If one behavior changes the list, it changes it everywhere, not just where the change was made. Behaviors that modify lists (like List Modify and List Order) have a “copy list” option in their settings that makes them work on a copy instead of the original, which keeps the original list untouched. If you see a list changing unexpectedly in one place when you modified it somewhere else, this is usually why.
+Port Types and Compatibility
+
+Flowlab uses colors to help you connect the right ports together:
+
+Port Color	Data Type	Example
+ White	Number	Score, speed, position
+ Purple	Text	Names, messages, labels
+ Green	List	High scores, inventories
+ White with gray center	Any	Adapts to whatever you connect
+
+“Any” type ports are special. They adapt automatically to whatever you connect to them. If you connect a number output to an Any input, it becomes a number port. Connect text instead, and it becomes a text port. They’re flexible by design.
+
+You don’t need to memorize which types are compatible. When you drag a link from an output port, incompatible input ports will automatically dim out. Only the ports that can accept that type of data stay bright. The editor won’t let you create an invalid link, so just drag and connect. If it lights up green, it works!
+
+Port Shapes: Round vs. Square
+
+You may also notice that ports come in two shapes:
+
+Round ports
+
+Activate the behavior and trigger its outputs. When a signal arrives at a round input port, the behavior runs, does its job, and sends signals out. Most ports you’ll work with are round.
+
+Square ports
+
+Do not activate any outputs. They may still cause an effect (like storing a value or selecting a route), but the signal stops there. Nothing gets sent out to the next behavior in the chain.
+
+For example, the Number behavior has a round “get” input and a square “set” input. Sending a signal to “get” makes it output its stored value. Sending a value to “set” changes the stored number, but doesn’t trigger any output. It just remembers the new value for next time.
+
+Staying Organized
+
+As your game grows, your behavior workspace can get crowded fast. A few behaviors for movement, some for scoring, a bunch for enemy AI. Before you know it, you’re staring at a tangled web of blocks and links. Here are three tools that will keep things manageable.
+
+Frames
+
+A Frame is a colored rectangle you can place behind a group of behaviors to visually organize them. Think of it like drawing a box around related notes on a whiteboard.
+
+To add a Frame, select the behaviors you want to group and choose “Add Frame” from the wheel menu that appears.
+
+Once you have a frame, you can:
+
+Name it to describe what that group does (like “Player Movement” or “Score System”)
+Color it to make different sections stand out
+
+Frames also let you move behaviors as a group. When you drag a frame, all the behaviors inside it move together. Just grab the frame and slide the whole group to a new spot.
+
+Frames don’t change how your behaviors work. They’re purely visual. But they make a huge difference when you come back to your game later.
+
+Frames group related behaviors
+Bundles
+A Bundle collapses complex logic into a single reusable block
+
+When you find yourself building the same logic over and over, or when a section of your workspace gets really complex, you can wrap behaviors into a Bundle.
+
+A Bundle takes a group of behaviors and collapses them into a single block. It’s like putting a bunch of parts into a box with a label on it.
+
+Select the behaviors you want to group together
+Choose “Create Bundle” from the wheel menu that appears
+Give your Bundle a descriptive name
+
+Bundles have their own inputs and outputs, just like any other behavior. You define which ports appear on the outside. If you’ve seen traditional code before, you might recognize what this makes a Bundle: a function, with parameters and return values, that you build visually. That idea becomes important in Scripted Behaviors.
+
+Organize
+
+Collapse complex logic
+
+Reuse
+
+Use in multiple places
+
+Read
+
+Keep workspace clean
+
+Notes
+
+Even with Frames and Bundles, you might look at a behavior a week later and think: “Why did I set this Filter to greater than 3?” That’s where Notes come in.
+
+Every behavior has a Notes field in its properties panel. Click on any behavior, and you’ll find a place to type a short note explaining what it does or why you set it up that way.
+
+Good notes answer the question “why?” not just “what”:
+
+Instead of:
+“Checks if value is greater than 3”
+
+Try:
+“Player needs at least 3 coins to unlock the secret door”
+
+Notes don’t affect how your game runs. They’re just for you. Your future self will thank you!
+
+Add notes to explain why you set up a behavior a certain way
+Keyboard Shortcuts
+
+Here’s a quick reference for all the keyboard shortcuts available in the behavior editor. Learning even a few of these will speed up your workflow.
+
+Tools
+Shortcut	Action
+V	Switch to Pointer tool
+S	Switch to Select tool
+Z	Switch to Zoom tool
+A	Add a behavior at the cursor position
+F	Open the search/find bar
+Space (hold)	Temporarily pan the workspace (release to return to previous tool)
+Editing
+Shortcut	Action
+Ctrl+Z  /  ⌘+Z	Undo
+Ctrl+Shift+Z  or  Ctrl+Y	Redo
+Delete  or  Backspace	Delete the behavior under the cursor, or all selected behaviors
+Shift (hold while dragging)	Drag a single behavior on its own, leaving connected behaviors in place
+Search Bar (when open)
+Shortcut	Action
+Enter	Jump to the next search result
+Shift+Enter	Jump to the previous search result
+Escape	Close the search bar
+Zooming
+Shortcut	Action
+Mouse wheel scroll	Zoom in and out
+Zoom tool + click (no drag)	Reset to 100% zoom and center the view
+Zoom tool + drag	Drag to zoom in or out continuously
+Tips and Best Practices
+Start simple. Get one small thing working before adding more. Make your player move before you add enemies. Add enemies before you add scoring.
+Test often. Play your game after every few changes. It’s much easier to find a problem when you just added 2 behaviors than when you added 20.
+Use Step Mode. When something doesn’t work, don’t just stare at your behaviors. Step through them. Watch the signals flow and the values change. The bug will reveal itself.
+Keep your workspace organized. Drag your behaviors so logic flows left to right. Group related behaviors together. A clean workspace is easier to understand and debug.
+Use the search tool. When your workspace gets crowded, use the find button in the bottom right to locate specific behaviors quickly.
+Name your objects clearly. Names like “Player”, “Enemy”, “Coin”, and “Door” are much easier to work with than “Object 1”, “Object 2”, etc. This especially matters when using Message and Mailbox.
+Don’t be afraid to experiment. You can always undo changes, and you can’t break anything permanently. The best way to learn is to try things and see what happens!
+Going Further: Scripted Behaviors
+
+Everything in this guide is real programming: events, data flow, conditions, variables, functions. You’ve just been writing it visually. If you also want to express logic as text, whether you already know a programming language or want to learn one, Flowlab has a behavior for that: the Custom Behavior, sometimes casually called the “code behavior.” It lets you write part of your game’s logic as typed, text-based code that runs right alongside everything else you’ve built.
+
+A Bundle with code inside
+
+Here’s the key idea: a Custom Behavior has exactly the same shape as a Bundle. It’s a single block with inputs and outputs that you name and type yourself. The only difference is what’s inside. A Bundle contains more behaviors. A Custom Behavior contains code.
+
+That means you already know how to use one. You add it from the Logic & Math section, wire its ports like any other behavior, and the rest of your game doesn’t know or care that there’s code inside. You’re not switching to a different kind of programming, just a different way of writing down what happens inside the block:
+
+1. Behaviors
+
+Learn events, logic, and data flow by connecting visual blocks
+
+2. Bundles
+
+Group logic behind named, typed inputs and outputs, like functions
+
+3. Code
+
+Keep the same block shape, but write the inside as text in a typed language
+
+Each step keeps the same mental model: blocks with typed ports, connected by links. The only thing that changes is how you describe what a block does on the inside: with more blocks, or with written code.
+
+How it works
+Add a Custom Behavior to your workspace and open its properties
+Define its inputs and outputs: give each one a name and a type (Number, Text, Number List, or Text List, the same port types every behavior uses)
+Click Edit Code and write what the block does
+
+Inside the code, each input you defined is a variable, ready to use. Each output gets a matching function: an output named average gives you setAverage(). Data inputs store the most recent value sent to them, and your code runs each time the built-in eval trigger input is activated, so you decide exactly when it runs by wiring a trigger into eval.
+
+For example, a Custom Behavior with a Number List input named scores and a Number output named average might contain:
+
+// Average all of the scores in the list
+var total = 0.0;
+for (score in scores) {
+    total += score;
+}
+setAverage(total / scores.length);
+
+If you’ve used the Expression behavior for one-line math, this will feel familiar: a Custom Behavior is its bigger sibling, with as many lines and as many typed inputs and outputs as you need.
+
+A real-world language
+
+The code is written in Haxe, a typed programming language with JavaScript-style syntax. It’s the same language the Flowlab engine itself is written in, so you’re scripting the engine in its own native language, and the concepts you practice (variables, types, loops, conditionals, functions) transfer directly to languages like TypeScript, Java, and C#.
+
+A Custom Behavior is a pure function: it can only see the inputs you wire in, and it can only affect the game through the outputs you define. That’s what keeps games with scripted behaviors safe to play and share, and it’s also just good program design.
+
+For teachers, this makes Flowlab a complete progression: students can learn programming concepts in visual logic, then apply the very same concepts in typed code, without ever leaving the project they’re working on. And it’s a two-way street, not a graduation: creators who write code still build most of their games in behaviors, because the two are designed to mix.
+
+Creating and editing Custom Behaviors requires a paid Flowlab plan. Games that use them are playable by everyone, on any plan, including exported games. For the full reference, see the Custom Behavior section of the Behavior Handbook.
+
+Made with  in Pensacola, FL
+
+    
+PRODUCT
+Features
+Releases
+Pricing
+Teachers
+COMPARE
+All comparisons
+Flowlab vs Scratch
+Flowlab vs Unity
+COMPANY
+About
+Merch
+Contact
+LEGAL
+Privacy
+Children's Privacy
+Terms
