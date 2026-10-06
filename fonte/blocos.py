@@ -1035,6 +1035,25 @@ def valor_com_botao_menos(bloco, positivo, cliques=1):
     return menos
 
 
+def campo_do_painel(rotulo, valor, abaixo=67, folga=10):
+    """Escreve `valor` no campo que fica ABAIXO de `rotulo`, num painel de
+       ajustes de bloco. Devolve o ponto clicado.
+
+       Serve para os limites da `Viewable Area` do `Camera` (left/top/right/
+       bottom). Da para mexer neles pelos botoes `-` e `+`, mas isso seriam
+       doze cliques para ir de 15 a 27; o campo aceita texto, que e um gesto
+       so — e um gesto so e o que cabe num passo de aula."""
+    a, _ = nav.captura("/tmp/_bl_campo.png")
+    p = nav.acha_texto(rotulo, arquivo=a)
+    if not p:
+        raise RuntimeError(f"nao achei o campo '{rotulo}' no painel do bloco")
+    alvo = (p[0] + folga, p[1] + abaixo)
+    nav.clique_seguro(*alvo); time.sleep(0.8)
+    rs.tecla(0, cmd=True); time.sleep(0.3)        # cmd+A
+    rs.digita_teclas(str(valor)); time.sleep(0.8)
+    return alvo
+
+
 def bloco_ou_solta(nome, x, y, titulo=None):
     """O bloco, se ele JA estiver na mesa; senao solta um novo ali.
 

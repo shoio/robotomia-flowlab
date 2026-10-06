@@ -37,7 +37,7 @@ D = "aula2"
 # Os VAOS continuam de UMA casa, que e a dificuldade ja provada na versao de 16
 # colunas. Fase mais comprida nao e fase mais dificil: o que cresce e o caminho,
 # nao o salto.
-COLUNAS = 28
+COLUNAS = 28            # as colunas do NIVEL (a tela continua com 16)
 
 LINHA_CHAO = 8          # a plataforma onde o boneco comeca
 LINHA_MEIO = 6          # a segunda plataforma
@@ -156,10 +156,14 @@ def novo():
     A.url = editor.jogo_novo()
     print("   jogo:", A.url, flush=True)
     A.guarda_url()
-    # O TAMANHO SE ESCOLHE ANTES DE MONTAR: alargar depois CENTRALIZA o que ja
-    # existe, e nenhuma coluna continua onde estava.
-    editor.tamanho_do_nivel(COLUNAS)
-    comum.calibra_grade(COLUNAS, 12)
+    # A TELA FICA NO PADRAO (16x12). O que e comprido e o NIVEL.
+    #
+    # Eu tinha alargado a tela achando que alargava a fase — e `Width` em
+    # Settings e o tamanho da TELA, nao do nivel (o guia oficial diz "change
+    # the screen width and height"). O resultado era a pagina desenhando tudo
+    # menor, sem nada rolando. O nivel e tao grande quanto se constroi: da para
+    # por peca FORA da folha branca, e a camera leva a vista ate la.
+    comum.calibra_grade(16, 12)
     A.cap("p01_vazio")
     return True
 
@@ -167,7 +171,7 @@ def novo():
 @etapa
 def jogador():
     editor.volta_ao_nivel()
-    comum.calibra_grade(COLUNAS, 12)
+    comum.calibra_grade(16, 12)
     x, y = celula(COL_JOGADOR, LINHA_CHAO - 1)
     A.gesto("criar_objeto", "g01", (x, y), lambda: clique(x, y), espera=1.5)
     a, _ = nav.captura("/tmp/_c2_rad.png")
@@ -206,7 +210,7 @@ def jogador():
 @etapa
 def movimento():
     editor.volta_ao_nivel()
-    comum.calibra_grade(COLUNAS, 12)
+    comum.calibra_grade(16, 12)
     x, y = celula(COL_JOGADOR, LINHA_CHAO - 1)
     editor.objeto_ou_abre(x, y)
     editor.abre_comportamentos()
@@ -221,9 +225,43 @@ def movimento():
 
 
 @etapa
+def camera():
+    """A CAMERA: e ela que faz a fase comprida virar um caminho.
+
+       Sem ela a pagina mostra so o pedaco do nivel que cabe na tela e o boneco
+       anda para fora de vista. Com ela, a vista segue o boneco e o cenario
+       entra em cena conforme ele avanca.
+
+       O bloco ja vem com `autoscroll X` e `autoscroll Y` marcados — nao ha fio
+       nem gatilho. O unico ajuste e o limite da direita, que nasce igual a
+       largura da TELA (15) e precisa ir ate o fim do NIVEL.
+
+       Do handbook: o `Camera` so funciona na camada do jogo, e so UM objeto do
+       nivel deve ter um ("com mais de uma camera ativa o resultado e
+       indefinido")."""
+    editor.volta_ao_nivel()
+    comum.calibra_grade(16, 12)
+    x, y = celula(COL_JOGADOR, LINHA_CHAO - 1)
+    editor.objeto_ou_abre(x, y)
+    editor.abre_comportamentos()
+    cam = blocos.bloco_ou_solta("Camera", 1200, 1150)
+    A.cap("p12_camera")
+    p = blocos.abre_ajustes(cam)
+    A.gesto("limite_da_camera", "g07", (0, 0),
+            lambda: blocos.campo_do_painel("right", COLUNAS - 1), espera=1.4)
+    blocos.fecha_ajustes(); time.sleep(0.8)
+    A.cap("p13_limite")
+    print(f"   camera com limite direito em {COLUNAS - 1}", flush=True)
+    time.sleep(2)
+    editor.fecha_comportamentos(); time.sleep(2.5)
+    fecha_painel_objeto(); time.sleep(2)
+    return True
+
+
+@etapa
 def plataformas():
     editor.volta_ao_nivel()
-    comum.calibra_grade(COLUNAS, 12)
+    comum.calibra_grade(16, 12)
     faz_peca(COLS_CHAO[0], LINHA_CHAO, "Chao", "verde", COLS_CHAO[1:])
     A.cap("p06_chao")
     faz_peca(COLS_MEIO[0], LINHA_MEIO, "Plataforma", "verde", COLS_MEIO[1:])
@@ -252,7 +290,7 @@ def plataformas():
 @etapa
 def lava():
     editor.volta_ao_nivel()
-    comum.calibra_grade(COLUNAS, 12)
+    comum.calibra_grade(16, 12)
     faz_peca(COLS_LAVA[0], LINHA_LAVA, "Lava", "vermelho", COLS_LAVA[1:])
     A.cap("p09_lava")
     x, y = celula(COLS_LAVA[0], LINHA_LAVA)
@@ -274,7 +312,7 @@ def lava():
 @etapa
 def estrela():
     editor.volta_ao_nivel()
-    comum.calibra_grade(COLUNAS, 12)
+    comum.calibra_grade(16, 12)
     x, y = celula(COL_ESTRELA, LINHA_ALTA - 1)
     editor.objeto_ou_abre(x, y)
     nomeia("Estrela")
@@ -313,7 +351,7 @@ def prova():
 
     editor.volta_ao_editor(); time.sleep(2)
     editor.volta_ao_nivel()
-    comum.calibra_grade(COLUNAS, 12)
+    comum.calibra_grade(16, 12)
     p = nav.acha_texto("play")
     if not p:
         raise RuntimeError("nao achei o botao Play (estou mesmo no editor?)")
@@ -362,6 +400,65 @@ def prova():
                 print(f"   caiu na lava e o jogo RECOMECOU (leitura {k+1})", flush=True)
                 return True
     raise RuntimeError("andei para a esquerda ate o fim e nao vi o jogo recomecar")
+
+
+@etapa
+def prova_camera():
+    """Prova a promessa do passo 12: a CAMERA segue o boneco.
+
+       A assinatura e inconfundivel e precisa das DUAS medidas no mesmo quadro:
+       o boneco fica mais ou menos parado na tela enquanto o CHAO desliza
+       debaixo dele. Medir so o boneco nao distingue "ele andou" de "o mundo
+       andou" — foi esse o furo que me fez dar a camera por morta durante
+       horas."""
+    from PIL import Image
+    import numpy as np
+
+    cor_jog, tol_jog = _rastreio("Jogador", "Lava", "Estrela")
+    cor_chao = tuple(_cores("Chao")[0])
+
+    def ler():
+        a, _ = nav.captura("/tmp/_c2cam.png")
+        im = np.asarray(Image.open(a).convert("RGB"), dtype=int)
+        mj = comum.mascara_cor(im, cor_jog, tol_jog); ys, xs = np.nonzero(mj)
+        jog = None if len(xs) < 60 else int(xs.mean())
+        mc = comum.mascara_cor(im, cor_chao, 46); yc, xc = np.nonzero(mc)
+        chao = None if len(xc) < 400 else int(xc.min())
+        return jog, chao
+
+    editor.volta_ao_editor(); time.sleep(2)
+    editor.volta_ao_nivel()
+    p = nav.acha_texto("play")
+    if not p:
+        raise RuntimeError("nao achei o botao Play")
+    clique(*p); time.sleep(7)
+    editor.exige_jogo()
+    clique(1470, 620); time.sleep(1.5)
+
+    j0, c0 = ler()
+    if j0 is None or c0 is None:
+        raise RuntimeError("nao achei o boneco e o chao no comeco do jogo")
+    jogs, chaos = [j0], [c0]
+    for _ in range(8):
+        clique(1470, 620); time.sleep(0.3)
+        rs.segura_tecla(124, 0.6)          # 124 = seta direita
+        j, c = ler()
+        if j is not None and c is not None:
+            jogs.append(j); chaos.append(c)
+    andou_boneco = max(jogs) - min(jogs)
+    andou_chao = max(chaos) - min(chaos)
+    print(f"   o boneco variou {andou_boneco} px na tela; o chao deslizou "
+          f"{andou_chao} px", flush=True)
+    A.cap("p19_camera")
+    if andou_chao < 150:
+        raise RuntimeError(f"o chao so deslizou {andou_chao} px: a camera nao "
+                           "esta seguindo o boneco")
+    if andou_boneco > andou_chao:
+        raise RuntimeError(f"o boneco andou {andou_boneco} px e o chao so "
+                           f"{andou_chao}: quem se mexeu foi ele, nao a vista")
+    print("   PROVADO: a vista segue o boneco e o cenario entra em cena",
+          flush=True)
+    return True
 
 
 def main():
