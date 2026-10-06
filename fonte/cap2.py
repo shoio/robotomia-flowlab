@@ -27,17 +27,34 @@ comum.pasta("aula2")
 ETAPAS.clear()      # a lista vive em comum.py: cada aula comeca a sua
 D = "aula2"
 
-# o desenho da fase
+# O DESENHO DA FASE, numa folha de 28 colunas.
+#
+# O Flowlab nasce com 16x12 e vai ate 48x32 — eu construi tres aulas sem nunca
+# ter procurado esse controle, e tratei o padrao como se fosse o limite. Com 28
+# colunas a fase fica quase duas vezes mais comprida, e o preco esta medido: a
+# pagina desenha o nivel inteiro, entao cada peca sai ~8% menor.
+#
+# Os VAOS continuam de UMA casa, que e a dificuldade ja provada na versao de 16
+# colunas. Fase mais comprida nao e fase mais dificil: o que cresce e o caminho,
+# nao o salto.
+COLUNAS = 28
+
 LINHA_CHAO = 8          # a plataforma onde o boneco comeca
 LINHA_MEIO = 6          # a segunda plataforma
 LINHA_ALTA = 4          # a terceira, onde fica a estrela
 LINHA_LAVA = 11
-COL_JOGADOR = 4
-COLS_CHAO = [3, 4, 5, 6]
-COLS_MEIO = [8, 9, 10]
-COLS_ALTA = [12, 13, 14]
-COL_ESTRELA = 13
-COLS_LAVA = list(range(1, 16))
+# O BURACO DA ESQUERDA E PARTE DA AULA. O passo 20 manda a crianca errar de
+# proposito — "ande para a esquerda ate cair do chao" — e para isso tem de
+# haver chao ONDE CAIR. Na primeira versao desta fase comprida eu estiquei o
+# chao ate a coluna 1, encostado na beirada do nivel: medido em jogo, o boneco
+# andava ate x=628, batia no limite do nivel e ficava parado. A promessa do
+# passo 20 virava mentira, e o guarda da prova foi quem disse.
+COL_JOGADOR = 5
+COLS_CHAO = list(range(3, 12))      # 3..11, com as colunas 0..2 VAZIAS
+COLS_MEIO = list(range(13, 21))     # 13..20, vao na 12
+COLS_ALTA = list(range(22, 28))     # 22..27, vao na 21
+COL_ESTRELA = 25
+COLS_LAVA = list(range(0, 28))
 
 DENSIDADE = 30          # medido: pula 273 px e anda 60 px por toque
 
@@ -139,6 +156,10 @@ def novo():
     A.url = editor.jogo_novo()
     print("   jogo:", A.url, flush=True)
     A.guarda_url()
+    # O TAMANHO SE ESCOLHE ANTES DE MONTAR: alargar depois CENTRALIZA o que ja
+    # existe, e nenhuma coluna continua onde estava.
+    editor.tamanho_do_nivel(COLUNAS)
+    comum.calibra_grade(COLUNAS, 12)
     A.cap("p01_vazio")
     return True
 
@@ -146,6 +167,7 @@ def novo():
 @etapa
 def jogador():
     editor.volta_ao_nivel()
+    comum.calibra_grade(COLUNAS, 12)
     x, y = celula(COL_JOGADOR, LINHA_CHAO - 1)
     A.gesto("criar_objeto", "g01", (x, y), lambda: clique(x, y), espera=1.5)
     a, _ = nav.captura("/tmp/_c2_rad.png")
@@ -166,8 +188,13 @@ def jogador():
     A.gesto("marcar_movable", "g04", (0, 0),
             lambda: marca_caixa("movable", True), espera=1.2)
     # o peso: medido, e o que decide se ele pula
-    pd = nav.acha_texto("density", arquivo=nav.captura("/tmp/_c2_d.png")[0],
-                        regiao=(0.45, 0.1, 1.0, 0.85))
+    # O PAINEL NASCE DO LADO DA CASA CLICADA, e com a folha mais larga ele
+    # muda de lado: numa fase de 28 colunas o `density` apareceu em x=1033,
+    # fora da metade direita que eu procurava. `_acha_no_painel` olha os dois
+    # lados — existe para isso, e so a Aula 1 a usava para as caixinhas.
+    pd = comum._acha_no_painel("density", nav.captura("/tmp/_c2_d.png")[0])
+    if not pd:
+        raise RuntimeError("nao achei o controle Density no painel de fisica")
     alvo = (int(pd[0] + 155 + 2.75 * DENSIDADE), pd[1])
     A.gesto("peso_do_pulo", "g05", alvo, lambda: clique(*alvo), espera=1.2)
     arrasta_slider("friction")
@@ -179,6 +206,7 @@ def jogador():
 @etapa
 def movimento():
     editor.volta_ao_nivel()
+    comum.calibra_grade(COLUNAS, 12)
     x, y = celula(COL_JOGADOR, LINHA_CHAO - 1)
     editor.objeto_ou_abre(x, y)
     editor.abre_comportamentos()
@@ -195,6 +223,7 @@ def movimento():
 @etapa
 def plataformas():
     editor.volta_ao_nivel()
+    comum.calibra_grade(COLUNAS, 12)
     faz_peca(COLS_CHAO[0], LINHA_CHAO, "Chao", "verde", COLS_CHAO[1:])
     A.cap("p06_chao")
     faz_peca(COLS_MEIO[0], LINHA_MEIO, "Plataforma", "verde", COLS_MEIO[1:])
@@ -223,6 +252,7 @@ def plataformas():
 @etapa
 def lava():
     editor.volta_ao_nivel()
+    comum.calibra_grade(COLUNAS, 12)
     faz_peca(COLS_LAVA[0], LINHA_LAVA, "Lava", "vermelho", COLS_LAVA[1:])
     A.cap("p09_lava")
     x, y = celula(COLS_LAVA[0], LINHA_LAVA)
@@ -244,6 +274,7 @@ def lava():
 @etapa
 def estrela():
     editor.volta_ao_nivel()
+    comum.calibra_grade(COLUNAS, 12)
     x, y = celula(COL_ESTRELA, LINHA_ALTA - 1)
     editor.objeto_ou_abre(x, y)
     nomeia("Estrela")
@@ -282,6 +313,7 @@ def prova():
 
     editor.volta_ao_editor(); time.sleep(2)
     editor.volta_ao_nivel()
+    comum.calibra_grade(COLUNAS, 12)
     p = nav.acha_texto("play")
     if not p:
         raise RuntimeError("nao achei o botao Play (estou mesmo no editor?)")

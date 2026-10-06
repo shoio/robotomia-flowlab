@@ -33,7 +33,7 @@ AULA = {
     sos=[("Não aconteceu nada","Clique de novo, uma vez só, bem no meio do botão verde. Às vezes ele demora alguns segundos para abrir a janelinha.")]),
 
   dict(n=4, titulo="Escolha o PROJETO VAZIO", img="aula2/p01_vazio.jpg", clipe="empty_project.gif",
-    corpo="Clique na <b>figura</b> da esquerda, a do <b>+</b> grande.<br><br>Clique na figura, não no nome embaixo dela — o nome não responde.",
+    corpo="Clique na <b>figura</b> da esquerda, a do <b>+</b> grande.<br><br>Clique na figura, não no nome embaixo dela — o nome não responde.<br><br><b>Agora deixe a folha mais comprida.</b> Clique em <span class=ui>Settings</span>, na fileira de baixo, e arraste a barrinha <span class=ui>Width</span> até o número ao lado mostrar <b>28</b>. Feche no <span class=ui>OK</span>.<br><br>A folha é o tamanho do seu jogo. Com 16 casas a fase cabe numa tela só; com 28 ela vira um <b>caminho</b>.",
     ck="Sobrou a folha branca vazia, com a fileira <span class=ui>Play · Library · Game Levels · Layer · Settings</span> embaixo.",
     sos=[("Abriu o Flowlab Tutorial","Volte para <span class=ui>My Games</span>, apague esse jogo nos três pontinhos e comece de novo.")]),
 
@@ -84,20 +84,20 @@ AULA = {
          ("Fechei e o bloco sumiu","Abra de novo e confira. Se sumiu mesmo, arraste outra vez e espere alguns segundos antes de fechar.")]),
 
   dict(n=13, titulo="Faça o primeiro chão", img="aula2/p06_chao.jpg", clipe=None,
-    corpo="Feche as duas telas (<span class=ui>OK</span> da mesa de blocos e <span class=ui>OK</span> azul do painel).<br><br>Clique numa casa <b>logo abaixo</b> do boneco, escolha <span class=ui>Create</span>, chame de <b>Chao</b> e, em <span class=ui>edit sprite</span>, use o <span class=ui>Browse</span> para pegar o <b>primeiro bloco</b> de <span class=ui>Flowlab Sprites &rsaquo; Blocks</span> — o de terra com grama.<br><br>Depois clique nele, escolha <span class=ui>Clone</span> e clique nas casas ao lado para fazer uma plataforma de <b>quatro casas</b>, sem buraco. Clique em <span class=ui>Done Cloning</span> para parar.",
+    corpo="Feche as duas telas (<span class=ui>OK</span> da mesa de blocos e <span class=ui>OK</span> azul do painel).<br><br>Clique numa casa <b>logo abaixo</b> do boneco, escolha <span class=ui>Create</span>, chame de <b>Chao</b> e, em <span class=ui>edit sprite</span>, use o <span class=ui>Browse</span> para pegar o <b>primeiro bloco</b> de <span class=ui>Flowlab Sprites &rsaquo; Blocks</span> — o de terra com grama.<br><br>Depois clique nele, escolha <span class=ui>Clone</span> e clique nas casas ao lado para fazer uma plataforma de <b>nove casas</b>, sem buraco. Clique em <span class=ui>Done Cloning</span> para parar.<br><br>Nove parece muito, e é de propósito: é o começo do caminho.",
     depois="O chão <b>não</b> leva física: não marque <span class=ui>movable</span> nele. Só o jogador se mexe; chão e plataformas ficam parados.",
-    ck="O boneco está em cima de uma faixa de blocos de grama de quatro casas, sem buraco.",
+    ck="O boneco está em cima de uma faixa de blocos de grama de <b>nove casas</b>, sem buraco.",
     sos=[("Ficou buraco entre as peças","Clique exatamente nas casas vizinhas; buraco faz o boneco cair."),
          ("Meu chão caiu junto com o boneco","Você marcou <span class=ui>movable</span> no chão. Clique nele, vá em <span class=ui>Physics ></span> e desmarque."),
          ("Não paro de clonar","Clique em <span class=ui>Done Cloning</span>, no lugar onde antes estava escrito Library.")]),
 
   dict(n=14, titulo="Faça a segunda plataforma, mais alta", img="aula2/p07_plataforma.jpg", clipe=None,
-    corpo="Agora uma plataforma <b>mais alta e mais à direita</b> — duas casas acima do chão e umas duas casas de distância.<br><br>Clique numa casa vazia ali, escolha <span class=ui>Create</span>, chame de <b>Plataforma</b>, dê a ela o <b>mesmo bloco de grama</b> pelo <span class=ui>Browse</span> e use o <span class=ui>Clone</span> para deixá-la com <b>três casas</b>.",
+    corpo="Agora uma plataforma <b>mais alta e mais à direita</b> — duas casas acima do chão, deixando <b>uma casa de vão</b> depois de onde o chão termina.<br><br>Clique numa casa vazia ali, escolha <span class=ui>Create</span>, chame de <b>Plataforma</b>, dê a ela o <b>mesmo bloco de grama</b> pelo <span class=ui>Browse</span> e use o <span class=ui>Clone</span> para deixá-la com <b>oito casas</b>.",
     ck="Há duas faixas de grama: a de baixo com o boneco e outra mais alta, à direita — e nenhuma delas com <span class=ui>movable</span> marcado.",
     sos=[("Minha plataforma ficou alta demais","Duas casas acima do chão é o certo. Mais que isso, o pulo não alcança: clique nela, escolha <span class=ui>Delete</span> e refaça mais baixo.")]),
 
   dict(n=15, titulo="Faça a terceira plataforma", img="aula2/p08_tres_plataformas.jpg", clipe=None,
-    corpo="Repita: mais duas casas para cima e mais para a direita, uma terceira plataforma de <b>três casas</b>, chamada <b>Alta</b> e com o <b>mesmo bloco de grama</b>.<br><br>Olhe a fase inteira: tem de parecer uma <b>escada</b> de três degraus.",
+    corpo="Repita: mais duas casas para cima e mais para a direita, deixando outra <b>casa de vão</b>, uma terceira plataforma de <b>oito casas</b>, chamada <b>Alta</b> e com o <b>mesmo bloco de grama</b>.<br><br>Olhe a fase inteira: tem de parecer uma <b>escada</b> de três degraus.",
     ck="Três faixas de grama em degraus, cada uma mais alta e mais à direita que a anterior.",
     sos=[("A escada ficou longe demais","Se o degrau estiver a mais de duas casas de altura, o pulo não chega. Apague e refaça mais perto.")]),
 

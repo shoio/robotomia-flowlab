@@ -178,8 +178,13 @@ def jogador():
             lambda: comum.abre_fisica(), espera=2.5)
     A.gesto("marcar_movable", "g04", (0, 0),
             lambda: marca_caixa("movable", True), espera=1.2)
-    pd = nav.acha_texto("density", arquivo=nav.captura("/tmp/_c3_d.png")[0],
-                        regiao=(0.45, 0.1, 1.0, 0.85))
+    # O PAINEL NASCE DO LADO DA CASA CLICADA, e com a folha mais larga ele
+    # muda de lado: numa fase de 28 colunas o `density` apareceu em x=1033,
+    # fora da metade direita que eu procurava. `_acha_no_painel` olha os dois
+    # lados — existe para isso, e so a Aula 1 a usava para as caixinhas.
+    pd = comum._acha_no_painel("density", nav.captura("/tmp/_c3_d.png")[0])
+    if not pd:
+        raise RuntimeError("nao achei o controle Density no painel de fisica")
     alvo = (int(pd[0] + 155 + 2.75 * DENSIDADE), pd[1])
     A.gesto("peso_do_pulo", "g05", alvo, lambda: clique(*alvo), espera=1.2)
     arrasta_slider("friction")

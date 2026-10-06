@@ -165,8 +165,13 @@ def peso():
     A.gesto("abrir_physics2", "g07", (0, 0),
             lambda: comum.abre_fisica(), espera=2.5)
     marca_caixa("movable", True)      # sem isto a Densidade fica desabilitada
-    pd = nav.acha_texto("density", arquivo=nav.captura("/tmp/_c1_d.png")[0],
-                        regiao=(0.45, 0.1, 1.0, 0.85))
+    # O PAINEL NASCE DO LADO DA CASA CLICADA, e com a folha mais larga ele
+    # muda de lado: numa fase de 28 colunas o `density` apareceu em x=1033,
+    # fora da metade direita que eu procurava. `_acha_no_painel` olha os dois
+    # lados — existe para isso, e so a Aula 1 a usava para as caixinhas.
+    pd = comum._acha_no_painel("density", nav.captura("/tmp/_c1_d.png")[0])
+    if not pd:
+        raise RuntimeError("nao achei o controle Density no painel de fisica")
     if not pd:
         raise RuntimeError("nao achei o controle 'Density' no painel de fisica")
     alvo = (int(pd[0] + 155 + 2.75 * DENSIDADE), pd[1])

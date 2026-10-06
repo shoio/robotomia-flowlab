@@ -1,59 +1,59 @@
 {
  "criar_objeto": {
-  "antes": "g01_a.jpg",
-  "depois": "g01_b.jpg",
+  "antes": "g01_a.png",
+  "depois": "g01_b.png",
   "alvo": [
-   1246,
-   895
+   926,
+   898
   ],
   "botao": "esq",
   "clicado": true
  },
  "escolher_create": {
-  "antes": "g02_a.jpg",
-  "depois": "g02_b.jpg",
+  "antes": "g02_a.png",
+  "depois": "g02_b.png",
   "alvo": [
-   1126,
-   892
+   806,
+   896
   ],
   "botao": "esq",
   "clicado": true
  },
  "escolher_sprite": {
-  "antes": "g13_a.jpg",
-  "depois": "g13_b.jpg",
+  "antes": "g13_a.png",
+  "depois": "g13_b.png",
   "alvo": [
    2307,
-   180
+   184
   ],
   "botao": "esq",
   "clicado": true
  },
  "abrir_physics": {
-  "antes": "g03_a.jpg",
-  "depois": "g03_b.jpg",
+  "antes": "g03_a.png",
+  "depois": "g03_b.png",
   "alvo": [
-   1878,
+   1558,
    1270
   ],
   "botao": "esq",
   "clicado": true
  },
  "marcar_movable": {
-  "antes": "g04_a.jpg",
-  "depois": "g04_b.jpg",
+  "antes": "g04_a.png",
+  "depois": "g04_b.png",
   "alvo": [
-   1434,
+   1114,
    545
   ],
   "botao": "esq",
   "clicado": true
  },
  "peso_do_pulo": {
-  "antes": "g05_a.jpg",
-  "depois": "g05_b.jpg",
+  "antes": "g05_a.png",
+  "depois": "g05_b.png",
   "alvo": [
-   1718,
+   1398,
    690
   ],
   "botao": "esq",
