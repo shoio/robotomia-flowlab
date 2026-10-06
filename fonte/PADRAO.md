@@ -186,6 +186,16 @@ aconteceu, neste curso ou nos anteriores:
       não outra tirada depois.
 - [ ] **A sonda está medindo o ator certo?** Uma série constante em 447 era a
       ESTRELA sendo lida como lava.
+- [ ] **A régua depende de uma propriedade ACIDENTAL do que ela mede?** Cinco
+      vezes numa sessão: passo da grade de sprites «é 85» (era 89), casa do
+      nível «é 64» (varia com o zoom), mínimo da barrinha «é 16» (é 4), zoom
+      normal «é 1» (é 100), e a folha «é branca» — até a aula passar a pintar
+      o céu, e a régua dizer que não havia folha. **Régua que depende da cor do
+      que mede quebra no dia em que a cor vira conteúdo.**
+- [ ] **O meu lixo na conta quebra a minha ferramenta?** Jogo sem miniatura
+      mostra um cartão de cor SORTEADA, e um deles saiu verde — dentro da faixa
+      onde eu procuro o verde do botão `+ New Game`. Rascunho se chama
+      `rascunho`, e some quando o dono mandar.
 - [ ] **Isto está no handbook?** `grep -i "<bloco>" fonte/docs/handbook.txt`
       antes de medir na tela. Medir o que está escrito é o jeito mais caro de
       aprender — e o mais sujeito a eu concluir errado com dados certos.

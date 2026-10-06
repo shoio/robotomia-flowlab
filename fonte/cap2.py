@@ -38,6 +38,7 @@ D = "aula2"
 # colunas. Fase mais comprida nao e fase mais dificil: o que cresce e o caminho,
 # nao o salto.
 COLUNAS = 28            # as colunas do NIVEL (a tela continua com 16)
+CEU = "87CEEB"          # azul de ceu; o padrao do Flowlab e FFFFFF
 
 LINHA_CHAO = 8          # a plataforma onde o boneco comeca
 LINHA_MEIO = 6          # a segunda plataforma
@@ -165,6 +166,13 @@ def novo():
     # por peca FORA da folha branca, e a camera leva a vista ate la.
     comum.calibra_grade(16, 12)
     A.cap("p01_vazio")
+    # O CEU. O campo da cor de fundo do nivel nasce em FFFFFF, e e por isso que
+    # todos os jogos do curso eram brancos de folha de papel. Um campo so.
+    A.gesto("pintar_o_ceu", "g08", (0, 0),
+            lambda: editor.cor_do_ceu(CEU), espera=2.0)
+    editor.volta_ao_nivel()
+    A.cap("p02_ceu")
+    print(f"   ceu em #{CEU}", flush=True)
     return True
 
 
@@ -296,9 +304,16 @@ def lava():
     x, y = celula(COLS_LAVA[0], LINHA_LAVA)
     editor.objeto_ou_abre(x, y)
     editor.abre_comportamentos()
-    c = blocos.bloco_ou_solta("Collision", 1120, 620)
+    c = blocos.bloco_ou_solta("Collision", 1120, 1220)
     A.cap("p10_collision")
-    r = blocos.bloco_ou_solta("Restart Game", 1700, 1150, titulo="RestartGame")
+    # NA MESMA FILEIRA do Collision, de proposito. O detector de fio
+    # (`blocos._ha_fio`) fatia o caminho ao longo do eixo mais longo: num fio
+    # RETO ele e confiavel, numa DIAGONAL ele erra. Com o Restart 580 px a
+    # direita e 530 abaixo, o fio existia e ele dizia que nao — a captura
+    # parava com "nenhum fio apareceu" e passava na repeticao, pela sorte do
+    # tracado. A Aula 3 ja punha os dois na mesma fileira, e la isso nao
+    # acontece.
+    r = blocos.bloco_ou_solta("Restart Game", 1700, 1220, titulo="RestartGame")
     A.cap("p11_restart")
     blocos.liga_fixo(c, "hit", r, "go")
     A.cap("p12_fio_lava")
@@ -320,8 +335,8 @@ def estrela():
     clique(*comum.SPRITE_OK); time.sleep(2); nav.espera_parar(limite=15)
     A.cap("p13_estrela")
     editor.abre_comportamentos()
-    c = blocos.bloco_ou_solta("Collision", 1120, 620)
-    d = blocos.bloco_ou_solta("Destroyer", 1700, 1150)
+    c = blocos.bloco_ou_solta("Collision", 1120, 1220)
+    d = blocos.bloco_ou_solta("Destroyer", 1700, 1220)     # mesma fileira
     blocos.liga_fixo(c, "hit", d, "in")
     A.cap("p14_fio_estrela")
     time.sleep(2)

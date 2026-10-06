@@ -24,15 +24,19 @@ AULA = {
     sos=[("Aparece Log in","Clique nele e entre com o e-mail e a senha da sua conta."),
          ("Minha lista está vazia","Confira se entrou com a mesma conta da Aula 1.")]),
 
-  dict(n=2, titulo="Crie um jogo novo", img="comum_fotos/c03_escolher.jpg", clipe="novo_jogo.gif",
-    corpo="Clique no botão verde <span class=ui>+ New Game</span>, no canto direito.",
-    ck="Apareceram duas figuras: <span class=ui>Empty Project</span> e <span class=ui>Flowlab Tutorial</span>.",
-    sos=[("Não aconteceu nada","Clique de novo, uma vez só, bem no meio do botão verde. Às vezes ele demora alguns segundos para abrir a janelinha.")]),
-
-  dict(n=3, titulo="Escolha o PROJETO VAZIO", img="aula2/p01_vazio.jpg", clipe="empty_project.gif",
-    corpo="Clique na <b>figura</b> da esquerda, a do <b>+</b> grande.<br><br>Clique na figura, não no nome embaixo dela — o nome não responde.",
+  dict(n=2, titulo="Crie um jogo novo, vazio", img="aula2/p01_vazio.jpg",
+    clipe="empty_project.gif",
+    corpo="Clique no botão verde <span class=ui>+ New Game</span>, no canto direito.<br><br>Aparecem duas figuras. Clique na da <b>esquerda</b>, a do <b>+</b> grande — e clique na <b>figura</b>, não no nome embaixo dela, que não responde.",
     ck="Sobrou a folha branca vazia, com a fileira <span class=ui>Play · Library · Game Levels · Layer · Settings</span> embaixo.",
-    sos=[("Abriu o Flowlab Tutorial","Volte para <span class=ui>My Games</span>, apague esse jogo nos três pontinhos e comece de novo.")]),
+    sos=[("Cliquei no nome e não aconteceu nada","Clique na figura, não no texto."),
+         ("Abriu o tutorial do Flowlab","Esse é o da direita. Volte e escolha o da esquerda.")]),
+
+  dict(n=3, titulo="Pinte o céu", img="aula2/p02_ceu.jpg", clipe="pintar_o_ceu.gif",
+    corpo="Antes de construir, tire o branco de folha de papel.<br><br>Clique em <span class=ui>Game Levels</span>, na fileira de baixo. Ao lado do nome <span class=ui>Level 1</span> há um campo escrito <span class=ui>FFFFFF</span> — é a <b>cor do fundo</b> do seu jogo.<br><br>Clique nele, apague, escreva <b>87CEEB</b> e aperte Enter. O fundo vira <b>azul de céu</b>.<br><br>Pode escolher outra cor se quiser: <b>FFD9A0</b> dá fim de tarde, <b>1A1A40</b> dá noite. São seis letras e números que o computador lê como uma cor.",
+    ck="O retângulo do jogo deixou de ser branco e ficou azul.",
+    sos=[("Não achei o FFFFFF","Ele fica à direita do nome <span class=ui>Level 1</span>, dentro do painel <span class=ui>Game Levels</span>."),
+         ("Escrevi e não mudou","Aperte <b>Enter</b> depois de escrever."),
+         ("Ficou uma cor estranha","São seis caracteres, só com números e as letras de A a F. Confira se não sobrou nenhum do antigo.")]),
 
   dict(n=4, titulo="Crie o jogador", img="aula2/g01_b.jpg", clipe="criar_objeto.gif",
     corpo="Clique uma vez dentro da folha branca, na <b>parte de baixo e à esquerda</b> — o boneco vai começar ali.<br><br>Abre a roda com <span class=ui>Create</span> e <span class=ui>Cancel</span>.",
@@ -89,7 +93,7 @@ AULA = {
          ("Só pode ter uma","Se dois objetos tiverem <span class=ui>Camera</span>, o jogo não sabe qual obedecer. Só o boneco leva um.")]),
 
   dict(n=13, titulo="Faça o primeiro chão", img="aula2/p06_chao.jpg", clipe=None,
-    corpo="Feche as duas telas (<span class=ui>OK</span> da mesa de blocos e <span class=ui>OK</span> azul do painel).<br><br>Clique numa casa <b>logo abaixo</b> do boneco, escolha <span class=ui>Create</span>, chame de <b>Chao</b> e, em <span class=ui>edit sprite</span>, use o <span class=ui>Browse</span> para pegar o <b>primeiro bloco</b> de <span class=ui>Flowlab Sprites &rsaquo; Blocks</span> — o de terra com grama.<br><br>Depois clique nele, escolha <span class=ui>Clone</span> e clique nas casas ao lado para fazer uma plataforma de <b>nove casas</b>, sem buraco. Clique em <span class=ui>Done Cloning</span> para parar.<br><br>Nove parece muito, e é de propósito: é o começo do caminho.",
+    corpo="Feche as duas telas (<span class=ui>OK</span> da mesa de blocos e <span class=ui>OK</span> azul do painel).<br><br>Clique numa casa <b>logo abaixo</b> do boneco, escolha <span class=ui>Create</span>, chame de <b>Chao</b> e, em <span class=ui>edit sprite</span>, use o <span class=ui>Browse</span> para pegar o <b>primeiro bloco</b> de <span class=ui>Flowlab Sprites &rsaquo; Blocks</span> — o de terra com grama.<br><br>Depois clique nele, escolha <span class=ui>Clone</span> e clique nas casas <b>à direita</b> para fazer uma plataforma de <b>nove casas</b>, sem buraco. Clique em <span class=ui>Done Cloning</span> para parar.<br><br><b>Antes de seguir, uma coisa importante:</b> aquele retângulo branco <b>não é a sua fase</b> — é a <b>tela</b>, o pedaço que aparece de cada vez. A fase pode ser muito maior, e daqui para a frente você vai construir <b>para fora dele</b>, no cinza. Estranha na primeira vez; é assim mesmo.",
     depois="O chão <b>não</b> leva física: não marque <span class=ui>movable</span> nele. Só o jogador se mexe; chão e plataformas ficam parados.",
     ck="O boneco está em cima de uma faixa de blocos de grama de <b>nove casas</b>, sem buraco.",
     sos=[("Ficou buraco entre as peças","Clique exatamente nas casas vizinhas; buraco faz o boneco cair."),
@@ -107,8 +111,8 @@ AULA = {
     sos=[("A escada ficou longe demais","Se o degrau estiver a mais de duas casas de altura, o pulo não chega. Apague e refaça mais perto.")]),
 
   dict(n=16, titulo="Ponha a lava embaixo de tudo", img="aula2/p09_lava.jpg", clipe=None,
-    corpo="Lá embaixo, na última linha da folha branca, faça um objeto novo chamado <b>Lava</b>. Em <span class=ui>edit sprite</span>, clique em <span class=ui>Browse</span>, depois em <span class=ui>Flowlab Sprites</span> e em <span class=ui>Terrain</span>: a <b>lava vermelha com bolhas</b> está lá embaixo na grade — role até achá-la.<br><br>Depois use o <span class=ui>Clone</span> para esticar a lava de <b>uma ponta à outra</b> da folha. Ela precisa cobrir todo o fundo — é onde o jogador cai quando erra o pulo.",
-    ck="Uma faixa vermelha atravessa o fundo da tela inteira, sem buraco.",
+    corpo="Lá embaixo, na <b>última fileira</b>, faça um objeto novo chamado <b>Lava</b>. Em <span class=ui>edit sprite</span>, clique em <span class=ui>Browse</span>, depois em <span class=ui>Flowlab Sprites</span> e em <span class=ui>Terrain</span>: a <b>lava vermelha com bolhas</b> está lá embaixo na grade — role até achá-la.<br><br>Depois use o <span class=ui>Clone</span> para esticar a lava por <b>toda a fileira de baixo</b> — do começo do chão até <b>depois da última plataforma</b>, bem para fora do retângulo branco.<br><br>Ela precisa cobrir o fundo da <b>fase inteira</b>, não só o pedaço da tela: é lá na frente que o jogador erra o pulo.",
+    ck="Uma faixa vermelha atravessa o fundo da <b>fase inteira</b>, passando do retângulo branco, sem buraco.",
     sos=[("Minha lava tem buracos","O jogador pode cair exatamente no buraco e não acontecer nada. Clone nas casas que faltam."),
          ("A lava ficou colada na plataforma","Deixe pelo menos duas casas de distância, senão o jogador encosta nela sem querer.")]),
 

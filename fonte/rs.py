@@ -683,7 +683,13 @@ def linha_da_saida(janela, alvo, arquivo="/tmp/_saidal.png"):
     return None
 
 
-ESCADA = ((1, None), (1, 90), (2, None), (2, 90), (3, 90), (1, 150))
+# A ESCADA de (escala, limiar) do OCR. Os limiares ALTOS (130, 170) entraram
+# no dia em que a aula passou a pintar o ceu: o fundo da mesa de blocos deixou
+# de ser quase preto e virou azul-acinzentado medio, e o limiar 90 passou a
+# afogar o titulo branco dos blocos. Medido na mesma foto: com limiar None o
+# tesseract devolve 23 itens de lixo; com 110 a 170, le `RestartGame` limpo.
+ESCADA = ((1, None), (1, 90), (1, 130), (1, 170), (2, None), (2, 90),
+          (2, 140), (3, 90), (1, 150))
 
 
 def ocr_forte(arquivo=None, regiao=None, psm="6", idioma="por+eng", escada=ESCADA):

@@ -38,32 +38,34 @@ def celula(c, r):
 
 
 def folha_do_nivel(arquivo=None, minimo=400):
-    """(x0, x1, y0, y1) da folha do nivel, medida na tela.
+    """(x0, x1, y0, y1) da folha do nivel — a area da TELA — medida na tela.
 
-       A folha e o nivel inteiro e e branca. Mas branco puro tambem existe no
-       canto de baixo a direita — o circulo do avatar e a palavra "Saved" — e
-       a primeira versao disto devolvia o retangulo que ENVOLVE todo pixel
-       branco da tela: a folha terminava em y=1244 e eu lia 1596, o que dava
-       uma fase de 19 fileiras onde havia 14.
+       NAO pela cor dela. A primeira versao procurava BRANCO, e funcionou ate o
+       dia em que a aula passou a pintar o ceu: a folha virou azul e a regua
+       disse que nao havia folha nenhuma. Regua que depende da cor do que mede
+       quebra no dia em que a cor vira conteudo.
 
-       O conserto e medir pela MASSA: fico com as fileiras e as colunas que tem
-       pelo menos `minimo` pixels brancos. Um texto e um circulo nao fazem 400
-       pixels numa linha; a folha faz dois mil."""
+       O invariante que ficou: a folha e tudo o que NAO e o xadrez escuro do
+       fundo do editor. O xadrez eu leio do proprio canto de cima a esquerda,
+       que nunca tem folha — entao a referencia se mede a cada foto, em vez de
+       ser um numero meu.
+
+       Tambem ignoro a barra de baixo (os botoes Play/Library/...), que e
+       escura mas nao e xadrez."""
     import numpy as _np
     from PIL import Image as _I
     a = arquivo or nav.captura("/tmp/_folha.png")[0]
     im = _np.asarray(_I.open(a).convert("RGB"), dtype=int)
-    br = (im > 250).all(axis=2)
-    if br.sum() < 5000:
+    alt = im.shape[0]
+    canto = im[0:140, 0:140].reshape(-1, 3)        # xadrez puro
+    lo, hi = canto.min(axis=0) - 12, canto.max(axis=0) + 12
+    fundo = ((im >= lo) & (im <= hi)).all(axis=2)
+    nao_fundo = ~fundo
+    nao_fundo[int(alt * 0.93):, :] = False         # a barra de baixo fica fora
+    if nao_fundo.sum() < 5000:
         return None
-    # O LIMIAR E RELATIVO, nao fixo. Com a tela em 4 colunas a folha tem 256
-    # px de branco por fileira, e um minimo fixo de 400 a declarava inexistente
-    # — o limiar quebrava exatamente no caso pequeno. Fico com as fileiras e
-    # colunas que tem pelo menos 30% do maximo: a folha e um retangulo cheio,
-    # entao as de dentro dela ficam todas perto do maximo, e o avatar e o
-    # "Saved" do canto nao chegam perto.
-    porfila = br.sum(axis=1)
-    porcol = br.sum(axis=0)
+    porfila = nao_fundo.sum(axis=1)
+    porcol = nao_fundo.sum(axis=0)
     lim_f = max(minimo * 0.25, porfila.max() * 0.3)
     lim_c = max(minimo * 0.25, porcol.max() * 0.3)
     ys = _np.nonzero(porfila >= lim_f)[0]
@@ -538,10 +540,43 @@ def abre_fisica(tentativas=4):
         #  - e o painel nasce do lado da casa clicada: para a lava, que fica
         #    no canto de baixo a esquerda, ele abre a ESQUERDA, e uma regiao
         #    fixa na direita da tela nao o alcanca.
+        # ÂNCORA NUM TEXTO QUE O OCR LÊ, e nao na cor do botao OK.
+        #
+        # A cor parou de servir no dia em que a aula passou a pintar o CEU: o
+        # azul do ceu fica a 38 do azul do OK, dentro da tolerancia 40, e o
+        # "OK" que o detector achava era um pedaco de ceu de 431x229 px (o
+        # botao tem 303x60). Pus um teto de tamanho e nem assim — o pedaco
+        # cabia no teto. Cor que distinguia deixou de distinguir porque a
+        # aula ganhou uma cor nova, e nenhuma tolerancia conserta isso.
+        #
+        # `Multiplayer` e o rotulo legivel mais proximo do link: medido, o
+        # `Physics >` fica 190 px abaixo e 85 px a direita dele. `Display
+        # Order` serve de reserva, do outro lado da mesma fileira.
+        for rotulo, (dx, dy) in (("multiplayer", (85, 190)),
+                                 ("display order", (475, 190))):
+            anc = _acha_no_painel(rotulo, a)
+            if anc:
+                p = (anc[0] + dx, anc[1] + dy)
+                break
+        else:
+            p = None
+        if p:
+            clique(p[0], p[1]); time.sleep(2.5)
+            a2, _ = nav.captura("/tmp/_c1_fis1.png")
+            if "collision shape" in " ".join(
+                    t for t, *_ in rs.ocr_forte(a2, psm="6")).lower():
+                return (int(p[0]), int(p[1]))
+            time.sleep(1.0)
+            continue
+
         from PIL import Image as _I
         L, A_ = _I.open(a).size
+        # `maximo`: o OK tem ~24 mil pixels azuis. Desde que a aula pinta o
+        # CEU, o fundo do nivel e azul tambem — 786 mil pixels a 38 de
+        # distancia do OK, dentro da tolerancia. Sem o teto, o "OK" encontrado
+        # era o ceu, e a faixa onde eu procuro o `Physics >` ia parar longe.
         ok = nav.acha_cor(AZUL_OK, tol=40, regiao=(0.0, 0.3, 1.0, 0.98),
-                          minimo=800, arquivo=a)
+                          minimo=800, maximo=120000, arquivo=a)
         p = None
         if ok:
             # DEPOIS da borda direita do OK, nao a partir do meio dele.

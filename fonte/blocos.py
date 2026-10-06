@@ -136,7 +136,7 @@ def item_palheta(nome, tentativas=3):
     raise RuntimeError(f"o bloco '{nome}' nao aparece na palheta")
 
 
-def solta(nome, x, y, tentativas=3, titulo=None):
+def solta(nome, x, y, tentativas=3, titulo=None, exige_titulo=True):
     """Arrasta um bloco da palheta para (x, y) e CONFERE que ele nasceu ali.
 
        A conferencia e por PIXEL, nao por leitura do titulo. Ler o titulo
@@ -149,6 +149,8 @@ def solta(nome, x, y, tentativas=3, titulo=None):
        O invariante e simples: ONDE EU SOLTEI, a mesa tem de ter mudado."""
     import numpy as _np
     for k in range(tentativas):
+        import editor as _ed
+        _ed.fecha_roda()          # a roda Create/Cancel tapa o meio da mesa
         antes, _ = nav.captura("/tmp/_bl_antes_solta.png")
         p = item_palheta(nome)
         # ARRASTO LENTO sempre: o rapido nao pega os pacotes de
@@ -175,6 +177,18 @@ def solta(nome, x, y, tentativas=3, titulo=None):
             try:
                 return acha_bloco(titulo or nome)
             except RuntimeError:
+                # A MUDANCA DE PIXEL NAO BASTA quando o bloco vai levar FIO.
+                #
+                # Desde que a aula pinta o ceu, o fundo da mesa de blocos e
+                # azul-acinzentado em vez de quase preto, e a conta de "mudou
+                # perto de onde soltei" passa com o ruido do fundo. O bloco
+                # nao nascia, o guarda aprovava, e so la na frente o fantasma
+                # era barrado. Para quem precisa de pino, o titulo LIDO e a
+                # unica prova que vale: desfaco e tento de novo.
+                if exige_titulo and k < tentativas - 1:
+                    rs.tecla(6, cmd=True)       # desfaz o que quer que tenha mudado
+                    time.sleep(1.0)
+                    continue
                 # NAO consegui ler o titulo. Isso e normal para os pacotes de
                 # `Behavior Bundles`, cujo nome o OCR nao pega — e eles nunca
                 # tem fio ligado. Devolvo o bloco MARCADO: quem for usar a
@@ -1054,7 +1068,17 @@ def campo_do_painel(rotulo, valor, abaixo=67, folga=10):
     return alvo
 
 
-def bloco_ou_solta(nome, x, y, titulo=None):
+# Os PACOTES de `Behavior Bundles` nao desenham um titulo que o OCR leia, e
+# nunca levam fio — para eles a mudanca de pixel e a unica prova possivel.
+# LISTA EXPLICITA, nao regra pela forma do nome: a minha primeira versao
+# isentava "todo nome com espaco", e isso pegava o `Restart Game`, cujo titulo
+# na mesa e `RestartGame` e le perfeitamente. Regra pela forma da palavra erra
+# o alvo; a lista diz exatamente quem.
+SEM_TITULO_LEGIVEL = {"Run & Jump", "Top Down Movement", "Platformer",
+                      "Follow Player", "Health Bar"}
+
+
+def bloco_ou_solta(nome, x, y, titulo=None, exige_titulo=None):
     """O bloco, se ele JA estiver na mesa; senao solta um novo ali.
 
        Uma etapa de captura costuma ser repetida depois de um erro no meio
@@ -1064,7 +1088,12 @@ def bloco_ou_solta(nome, x, y, titulo=None):
     try:
         return acha_bloco(alvo)
     except RuntimeError:
-        return solta(nome, x, y, titulo=titulo)
+        # Os pacotes de `Behavior Bundles` nao tem titulo que o OCR leia, e
+        # nunca levam fio: para eles a mudanca de pixel e a unica prova
+        # possivel. Para todo o resto, o titulo lido e obrigatorio.
+        if exige_titulo is None:
+            exige_titulo = nome not in SEM_TITULO_LEGIVEL
+        return solta(nome, x, y, titulo=titulo, exige_titulo=exige_titulo)
 
 
 def escolhe_tipo_da_colisao(bloco, tipo):

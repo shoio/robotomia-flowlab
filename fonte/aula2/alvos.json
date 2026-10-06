@@ -1,7 +1,7 @@
 {
  "criar_objeto": {
-  "antes": "g01_a.jpg",
-  "depois": "g01_b.jpg",
+  "antes": "g01_a.png",
+  "depois": "g01_b.png",
   "alvo": [
    1310,
    898
@@ -10,8 +10,8 @@
   "clicado": true
  },
  "escolher_create": {
-  "antes": "g02_a.jpg",
-  "depois": "g02_b.jpg",
+  "antes": "g02_a.png",
+  "depois": "g02_b.png",
   "alvo": [
    1190,
    896
@@ -20,8 +20,8 @@
   "clicado": true
  },
  "escolher_sprite": {
-  "antes": "g13_a.jpg",
-  "depois": "g13_b.jpg",
+  "antes": "g13_a.png",
+  "depois": "g13_b.png",
   "alvo": [
    2307,
    184
@@ -30,18 +30,18 @@
   "clicado": true
  },
  "abrir_physics": {
-  "antes": "g03_a.jpg",
-  "depois": "g03_b.jpg",
+  "antes": "g03_a.png",
+  "depois": "g03_b.png",
   "alvo": [
-   1942,
-   1270
+   1949,
+   1269
   ],
   "botao": "esq",
   "clicado": true
  },
  "marcar_movable": {
-  "antes": "g04_a.jpg",
-  "depois": "g04_b.jpg",
+  "antes": "g04_a.png",
+  "depois": "g04_b.png",
   "alvo": [
    1498,
    545
@@ -50,8 +50,8 @@
   "clicado": true
  },
  "peso_do_pulo": {
-  "antes": "g05_a.jpg",
-  "depois": "g05_b.jpg",
+  "antes": "g05_a.png",
+  "depois": "g05_b.png",
   "alvo": [
    1782,
    690
@@ -70,11 +70,21 @@
   "clicado": true
  },
  "limite_da_camera": {
-  "antes": "g07_a.jpg",
-  "depois": "g07_b.jpg",
+  "antes": "g07_a.png",
+  "depois": "g07_b.png",
   "alvo": [
    1024,
-   528
+   527
+  ],
+  "botao": "esq",
+  "clicado": false
+ },
+ "pintar_o_ceu": {
+  "antes": "g08_a.png",
+  "depois": "g08_b.png",
+  "alvo": [
+   1296,
+   1298
   ],
   "botao": "esq",
   "clicado": false

@@ -269,13 +269,21 @@ if __name__ == "__main__":
     print("quieto :", espera_parar(), "s")
 
 
-def acha_cor(rgb, tol=26, regiao=None, minimo=400, arquivo=None):
+def acha_cor(rgb, tol=26, regiao=None, minimo=400, arquivo=None,
+             maximo=None):
     """Acha o maior aglomerado de uma COR na tela e devolve (x, y, largura,
        altura) em pixels da imagem, ou None.
 
        Existe porque botao de site e texto BRANCO sobre cor: o OCR nao le nada
        ali (medido — 'New Game' em branco sobre verde deu lista vazia em quatro
-       modos de segmentacao). A cor do botao, essa nao muda."""
+       modos de segmentacao). A cor do botao, essa nao muda.
+
+       `maximo` recusa mancha grande demais para ser o que eu procuro. Nasceu
+       no dia em que a aula passou a pintar o CEU: o azul do ceu (135,206,235)
+       fica a 38 do azul do botao OK (126,168,224), dentro da tolerancia 40 —
+       e o detector do OK passou a achar o ceu, uma mancha de 786 mil pixels
+       onde o botao tem 24 mil. Tamanho e o que separa os dois, e nenhuma
+       tolerancia de cor resolveria."""
     import numpy as _np
     a = arquivo or captura("/tmp/_nav_cor.png")[0]
     im = _np.asarray(Image.open(a).convert("RGB"), dtype=int)
@@ -288,6 +296,7 @@ def acha_cor(rgb, tol=26, regiao=None, minimo=400, arquivo=None):
     mask = (_np.abs(im - _np.array(rgb)) <= tol).all(axis=2)
     if mask.sum() < minimo:
         return None
+
     ys, xs = _np.nonzero(mask)
     # o maior bloco: fico com o aglomerado em volta da mediana
     for _ in range(4):
@@ -296,6 +305,11 @@ def acha_cor(rgb, tol=26, regiao=None, minimo=400, arquivo=None):
         if perto.sum() < minimo:
             break
         xs, ys = xs[perto], ys[perto]
+    # O TETO VALE PARA O AGLOMERADO ESCOLHIDO, nao para a mascara inteira. A
+    # primeira versao media `mask.sum()`, e com o ceu azul na tela a soma
+    # passava do teto SEMPRE — o botao era recusado junto com o ceu.
+    if maximo and len(xs) > maximo:
+        return None
     return (int(xs.mean()) + x0, int(ys.mean()) + y0,
             int(xs.max() - xs.min()), int(ys.max() - ys.min()))
 

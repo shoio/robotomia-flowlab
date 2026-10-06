@@ -9,7 +9,7 @@ import rs, nav
 VERDE = (41, 168, 70)              # o botao "+ New Game", medido em 04-10
 
 
-def botao_novo_jogo(arquivo=None, regiao=(0.5, 0.05, 1.0, 0.35)):
+def botao_novo_jogo(arquivo=None, regiao=(0.6, 0.05, 1.0, 0.22)):
     """O `+ New Game` achado pela PROPRIEDADE da cor, nao pelo valor exato.
 
        O verde dele mudou de (99,173,97) para (41,168,70) entre uma noite e a
@@ -18,7 +18,14 @@ def botao_novo_jogo(arquivo=None, regiao=(0.5, 0.05, 1.0, 0.35)):
        bem maior que R e que B — sobrevive a mudanca de tom.
 
        Procurar pelo TEXTO tambem nao serve: a lista esta cheia de jogos
-       chamados `New Game`, e a leitura acha o titulo de um cartao primeiro."""
+       chamados `New Game`, e a leitura acha o titulo de um cartao primeiro.
+
+       A FAIXA E ESTREITA de proposito (y de 5% a 22%, x de 60% para a
+       direita). A faixa larga de antes funcionava com a conta vazia e passou a
+       errar quando ela encheu: a miniatura "No Screenshot Yet" de um jogo sem
+       captura e VERDE, e caiu dentro da busca. O botao vive sozinho na tira de
+       cima, a direita — e e o verde mais a DIREITA de todos, que e o criterio
+       que ficou no desempate."""
     import numpy as _np
     from PIL import Image as _I
     a = arquivo or nav.captura("/tmp/_ed_verde.png")[0]
@@ -32,6 +39,11 @@ def botao_novo_jogo(arquivo=None, regiao=(0.5, 0.05, 1.0, 0.35)):
     ys, xs = _np.nonzero(m)
     if len(xs) < 2000:
         return None
+    # fico com o aglomerado mais A DIREITA: se alguma miniatura verde entrar na
+    # faixa, a MEDIA de todos os pixels cai no meio do caminho entre ela e o
+    # botao — num lugar onde nao ha nada para clicar
+    perto = xs >= (xs.max() - 0.12 * (x1 - x0))
+    xs, ys = xs[perto], ys[perto]
     return (int(xs.mean()) + x0, int(ys.mean()) + y0)
 
 
@@ -179,6 +191,36 @@ def tamanho_do_nivel(colunas, tentativas=6):
                        f"{colunas_do_nivel()} (cliques: {medidos})")
 
 
+def cor_do_ceu(hexa):
+    """Pinta o fundo do NIVEL com uma cor, pelo painel `Game Levels`.
+
+       O campo fica ao lado do nome do nivel e nasce com `FFFFFF` — e e por
+       isso que todo jogo do curso era branco de folha de papel. Eu fotografei
+       esse painel varias vezes e nunca olhei o que era aquele campo.
+
+       Devolve o ponto clicado, para o clipe da aula apontar para ele."""
+    import comum
+    p = nav.acha_texto("game levels")
+    if not p:
+        raise RuntimeError("nao achei o Game Levels na barra de baixo")
+    comum.clique(*p); time.sleep(2.5)
+    a, _ = nav.captura("/tmp/_ed_ceu.png")
+    q = None
+    for alvo in ("ffffff", "level 1"):
+        q = nav.acha_texto(alvo, arquivo=a)
+        if q:
+            if alvo == "level 1":      # o campo da cor fica a direita do nome
+                q = (q[0] + 240, q[1])
+            break
+    if not q:
+        raise RuntimeError("nao achei o campo da cor no painel Game Levels")
+    nav.clique_seguro(*q); time.sleep(0.8)
+    rs.tecla(0, cmd=True); time.sleep(0.3)
+    rs.digita_teclas(hexa); time.sleep(0.5)
+    rs.tecla(36); time.sleep(1.8)                  # Enter
+    return q
+
+
 def jogo_novo():
     """Cria um jogo novo e abre o projeto vazio. Devolve o endereco do jogo."""
     nav.vai("https://flowlab.io/games/mine", espera=4)
@@ -268,6 +310,25 @@ def fecha_comportamentos():
     J = nav.janela()
     rs.clique_img(160, 1560, escala=2.0, janela=J)
     time.sleep(2); nav.espera_parar(limite=15)
+    return True
+
+
+def fecha_roda():
+    """Dispensa a roda `Create / Cancel`, se ela estiver aberta.
+
+       Ela nasce de um clique que chegou ao NIVEL — e, quando a mesa de blocos
+       esta aberta, ela fica POR CIMA dela, bem no meio, justamente onde eu
+       solto bloco. O arrasto cai na roda e o bloco nao nasce, sem nada dizer
+       por que: a mensagem que sobrava era "a mesa nao mudou ali"."""
+    import comum
+    a, _ = nav.captura("/tmp/_ed_roda.png")
+    txt = " ".join(t for t, *_ in rs.ocr_forte(a, psm="6")).lower()
+    if "cancel" not in txt or "create" not in txt:
+        return False
+    p = nav.acha_texto("cancel", arquivo=a)
+    if not p:
+        return False
+    comum.clique(*p); time.sleep(1.2)
     return True
 
 
