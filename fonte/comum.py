@@ -56,10 +56,18 @@ def folha_do_nivel(arquivo=None, minimo=400):
     br = (im > 250).all(axis=2)
     if br.sum() < 5000:
         return None
+    # O LIMIAR E RELATIVO, nao fixo. Com a tela em 4 colunas a folha tem 256
+    # px de branco por fileira, e um minimo fixo de 400 a declarava inexistente
+    # — o limiar quebrava exatamente no caso pequeno. Fico com as fileiras e
+    # colunas que tem pelo menos 30% do maximo: a folha e um retangulo cheio,
+    # entao as de dentro dela ficam todas perto do maximo, e o avatar e o
+    # "Saved" do canto nao chegam perto.
     porfila = br.sum(axis=1)
     porcol = br.sum(axis=0)
-    ys = _np.nonzero(porfila >= minimo)[0]
-    xs = _np.nonzero(porcol >= minimo)[0]
+    lim_f = max(minimo * 0.25, porfila.max() * 0.3)
+    lim_c = max(minimo * 0.25, porcol.max() * 0.3)
+    ys = _np.nonzero(porfila >= lim_f)[0]
+    xs = _np.nonzero(porcol >= lim_c)[0]
     if not len(ys) or not len(xs):
         return None
     return int(xs.min()), int(xs.max()), int(ys.min()), int(ys.max())

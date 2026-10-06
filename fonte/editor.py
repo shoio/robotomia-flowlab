@@ -158,7 +158,11 @@ def tamanho_do_nivel(colunas, tentativas=6):
             (xa, va), (xb, vb) = medidos[-2], medidos[-1]
             x = xa + (xb - xa) * (colunas - va) / float(vb - va)
         else:
-            frac = (colunas - 16) / 32.0 + 0.18 * len(medidos)
+            # A FAIXA DA BARRINHA E 4 A 48, nao 16 a 48. O minimo nao e o
+            # tamanho padrao: o padrao e 16, mas o controle desce ate 4 —
+            # conferido no painel. Eu calculava a fracao sobre 16..48, e por
+            # isso pedir 32 colocava 26.
+            frac = (colunas - 4) / 44.0 + 0.12 * len(medidos)
             x = x0 + (x1 - x0) * frac
         x = int(max(x0, min(x1, x)))
         comum.clique(x, y); time.sleep(1.0)
