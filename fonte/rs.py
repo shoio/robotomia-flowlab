@@ -721,11 +721,19 @@ def procura_forte(alvo, arquivo=None, regiao=None, psm="6", escada=ESCADA, exato
 
 
 def tecla_baixo(codigo):
+    # Estas duas NAO eram guardadas, e a bancada tambem nao as remenda: uma
+    # sonda minha montou "segurar as duas setas juntas" com elas, e as teclas
+    # foram para o teclado do Julio em vez do navegador da bancada. O pior nao
+    # foi o teclado alheio: foi a MEDIDA, que saiu "0 px de pulo" e eu quase
+    # tomei por resposta. Guardar uma porta e nao olhar as vizinhas foi o que
+    # deixou isto passar.
+    _exige_bancada_instalada()
     e = Quartz.CGEventCreateKeyboardEvent(None, codigo, True)
     Quartz.CGEventPost(Quartz.kCGHIDEventTap, e)
 
 
 def tecla_cima(codigo):
+    _exige_bancada_instalada()
     e = Quartz.CGEventCreateKeyboardEvent(None, codigo, False)
     Quartz.CGEventPost(Quartz.kCGHIDEventTap, e)
 

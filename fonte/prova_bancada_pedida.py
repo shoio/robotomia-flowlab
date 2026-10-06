@@ -22,6 +22,9 @@ CASOS = [
     ("tecla sem comum",   "import rs; rs.tecla(53)",                      True),
     ("foto sem comum",    "import rs; rs.captura(arquivo='/tmp/_p.png')", True),
     ("arrasto sem comum", "import rs; rs.arrasta_tela(10, 10, 20, 20)",   True),
+    # as duas que escaparam da primeira versao desta guarda
+    ("tecla_baixo sem comum", "import rs; rs.tecla_baixo(124)",            True),
+    ("tecla_cima sem comum",  "import rs; rs.tecla_cima(124)",             True),
     # o CONTROLE: sem BANCADA pedida, a tela e o caminho certo e nada barra
     ("sem BANCADA pedida", "import rs; rs._exige_bancada_instalada()",    False),
     # e o outro CONTROLE: com os remendos instalados, passa

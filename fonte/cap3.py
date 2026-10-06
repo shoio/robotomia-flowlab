@@ -79,30 +79,25 @@ def _cor_de(quem, indice=0):
     raise RuntimeError(f"nao sei a cor de `{quem}`")
 
 
-def _cor_mais_distinta(quem, longe_de, minimo=120):
-    """A cor mais ABUNDANTE do sprite que ainda se distingue dos vizinhos.
+def _cores(quem):
+    """Todas as cores medidas daquele sprite, da mais comum para a menos."""
+    if quem in CORES and CORES[quem]:
+        return CORES[quem]
+    caminho = os.path.join(D, "cores.json")
+    if os.path.exists(caminho):
+        g = json.load(open(caminho))
+        if quem in g:
+            return g[quem]
+    raise RuntimeError(f"nao sei as cores de `{quem}`")
 
-       Pegar a mais DISTANTE escolhia um ciano que existe em pouquissimos
-       pixels do heroi: distingue bem e mede pessimo — o centro de uma duzia de
-       pixels pula sozinho, e na Aula 2 o pulo saiu 50 px em vez de 428. A
-       lista vem da cor mais comum para a menos; fico com a primeira que passa
-       da distancia minima."""
-    opcoes = []
-    for i in range(5):
-        try:
-            opcoes.append(_cor_de(quem, i))
-        except (RuntimeError, IndexError):
-            break
-    if not opcoes:
-        raise RuntimeError(f"nao tenho cor nenhuma de `{quem}`")
 
-    def dist(c):
-        return min(sum(abs(a - b) for a, b in zip(c, o)) for o in longe_de)
+def _rastreio(quem, *outros):
+    """(cor, tolerancia) para achar `quem` sem achar `outros`.
 
-    for c in opcoes:                       # da mais comum para a menos
-        if dist(c) >= minimo:
-            return c
-    return max(opcoes, key=dist)
+       Os `outros` sao escolhidos a mao porque chao, plataforma e degrau alto
+       sao o MESMO desenho: exigir que se distingam entre si reprovaria uma
+       fase correta. Quem precisa ser distinguido e quem a prova mede."""
+    return comum.cor_de_rastreio({q: _cores(q) for q in (quem,) + outros}, quem)
 
 
 def _poe_sprite(quem, so_clique=False):
@@ -282,8 +277,16 @@ def lava_sobe():
     # Pelo `A.gesto`, nao pelo `A.reg` na mao: eu fotografava os DOIS quadros
     # depois do gesto ja feito, e o clipe saia uma figura parada — antes
     # identico a depois. O guarda dos alvos agora reprova isso.
-    A.gesto("botao_menos", "g08", (0, 0),
-            lambda: blocos.valor_com_botao_menos(nu, SUBIDA, 1), espera=1.6)
+    # O CLIPE GRAVA SO O CLIQUE NO `−`, nao o gesto inteiro.
+    #
+    # Gravando abrir-digitar-clicar-fechar, o antes e o depois mostram os dois
+    # o painel FECHADO, e a seta aponta para um botao que nao esta em quadro
+    # nenhum. `prepara_menos` deixa o painel aberto com o valor positivo ja
+    # digitado; o clipe e so o clique, que e o gesto que a crianca precisa ver.
+    ponto = blocos.prepara_menos(nu, SUBIDA)
+    A.gesto("botao_menos", "g08", ponto,
+            lambda: blocos.clica_menos(ponto, 1), espera=1.6)
+    blocos.fecha_ajustes(); time.sleep(0.8)
     A.cap("p15_menos_meio")
     print("   lava com velocidade", blocos.le_valor(nu), flush=True)
     time.sleep(2)
@@ -370,20 +373,16 @@ def prova():
     # — nao de uma faixa de tom escrita a mao. Com quadrados pintados dava para
     # dizer "o vermelho e a lava"; com sprite de verdade o heroi TAMBEM tem
     # vermelho na roupa, e a faixa larga pegaria os dois.
-    cor_lava = _cor_de("Lava")
-    cor_estrela = _cor_de("Estrela")
-    cor_jog = _cor_mais_distinta("Jogador", [cor_lava, cor_estrela])
-    if not comum.distantes([cor_jog, cor_lava, cor_estrela]):
-        raise RuntimeError(f"jogador {cor_jog}, lava {cor_lava} e estrela "
-                           f"{cor_estrela} tem cores parecidas demais")
-    print(f"   rastreando o boneco por {cor_jog} e a lava por {cor_lava}",
-          flush=True)
+    cor_jog, tol_jog = _rastreio("Jogador", "Lava", "Estrela")
+    cor_lava, tol_lava = _rastreio("Lava", "Jogador", "Estrela")
+    print(f"   rastreando o boneco por {cor_jog} (tol {tol_jog}) e a lava por "
+          f"{cor_lava} (tol {tol_lava})", flush=True)
 
     def boneco():
         """O centro de TODOS os pixels da cor do heroi: no jogo o sprite sai
            pequeno e PARTIDO, e exigir mancha unica dizia que ele sumiu."""
         a, _ = nav.captura("/tmp/_c3_j.png")
-        g = comum.centro_por_cor(a, cor_jog, minimo=60)
+        g = comum.centro_por_cor(a, cor_jog, tol=tol_jog, minimo=60)
         return (g[0], g[1]) if g else None
 
     def topo_da_lava(largura=200):
@@ -396,7 +395,7 @@ def prova():
            ate onde a lava CHEGOU."""
         a, _ = nav.captura("/tmp/_c3_j.png")
         im = np.asarray(Image.open(a).convert("RGB"), dtype=int)
-        por_fileira = comum.mascara_cor(im, cor_lava).sum(axis=1)
+        por_fileira = comum.mascara_cor(im, cor_lava, tol_lava).sum(axis=1)
         fileiras = np.nonzero(por_fileira >= largura)[0]
         return int(fileiras.min()) if len(fileiras) else None
 
@@ -478,62 +477,200 @@ def prova_vitoria():
        - e ela conferia sem olhar se o boneco ainda estava vivo. Depois de
          cair, as teclas vao para o vazio e a sonda conclui que a fase nao tem
          saida."""
-    cor_lava = _cor_de("Lava")
-    cor_estrela = _cor_de("Estrela")
-    cor_jog = _cor_mais_distinta("Jogador", [cor_lava, cor_estrela])
-    if not comum.distantes([cor_jog, cor_lava, cor_estrela]):
-        raise RuntimeError(f"jogador {cor_jog}, lava {cor_lava} e estrela "
-                           f"{cor_estrela} tem cores parecidas demais")
+    cor_jog, tol_jog = _rastreio("Jogador", "Lava", "Estrela")
+    cor_lava, tol_lava = _rastreio("Lava", "Jogador", "Estrela")
+    cor_estrela, tol_estrela = _rastreio("Estrela", "Jogador", "Lava")
+    print(f"   boneco {cor_jog}/{tol_jog}  lava {cor_lava}/{tol_lava}  "
+          f"estrela {cor_estrela}/{tol_estrela}", flush=True)
 
-    def onde(cor, minimo=60):
+    import numpy as np
+    from PIL import Image
+
+    def leitura():
+        """UMA foto so, e as tres medidas saem dela. Devolve (arquivo, boneco,
+           estrela, lava).
+
+           Por que juntas: cada medida tirava a SUA propria foto, e entre uma e
+           outra passava meio segundo. O jogo pisca entre aceso e apagado (o
+           Flowlab escurece tudo quando a pagina perde o foco), entao eu lia
+           'a estrela nao esta' no quadro ESCURO e 'o boneco esta' no quadro
+           ACESO — dois instantes diferentes — e chamava isso de vitoria. A
+           foto que a sonda guardou como prova tinha o canvas inteiro preto."""
         a, _ = nav.captura("/tmp/_c3_v.png")
-        return comum.centro_por_cor(a, cor, minimo=minimo)
+        im = np.asarray(Image.open(a).convert("RGB"), dtype=int)
 
-    boneco = lambda: onde(cor_jog)
-    estrela_na_tela = lambda: onde(cor_estrela, minimo=120)
+        def centro(cor, tol, minimo):
+            m = comum.mascara_cor(im, cor, tol)
+            ys, xs = np.nonzero(m)
+            if len(xs) < minimo:
+                return None
+            return (int(xs.mean()), int(ys.mean()))
+
+        # O JOGO ESTA ACESO NESTE QUADRO?
+        #
+        # O fundo do nivel e BRANCO PURO enquanto o jogo roda. Quando o Flowlab
+        # escurece tudo — ele faz isso quando a pagina perde o foco — nao sobra
+        # um pixel branco: medido, 569.000 contra 0. E o escurecimento nao
+        # atinge as cores por igual: o azul do boneco sobrevive a tolerancia
+        # 46, o dourado da estrela nao sobrevive a 25. Entao "a estrela sumiu"
+        # num quadro escuro nao e uma leitura ruim, e leitura NENHUMA.
+        #
+        # A janela se calibra sozinha pela LAVA, que atravessa o nivel inteiro:
+        # ela da as beiradas da esquerda e da direita, e o teto dela da o chao
+        # da faixa que eu olho.
+        ml = comum.mascara_cor(im, cor_lava, tol_lava)
+        ys, xs = np.nonzero(ml)
+        aceso, beiradas = False, None
+        if len(xs) >= 400:
+            x0, x1, yl = int(xs.min()), int(xs.max()), int(ys.min())
+            faixa = im[max(0, yl - 500):yl, x0:x1]
+            aceso = int((faixa > 250).all(axis=2).sum()) > 5000
+            beiradas = (x0, x1)            # a lava atravessa o nivel inteiro
+
+        return (a, centro(cor_jog, tol_jog, 60),
+                centro(cor_estrela, tol_estrela, 100), beiradas, aceso)
 
     def espera_comeco(limite=40):
         for _ in range(limite):
-            q = boneco()
+            _a, q, _e, _l, _ac = leitura()
             if q and abs(q[0] - inicio[0]) < 40:
                 return True
             time.sleep(0.8)
         return False
 
-    editor.volta_ao_editor(); time.sleep(2)
-    editor.volta_ao_nivel()
-    p = nav.acha_texto("play")
-    if not p:
-        raise RuntimeError("nao achei o botao Play (estou mesmo no editor?)")
-    clique(*p); time.sleep(6)
-    editor.exige_jogo()
-    clique(1470, 620); time.sleep(1.2)
-    if not estrela_na_tela():
-        raise RuntimeError("nao achei a estrela no jogo")
+    # ABRIR O JOGO ATE ELE DESENHAR. Medido: abrir a pagina do jogo logo depois
+    # da outra prova devolve, as vezes, um canvas PRETO — a pagina carrega, o
+    # titulo esta certo, `exige_jogo` aprova, e nao ha um pixel do nivel. Dali
+    # toda leitura de ausencia vira falsa vitoria.
+    for arranque in range(3):
+        editor.volta_ao_editor(); time.sleep(2)
+        editor.volta_ao_nivel()
+        p = nav.acha_texto("play")
+        if not p:
+            raise RuntimeError("nao achei o botao Play (estou mesmo no editor?)")
+        clique(*p); time.sleep(6)
+        editor.exige_jogo()
+        clique(1470, 620); time.sleep(1.5)
+        _a, _q, e, l, ac = leitura()
+        if e and l and ac:
+            break
+        print(f"   (abertura {arranque + 1}: a pagina do jogo nao desenhou)",
+              flush=True)
+    else:
+        raise RuntimeError("abri o jogo tres vezes e o nivel nunca desenhou — "
+                           "daqui nenhuma medida de ausencia vale")
     # ONDE o boneco nasce, medido na hora. Numero fixo aqui envelhece: bastou
     # mudar a coluna onde a fase comeca para a sonda ficar esperando um boneco
     # que estava na tela, parado, 60 px ao lado.
-    inicio = boneco()
+    _a, inicio, _e, _l, _ac = leitura()
     if not inicio:
         raise RuntimeError("nao achei o boneco no comeco do jogo")
     print(f"   o boneco nasce em x={inicio[0]}", flush=True)
 
-    for tentativa in range(6):
+    def acorda():
+        """Clique dentro do jogo ANTES de cada gesto e de cada leitura.
+
+           Medido, e e a chave de tudo: com o jogo apagado as TECLAS NAO
+           CHEGAM NELE. O mesmo corre-e-pula que, com o jogo aceso, leva o
+           boneco 373 px para a direita e 128 px para cima — dois degraus —
+           levava 163 px e nenhum degrau quando o quadro estava escuro. Era por
+           isso que ele empacava na coluna 6, a beirada do chao, catorze pulos
+           seguidos: metade dos meus comandos ia para um jogo pausado.
+
+           O escurecimento nao e esporadico: no registro ele aparece a CADA
+           gesto, e some a cada clique."""
+        clique(1470, 620)
+        time.sleep(0.6)
+
+    # ONDE O BONECO ESTA, EM DEGRAUS. Medido na propria tela, nao decorado: o
+    # canvas vai da beirada esquerda a direita da LAVA, que atravessa o nivel
+    # inteiro, e o nivel tem 16 colunas. A altura diz em que degrau ele esta —
+    # os tres ficam 128 px um acima do outro.
+    #
+    # Isto existe porque a sonda apertava teclas as CEGAS, com tempo fixo:
+    # `antes=0.12` fazia ela pular no meio do chao e cair de volta, e
+    # `antes=0.45` fazia andar ate a beirada e cair no vao. Medido, o acerto
+    # era de uma vez em duas — e uma subida unica nao distingue gesto certo de
+    # sorte. A crianca nao joga assim: ela OLHA onde esta. Entao a sonda anda
+    # ate perto da ponta do degrau em que esta, e so entao pula.
+    DEGRAUS = [(LINHA_CHAO - 1, COLS_CHAO[-1]),
+               (LINHA_MEIO - 1, COLS_MEIO[-1]),
+               (LINHA_ALTA - 1, COLS_ALTA[-1])]
+
+    def degrau_de(q, base_y, altura=128, folga=45):
+        """Em que degrau ele esta, pela altura. None se nao da para dizer."""
+        for i in range(len(DEGRAUS)):
+            if abs(q[1] - (base_y - i * altura)) <= folga:
+                return i
+        return None
+
+    for tentativa in range(8):
         if not espera_comeco():
             raise RuntimeError("o boneco nao voltou ao comeco: o jogo travou?")
-        rs.corre_e_pula(antes=0.25)                    # chao -> plataforma do meio
-        rs.corre_e_pula(antes=0.02, segurando=0.12)    # meio -> plataforma alta
-        for k in range(10):
-            if not estrela_na_tela():
-                A.cap("p24_pegou_a_estrela")
+        acorda()
+        arq, q, viva, lava, ac = leitura()
+        if not (ac and q and lava):
+            continue
+        base_y = q[1]                      # a altura do chao, medida na hora
+        canvas0, largura = lava[0], (lava[1] - lava[0]) / 16.0
+
+        for passo in range(26):
+            acorda()
+            arq, q, viva, _l, ac = leitura()
+            if not ac:
+                continue                   # quadro apagado nao e leitura
+            if not viva and q:
+                import shutil
+                os.makedirs(D, exist_ok=True)
+                shutil.copy(arq, os.path.join(D, "p24_pegou_a_estrela.png"))
                 print(f"   encostei na estrela e ela SUMIU "
-                      f"(tentativa {tentativa + 1}, passo {k})", flush=True)
+                      f"(tentativa {tentativa + 1}, passo {passo})", flush=True)
                 return True
-            q = boneco()
-            if not q or q[1] > 520:        # caiu da plataforma alta
-                break
-            rs.segura_tecla(123, 0.08)     # seta esquerda, ate tocar a estrela
-    raise RuntimeError("subi ate a plataforma alta seis vezes e a estrela nao sumiu")
+            if not viva and not q:
+                acorda()
+                _a, q2, e2, _l2, ac2 = leitura()
+                if q2 or e2 or not ac2:
+                    continue
+                A.cap("p24_jogo_apagado")
+                raise RuntimeError("a estrela sumiu E o boneco tambem, e clicar "
+                                   "dentro do jogo nao acordou: o jogo esta "
+                                   "pausado ou parou de desenhar — isso nao e "
+                                   "vitoria")
+            if not q:
+                break                      # caiu; o laco de fora recomeca
+            i = degrau_de(q, base_y)
+            col = (q[0] - canvas0) / largura
+            if i is None:
+                print(f"     t{tentativa+1} p{passo}: col {col:.1f} y {q[1]} "
+                      f"NO AR", flush=True)
+                continue                   # entre dois degraus
+            ponta = DEGRAUS[i][1]
+            if i == len(DEGRAUS) - 1:
+                gesto = "anda ate a estrela"
+                rs.segura_tecla(124, 0.12)
+            elif col < ponta - 0.8:
+                gesto = f"anda (ponta em {ponta})"
+                rs.segura_tecla(124, 0.18)
+            else:
+                # PULA JA, sem corrida antes.
+                #
+                # `antes` e quanto tempo o boneco CORRE antes de o pulo ser
+                # apertado. Perto da ponta do degrau isso e fatal: com 0,35 s
+                # ele percorre duas colunas, sai da beirada, e quando o pulo
+                # chega ele ja esta NO AR — e o pacote `Run & Jump` so deixa
+                # pular com o boneco TOCANDO alguma coisa. O comando vai para o
+                # vazio e ele cai na lava. Medido: 26 passos vezes 8 tentativas,
+                # sempre «col 5,8 -> PULA -> col 3,5», que e morrer e renascer.
+                #
+                # A corrida de impulso ja aconteceu nos passos de andar. Aqui o
+                # pulo e imediato, e a seta de lado fica segurada DURANTE o voo,
+                # que e o que leva o boneco para cima do degrau seguinte.
+                gesto = "PULA"
+                rs.corre_e_pula(direcao=124, antes=0.02, segurando=0.6)
+            print(f"     t{tentativa+1} p{passo}: col {col:.1f} y {q[1]} "
+                  f"degrau {i} -> {gesto}", flush=True)
+            time.sleep(0.25)
+    raise RuntimeError("subi a escada oito vezes e a estrela nao sumiu")
 
 
 def main():

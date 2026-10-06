@@ -153,7 +153,15 @@ def solta(nome, x, y, tentativas=3, titulo=None):
         p = item_palheta(nome)
         # ARRASTO LENTO sempre: o rapido nao pega os pacotes de
         # `Behavior Bundles` — a mesa ficava vazia e a captura parava ali.
-        arrasta_devagar(p[0], p[1], x, y, passos=40, segura=0.45)
+        #
+        # E a PRESSAO CRESCE a cada tentativa. Medido: com 0,45 s de pressao
+        # antes de mover, a palheta do Flowlab nao registra o arrasto — a mesa
+        # fica igual, sem um erro em lugar nenhum. Com 1,2 s o mesmo gesto, do
+        # mesmo ponto, para o mesmo alvo, solta o bloco. Era por isso que o
+        # Collision da Aula 3 nunca nascia: nao era o ponto, era o TEMPO. Um
+        # numero fixo aqui e aposta; escalar e medida.
+        espera = (0.6, 1.2, 2.0)[min(k, 2)]
+        arrasta_devagar(p[0], p[1], x, y, passos=90, segura=espera)
         time.sleep(1.2)
         fecha_ajustes()          # o arrasto lento costuma abrir os ajustes
         time.sleep(0.6)

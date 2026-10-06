@@ -60,8 +60,8 @@
   "clicado": true
  },
  "jogar": {
-  "antes": "g06_a.jpg",
-  "depois": "g06_b.jpg",
+  "antes": "g06_a.png",
+  "depois": "g06_b.png",
   "alvo": [
    1051,
    1586

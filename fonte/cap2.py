@@ -54,6 +54,30 @@ SPRITES = {
 CORES = {}
 
 
+def _cores(quem):
+    """Todas as cores medidas daquele sprite, da mais comum para a menos."""
+    if quem in CORES and CORES[quem]:
+        return CORES[quem]
+    caminho = os.path.join(D, "cores.json")
+    if os.path.exists(caminho):
+        g = json.load(open(caminho))
+        if quem in g:
+            return g[quem]
+    raise RuntimeError(f"nao sei as cores de `{quem}`")
+
+
+def _rastreio(quem, *outros):
+    """(cor, tolerancia) para achar `quem` sem achar `outros`.
+
+       Uma porta so para as tres aulas: `comum.cor_de_rastreio`. Aqui havia
+       uma copia que comparava so a PRIMEIRA cor de cada vizinho e media
+       distancia pela SOMA dos canais — os dois errados. Na Aula 3 isso fez a
+       sonda "procurar a estrela" e medir a lava, que tem respingos da mesma
+       cor dourada. Duas copias do mesmo juizo, uma delas com o criterio
+       defeituoso, e o lado sozinho que volta a morder."""
+    return comum.cor_de_rastreio({q: _cores(q) for q in (quem,) + outros}, quem)
+
+
 def _cor_de(quem, indice=0):
     import json
     if quem in CORES and CORES[quem]:
@@ -64,32 +88,6 @@ def _cor_de(quem, indice=0):
         if quem in g:
             return tuple(g[quem][indice])
     raise RuntimeError(f"nao sei a cor de `{quem}`")
-
-
-def _cor_mais_distinta(quem, longe_de, minimo=120):
-    """A cor mais ABUNDANTE que ainda se distingue dos vizinhos.
-
-       Pegar simplesmente a mais distante escolhia um ciano que existe em
-       pouquissimos pixels do sprite: distingue bem e mede pessimo — o pulo
-       saiu 50 px porque o centro de uma dúzia de pixels pula sozinho. A lista
-       vem ordenada da cor mais comum para a menos; fico com a primeira que
-       passa da distancia minima."""
-    opcoes = []
-    for i in range(5):
-        try:
-            opcoes.append(_cor_de(quem, i))
-        except (RuntimeError, IndexError):
-            break
-    if not opcoes:
-        raise RuntimeError(f"nao tenho cor nenhuma de `{quem}`")
-
-    def dist(c):
-        return min(sum(abs(a - b) for a, b in zip(c, o)) for o in longe_de)
-
-    for c in opcoes:                       # da mais comum para a menos
-        if dist(c) >= minimo:
-            return c
-    return max(opcoes, key=dist)
 
 
 def _poe_sprite(quem, so_clique=False):
@@ -272,19 +270,14 @@ def prova():
 
     # as cores saem dos SPRITES, e a do jogador e a que mais se distingue da
     # lava e da estrela — a mais comum dele e a pele, que puxa para o amarelo
-    cor_lava = _cor_de("Lava")
-    cor_estrela = _cor_de("Estrela")
-    cor_jog = _cor_mais_distinta("Jogador", [cor_lava, cor_estrela])
-    if not comum.distantes([cor_jog, cor_lava, cor_estrela]):
-        raise RuntimeError(f"jogador {cor_jog}, lava {cor_lava} e estrela "
-                           f"{cor_estrela} tem cores parecidas demais")
-    print(f"   rastreando o boneco por {cor_jog}", flush=True)
+    cor_jog, tol_jog = _rastreio("Jogador", "Lava", "Estrela")
+    print(f"   rastreando o boneco por {cor_jog} (tol {tol_jog})", flush=True)
 
     def pos():
         """O centro de TODOS os pixels da cor: no jogo o sprite sai pequeno e
            partido, e exigir uma mancha unica dizia que o boneco sumiu."""
         a, _ = nav.captura("/tmp/_c2_j.png")
-        g = comum.centro_por_cor(a, cor_jog, minimo=60)
+        g = comum.centro_por_cor(a, cor_jog, tol=tol_jog, minimo=60)
         return (g[0], g[1]) if g else None
 
     editor.volta_ao_editor(); time.sleep(2)

@@ -1,102 +1,113 @@
 {
  "criar_objeto": {
-  "antes": "g01_a.jpg",
-  "depois": "g01_b.jpg",
+  "antes": "g01_a.png",
+  "depois": "g01_b.png",
   "alvo": [
    1182,
    895
   ],
-  "botao": "esq"
+  "botao": "esq",
+  "clicado": true
  },
  "escolher_create": {
-  "antes": "g02_a.jpg",
-  "depois": "g02_b.jpg",
+  "antes": "g02_a.png",
+  "depois": "g02_b.png",
   "alvo": [
    1062,
    892
   ],
-  "botao": "esq"
+  "botao": "esq",
+  "clicado": true
  },
  "abrir_physics": {
-  "antes": "g03_a.jpg",
-  "depois": "g03_b.jpg",
+  "antes": "g03_a.png",
+  "depois": "g03_b.png",
   "alvo": [
-   1812,
+   1814,
    1270
   ],
-  "botao": "esq"
+  "botao": "esq",
+  "clicado": true
  },
  "marcar_movable": {
-  "antes": "g04_a.jpg",
-  "depois": "g04_b.jpg",
+  "antes": "g04_a.png",
+  "depois": "g04_b.png",
   "alvo": [
    1370,
    545
   ],
-  "botao": "esq"
+  "botao": "esq",
+  "clicado": true
  },
  "peso_do_pulo": {
-  "antes": "g05_a.jpg",
-  "depois": "g05_b.jpg",
+  "antes": "g05_a.png",
+  "depois": "g05_b.png",
   "alvo": [
    1654,
-   688
+   690
   ],
-  "botao": "esq"
+  "botao": "esq",
+  "clicado": true
  },
  "fisica_da_lava": {
-  "antes": "g06_a.jpg",
-  "depois": "g06_b.jpg",
+  "antes": "g06_a.png",
+  "depois": "g06_b.png",
   "alvo": [
-   1162,
-   990
+   1164,
+   998
   ],
-  "botao": "esq"
+  "botao": "esq",
+  "clicado": true
  },
  "desligar_gravidade": {
-  "antes": "g07_a.jpg",
-  "depois": "g07_b.jpg",
+  "antes": "g07_a.png",
+  "depois": "g07_b.png",
   "alvo": [
    1038,
-   263
+   271
   ],
-  "botao": "esq"
+  "botao": "esq",
+  "clicado": true
  },
  "lava_atravessa": {
-  "antes": "g10_a.jpg",
-  "depois": "g10_b.jpg",
+  "antes": "g10_a.png",
+  "depois": "g10_b.png",
   "alvo": [
    724,
-   337
+   345
   ],
-  "botao": "esq"
+  "botao": "esq",
+  "clicado": true
  },
  "lava_sente_o_toque": {
-  "antes": "g11_a.jpg",
-  "depois": "g11_b.jpg",
+  "antes": "g11_a.png",
+  "depois": "g11_b.png",
   "alvo": [
    1034,
-   337
+   345
   ],
-  "botao": "esq"
+  "botao": "esq",
+  "clicado": true
  },
  "botao_menos": {
-  "antes": "g08_a.jpg",
-  "depois": "g08_b.jpg",
+  "antes": "g08_a.png",
+  "depois": "g08_b.png",
   "alvo": [
-   1927,
-   453
+   1837,
+   421
   ],
-  "botao": "esq"
+  "botao": "esq",
+  "clicado": false
  },
  "jogar": {
-  "antes": "g09_a.jpg",
-  "depois": "g09_b.jpg",
+  "antes": "g09_a.png",
+  "depois": "g09_b.png",
   "alvo": [
    1051,
    1586
   ],
-  "botao": "esq"
+  "botao": "esq",
+  "clicado": true
  },
  "lava_movable": {
   "antes": "g12_a.jpg",
@@ -106,5 +117,15 @@
    265
   ],
   "botao": "esq"
+ },
+ "escolher_sprite": {
+  "antes": "g13_a.png",
+  "depois": "g13_b.png",
+  "alvo": [
+   2307,
+   184
+  ],
+  "botao": "esq",
+  "clicado": true
  }
 }

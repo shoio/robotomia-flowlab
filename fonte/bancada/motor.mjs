@@ -113,11 +113,21 @@ const rotas = {
     await pag.waitForTimeout(80);
     return {};
   },
-  async duas({ anda, pula, antes = 0.25, segurando = 0.45, depois = 0.25 }) {
+  async duas({ anda, pula, antes = 0.25, segurando = 0.45, depois = 0.25,
+               toque = 0.18 }) {
     // correr E pular ao mesmo tempo
+    //
+    // O pulo é SEGURADO, não `press`. `keyboard.press` aperta e solta no mesmo
+    // instante, e o motor do jogo lê o estado das teclas uma vez por quadro:
+    // um toque de duração zero não aparece em quadro nenhum. Medido na Aula 3
+    // — com `press`, o boneco subia 0 px segurando a seta de lado; com a seta
+    // de cima segurada 0,2 s sozinha, subia 422 px. O Julio jogou com a mão e
+    // o boneco pulou correndo: a fase estava certa, quem não pulava era eu.
     await pag.keyboard.down(anda);
     await pag.waitForTimeout(antes * 1000);
-    await pag.keyboard.press(pula);
+    await pag.keyboard.down(pula);
+    await pag.waitForTimeout(toque * 1000);
+    await pag.keyboard.up(pula);
     await pag.waitForTimeout(segurando * 1000);
     await pag.keyboard.up(anda);
     await pag.waitForTimeout(depois * 1000);

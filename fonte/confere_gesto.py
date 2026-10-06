@@ -43,7 +43,12 @@ def rotulo_perto(imagem, x, y, raio=150):
 
 def confere(aula):
     mod = __import__(f"conteudo_a{aula[-1]}")
-    passos = {p.get("clipe"): p for p in mod.AULA["passos"] if p.get("clipe")}
+    import gera_curso as _G
+    # o `clipe` de um passo pode ser UM arquivo ou uma LISTA de (rotulo,
+    # arquivo) — o passo da fisica da lava tem cinco abas. Lendo so o caso
+    # simples, este relatorio estourava com "unhashable type: 'list'" e nao
+    # dizia nada sobre nenhuma das cinco.
+    passos = {cl: p for p in mod.AULA["passos"] for _rot, cl in _G.clipes_do(p)}
     alvos = json.load(open(f"{aula}/alvos.json"))
     print(f"=== {aula}: para o que cada seta aponta ===")
     for chave, dados in sorted(alvos.items()):

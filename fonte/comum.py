@@ -712,11 +712,77 @@ def distantes(cores, minimo=90):
     return True
 
 
+def cor_de_rastreio(cores, quem, tols=(46, 34, 25, 18)):
+    """(cor, tolerancia) com que achar `quem` sem achar os vizinhos.
+
+       `cores` e o {nome: [cor, ...]} medido na hora de escolher os sprites, da
+       cor mais comum para a menos. Devolve tambem a TOLERANCIA porque ela faz
+       parte da resposta: a mesma cor serve ou nao conforme a folga.
+
+       O criterio e exato, nao um numero escolhido a dedo. Duas mascaras com
+       tolerancia `tol` so podem pegar o mesmo pixel se as duas cores estiverem
+       a menos de `2*tol` em TODOS os canais. Entao a cor serve quando existe
+       pelo menos um canal em que ela esta a `2*tol` ou mais de cada cor dos
+       outros atores. Somar os tres canais — que era o que eu fazia — responde
+       outra pergunta: (255,235,97) e (254,176,49) somam 108 de distancia e
+       MESMO ASSIM dividem pixels, porque nenhum canal sozinho abre folga.
+
+       Por que isto existe: a lava do Flowlab tem respingos DOURADOS de
+       (254,176,49) e a estrela e (255,181,44) — a mesma cor. A guarda velha
+       comparava so a PRIMEIRA cor de cada sprite, viu (255,181,44) contra
+       (255,0,66) e aprovou. A sonda entao "procurava a estrela" e media a
+       LAVA, no pe da tela, descendo junto com ela — e a fase nunca podia ser
+       dada por vencida, porque a lava nunca sai de cena.
+
+       Duas outras exigencias, que tambem ja custaram caro:
+       - ABUNDANTE: pegar a mais distante escolheu um ciano de uma duzia de
+         pixels, e o pulo mediu 50 px em vez de 428. Por isso percorro na
+         ordem em que vieram, da mais comum para a menos.
+       - VIVA: cor de tom medio casa com cinza, e quando o Flowlab escurece o
+         jogo a pagina inteira vira "boneco"."""
+    minhas = [tuple(c) for c in cores.get(quem, [])]
+    if not minhas:
+        raise RuntimeError(f"nao tenho cor nenhuma de `{quem}`")
+    outras = [tuple(c) for nome, lista in cores.items() if nome != quem
+              for c in lista]
+
+    def folga(c):
+        """O menor, entre os vizinhos, do MAIOR afastamento de canal."""
+        return min((max(abs(a - b) for a, b in zip(c, o)) for o in outras),
+                   default=999)
+
+    for tol in tols:                       # da folga mais generosa para a menor
+        for c in minhas:                   # da cor mais comum para a menos
+            if (max(c) - min(c)) >= 40 and folga(c) >= 2 * tol:
+                return c, tol
+    raise RuntimeError(
+        f"nenhuma cor de `{quem}` se separa das dos vizinhos nem com "
+        f"tolerancia {tols[-1]}: "
+        + ", ".join(f"{c} (folga {folga(c)})" for c in minhas))
+
+
 def mascara_cor(im, cor, tol=46):
-    """Mascara dos pixels proximos de uma cor. `im` e array RGB inteiro."""
-    return ((abs(im[:, :, 0] - cor[0]) < tol) &
-            (abs(im[:, :, 1] - cor[1]) < tol) &
-            (abs(im[:, :, 2] - cor[2]) < tol))
+    """Mascara dos pixels proximos de uma cor. `im` e array RGB inteiro.
+
+       Alem da distancia canal a canal, o pixel tem de ser tao COLORIDO quanto
+       o alvo. Sem isso, uma cor de tom medio casa com CINZA: a pele do heroi
+       e (234,179,146), e um cinza (190,190,190) cai dentro de 46 nos tres
+       canais. Quando o Flowlab escurece o jogo (ele faz isso quando a pagina
+       perde o foco), a pagina inteira vira esse cinza — e a sonda que
+       procurava o boneco achou 667.424 pixels dele, contra 432 com o jogo
+       aceso. Dai ela concluiu que a crianca tinha pegado a estrela, com a
+       estrela visivel na propria foto que guardou como prova.
+
+       A regra: a diferenca entre o canal mais alto e o mais baixo do pixel tem
+       de ser pelo menos METADE da do alvo. Para um alvo que ja e cinza, a
+       exigencia e zero e nada muda."""
+    perto = ((abs(im[:, :, 0] - cor[0]) < tol) &
+             (abs(im[:, :, 1] - cor[1]) < tol) &
+             (abs(im[:, :, 2] - cor[2]) < tol))
+    viva = max(cor) - min(cor)
+    if viva < 20:
+        return perto
+    return perto & ((im.max(axis=2) - im.min(axis=2)) >= viva // 2)
 
 
 def acha_por_cor(arquivo, cor, tol=46, minimo=600):

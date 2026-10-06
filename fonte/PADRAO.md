@@ -53,6 +53,9 @@ O passo 1 é onde mora quase todo o tempo. Os §2 e §3 abaixo são para encurt�
 | O `Number` tem três entradas | `get` é o gatilho; ligar no `set` não faz sair nada |
 | `Velocity y` **positivo é para BAIXO** | subir é número negativo |
 | A barra de baixo diz **em que tela estou** | `Library/Game Levels/Layer/Settings` = editor |
+| Arrastar da palheta precisa de **pressão longa** antes de mover | com 0,45 s a mesa fica IGUAL, sem erro nenhum; com 1,2 s o mesmo gesto solta o bloco. `solta` escala 0,6 → 1,2 → 2,0 |
+| O bloco **não nasce onde eu soltei** | o endereço é `acha_bloco(titulo)`, lido na tela; a coordenada do arrasto é só a mira |
+| Arrastar um bloco que JÁ existe funciona com o gesto curto | foi assim que separei «o arrasto está quebrado» de «a palheta não registrou» |
 
 E a tabela de velocidade, já medida: `-1` sobe 55 px/s (a tela em 14 s),
 `-0.5` sobe 27 px/s (28 s).
@@ -72,6 +75,11 @@ prontas (`edit sprite` → `Browse`), e a da casa é `Flowlab Sprites`
 | A grade **rola** | contar fileira no olho erra; `comum.linhas_da_grade()` MEDE os centros a cada corrida |
 | O sprite no jogo sai **pequeno e partido** | rastrear por `maior_mancha` diz «sumiu»; use `comum.centro_por_cor` |
 | A cor de rastreio é a mais **ABUNDANTE** que ainda distingue | pegar a mais distante escolheu um ciano de uma dúzia de pixels, e o pulo mediu 50 px em vez de 428 |
+| Uma cor de tom médio **casa com CINZA** | a pele do herói é (234,179,146) e um cinza (190,190,190) cai dentro de 46 nos três canais: `mascara_cor` exige o pixel tão colorido quanto o alvo |
+| Um toque de tecla de **duração zero não existe** para o jogo | o motor lê o estado das teclas uma vez por quadro; `keyboard.press` aperta e solta no mesmo instante e some entre dois quadros. Segurar 0,18 s resolveu: 0 px → 128 px |
+| Com o jogo apagado **as teclas não chegam nele** | o mesmo corre-e-pula levava 373 px e dois degraus aceso, e 163 px e nenhum degrau apagado: clique dentro do jogo ANTES de cada gesto |
+| O escurecimento é **sistemático**, não esporádico | no registro ele aparece a cada gesto e some a cada clique |
+| O Flowlab **escurece o jogo inteiro** quando a página perde o foco | nada some, só apaga — e aí a página virava «boneco» com 667.424 pixels |
 | O herói tem **vermelho** na roupa | faixa de tom escrita à mão («vermelho é a lava») lê o herói como lava; a cor sai MEDIDA do sprite (`cores_do_sprite`) |
 | O `OK` do editor de desenho **não é o azul** do painel do objeto | `volta_ao_nivel` tem de fechar os três: desenho, objeto e física |
 
@@ -111,8 +119,28 @@ aconteceu, neste curso ou nos anteriores:
       o fio já estava lá.
 - [ ] **«Existe caminho» não é «resolvível pelo programa que a aula ensina».**
       Prove que dá para VENCER a fase, não só que ela carrega.
+- [ ] **As duas medidas saem do MESMO quadro?** Cada chamada tirava a sua
+      própria foto, meio segundo depois da outra. Com o jogo piscando entre
+      aceso e apagado, eu lia «a estrela não está» no quadro escuro e «o boneco
+      está» no quadro aceso — dois instantes — e chamava de vitória. Uma foto,
+      todas as medidas; e **a foto que a aula publica é o quadro que provou**,
+      não outra tirada depois.
 - [ ] **A sonda está medindo o ator certo?** Uma série constante em 447 era a
       ESTRELA sendo lida como lava.
+- [ ] **O defeito pode estar no INSTRUMENTO, e não na aula?** Quatro medidas
+      consistentes diziam «o boneco não pula correndo», e a leitura natural
+      era que a fase não tinha saída. Estavam todas certas sobre o que mediam
+      e erradas sobre o que isso significava. O conserto «óbvio» — alargar as
+      plataformas — teria piorado a aula por um motivo que não existia. Quando
+      a medida condena o DESENHO da aula, peça a mão do Julio antes de mexer
+      nele: a mão dele é o único instrumento que enxerga um defeito do meu.
+- [ ] **A sonda sabe distinguir «sumiu» de «apagou»?** O Flowlab **escurece o
+      jogo inteiro** quando a página perde o foco — nada some, só apaga, e as
+      cores medidas no sprite deixam de bater. Ausência de amarelo é a mesma
+      leitura em dois casos opostos («a criança pegou» e «o jogo está
+      pausado»). Toda prova que conclui por AUSÊNCIA tem de exigir, na MESMA
+      leitura, que outra coisa viva esteja na tela — e, quando as duas somem,
+      clicar dentro do jogo antes de desistir.
 - [ ] **O verde é novo? Sabote e repita.** Guarda que não reprova quando eu
       quebro de propósito não está guardando nada.
 - [ ] **O texto ainda fala de pintar?** Trocar o quadrado pelo sprite deixa

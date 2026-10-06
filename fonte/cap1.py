@@ -30,6 +30,30 @@ comum.pasta("aula1")
 ETAPAS.clear()      # a lista vive em comum.py: cada aula comeca a sua
 D = "aula1"
 
+def _cores(quem):
+    """Todas as cores medidas daquele sprite, da mais comum para a menos."""
+    if quem in CORES and CORES[quem]:
+        return CORES[quem]
+    caminho = os.path.join(D, "cores.json")
+    if os.path.exists(caminho):
+        g = json.load(open(caminho))
+        if quem in g:
+            return g[quem]
+    raise RuntimeError(f"nao sei as cores de `{quem}`")
+
+
+def _rastreio(quem, *outros):
+    """(cor, tolerancia) para achar `quem` sem achar `outros`.
+
+       Uma porta so para as tres aulas: `comum.cor_de_rastreio`. Aqui havia
+       uma copia que comparava so a PRIMEIRA cor de cada vizinho e media
+       distancia pela SOMA dos canais — os dois errados. Na Aula 3 isso fez a
+       sonda "procurar a estrela" e medir a lava, que tem respingos da mesma
+       cor dourada. Duas copias do mesmo juizo, uma delas com o criterio
+       defeituoso, e o lado sozinho que volta a morder."""
+    return comum.cor_de_rastreio({q: _cores(q) for q in (quem,) + outros}, quem)
+
+
 def _cor_de(quem, indice=0):
     """A cor de rastreio de um objeto. Vem do arquivo, para a PROVA poder rodar
        sozinha depois, sem ter acabado de escolher o sprite."""
@@ -43,32 +67,6 @@ def _cor_de(quem, indice=0):
             return tuple(guardado[quem][indice])
     raise RuntimeError(f"nao sei a cor de `{quem}` — rode a captura do sprite "
                        "antes, ou apague aulaN/cores.json e refaca")
-
-
-def _cor_mais_distinta(quem, longe_de, minimo=120):
-    """A cor mais ABUNDANTE que ainda se distingue dos vizinhos.
-
-       Pegar simplesmente a mais distante escolhia um ciano que existe em
-       pouquissimos pixels do sprite: distingue bem e mede pessimo — o pulo
-       saiu 50 px porque o centro de uma dúzia de pixels pula sozinho. A lista
-       vem ordenada da cor mais comum para a menos; fico com a primeira que
-       passa da distancia minima."""
-    opcoes = []
-    for i in range(5):
-        try:
-            opcoes.append(_cor_de(quem, i))
-        except (RuntimeError, IndexError):
-            break
-    if not opcoes:
-        raise RuntimeError(f"nao tenho cor nenhuma de `{quem}`")
-
-    def dist(c):
-        return min(sum(abs(a - b) for a, b in zip(c, o)) for o in longe_de)
-
-    for c in opcoes:                       # da mais comum para a menos
-        if dist(c) >= minimo:
-            return c
-    return max(opcoes, key=dist)
 
 
 def _poe_sprite(quem, so_clique=False):
@@ -281,18 +279,21 @@ def prova():
     # AS CORES VEM DOS SPRITES, nao de um palpite meu. E antes de usar, confiro
     # que elas se distinguem: com dois objetos de cor parecida, a prova acha um
     # pensando que achou o outro, e o numero sai bonito e errado.
-    cor_moeda = _cor_de("Moeda")
+    cor_moeda, tol_moeda = _rastreio("Moeda", "Jogador", "Chao")
     # A MAIS DISTINTA, nao a primeira: a cor mais comum do heroi e a PELE, que
     # puxa para o mesmo tom da moeda de ouro. A camisa azul distingue.
-    cor_jog = _cor_mais_distinta("Jogador", [cor_moeda])
-    if not comum.distantes([cor_moeda, cor_jog]):
-        raise RuntimeError(f"a moeda {cor_moeda} e o jogador {cor_jog} tem cores "
-                           "parecidas demais para a prova distinguir")
-    print(f"   rastreando moeda por {cor_moeda} e jogador por {cor_jog}", flush=True)
+    cor_jog, tol_jog = _rastreio("Jogador", "Moeda", "Chao")
+    # Quem garante que as duas se distinguem agora e o proprio `_rastreio`:
+    # ele percorre as cores do sprite e LEVANTA erro se nenhuma se separa das
+    # dos vizinhos. A conferencia solta que ficava aqui virou codigo morto, e
+    # guarda morto e pior que guarda nenhum — quem passa confere e acha que
+    # esta coberto.
+    print(f"   rastreando moeda por {cor_moeda} (tol {tol_moeda}) e jogador "
+          f"por {cor_jog} (tol {tol_jog})", flush=True)
 
     def amarelo(f):
         im = np.asarray(Image.open(os.path.join(D, f)).convert("RGB"), dtype=int)
-        return int(comum.mascara_cor(im, cor_moeda).sum())
+        return int(comum.mascara_cor(im, cor_moeda, tol_moeda).sum())
 
     def azul():
         """Onde esta o boneco agora, em pixels da tela."""
@@ -301,7 +302,7 @@ def prova():
         # sprite e desenhado pequeno e a camisa sai PARTIDA — 192 px em
         # pedacos de 80. Exigir uma mancha de 600 px dizia que o boneco nao
         # estava na tela com ele na tela.
-        g = comum.centro_por_cor(a, cor_jog, minimo=60)
+        g = comum.centro_por_cor(a, cor_jog, tol=tol_jog, minimo=60)
         return (g[0], g[1]) if g else None
 
     editor.volta_ao_editor(); time.sleep(2)
@@ -342,7 +343,28 @@ def prova():
         rs.segura_tecla(124, 0.12); time.sleep(0.45)   # 124 = seta direita
         n1 = amarelo(A.cap("p20_pegou"))
         if n1 < n0 * 0.5:
-            print(f"   a moeda sumiu no toque {k+1}", flush=True)
+            # SUMIU — mas sumiu POR QUE? A pagina do jogo as vezes abre, ou
+            # fica, com o canvas PRETO: nenhum pixel da moeda, e nenhum do
+            # boneco. Ausencia de amarelo e a MESMA leitura nos dois casos
+            # opostos ("a crianca pegou" e "a pagina parou de desenhar"), e so
+            # o boneco desempata. Na Aula 3 este mesmo engano deu uma vitoria
+            # no passo 0, com a foto da aula virando um retangulo preto.
+            if azul() is None:
+                # O Flowlab ESCURECE o jogo inteiro quando a pagina perde o
+                # foco: nada sumiu, so apagou — e as cores medidas no sprite
+                # deixam de bater. Clico dentro do jogo, como a crianca faria,
+                # e so desisto se continuar apagado.
+                clique(1470, 640); time.sleep(1.5)
+                n1 = amarelo(A.cap("p20_pegou"))
+                if azul() is None:
+                    A.cap("p20_jogo_apagado")
+                    raise RuntimeError("a moeda sumiu E o boneco tambem, e "
+                                       "clicar dentro do jogo nao acordou: "
+                                       "isso nao prova que a moeda foi pegada")
+                if n1 >= n0 * 0.5:
+                    continue          # estava so apagado; a moeda ainda esta la
+            print(f"   a moeda sumiu no toque {k+1} (e o boneco continua na tela)",
+                  flush=True)
             break
     print(f"   moeda: {n0} px antes, {n1} px depois", flush=True)
     if n1 >= n0 * 0.5:
