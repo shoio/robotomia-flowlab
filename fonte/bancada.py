@@ -148,6 +148,13 @@ def instala():
     rs.arrasta_img = arrasta_img
 
     import blocos
+    # a roda: rola a folha do nivel, que pode ser maior que a janela
+    rs.roda_img = lambda px, py, cliques=5, escala=2.0, janela=None: _chama(
+        "roda", x=px, y=py, dy=cliques * 120)
+    rs.roda = lambda x, y, cliques=5: _chama("roda", x=x * 2, y=y * 2,
+                                             dy=cliques * 120)
+    nav.rola = lambda x, y, dx=0, dy=0: _chama("roda", x=x, y=y, dx=dx, dy=dy)
+
     blocos.arrasta_devagar = lambda x0, y0, x1, y1, passos=45, segura=0.45: _chama(
         "arrastar", x0=x0, y0=y0, x1=x1, y1=y1, passos=passos, segura=segura)
 

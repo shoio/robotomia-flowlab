@@ -264,6 +264,8 @@ PORTAS = {
     "Message":   {"esq": ["send"],                 "dir": ["out"]},
     "Spawn":     {"esq": ["spawn"],                "dir": ["out"]},
     "Sound":     {"esq": ["play", "stop"],         "dir": ["done"]},
+    "Camera":    {"esq": ["set x", "set y", "move x", "move y", "zoom",
+                          "rotate"],               "dir": []},
 }
 
 
@@ -715,6 +717,13 @@ DESLOC = {
     # o titulo no canvas e 'RestartGame' (sem espaco), mas na palheta ele
     # aparece como 'Restart Game' — por isso solta() aceita titulo diferente
     "RestartGame": {"esq": {"go": (-28, 57)}, "dir": {"out": (248, 57)}},
+    # O Camera tem SEIS entradas, medidas com `blocos.pinos` na tela — nao
+    # contadas no olho num print reduzido. As saidas ficaram de fora de
+    # proposito: a leitura delas veio suja (dx de 22 a 38, incoerente), e
+    # numero que eu nao medi direito nao entra em tabela de onde clicar.
+    "Camera": {"esq": {"set x": (-27, 36), "set y": (-27, 68),
+                       "move x": (-27, 102), "move y": (-27, 134),
+                       "zoom": (-27, 168), "rotate": (-27, 200)}},
 }
 
 

@@ -133,6 +133,16 @@ const rotas = {
     await pag.waitForTimeout(depois * 1000);
     return {};
   },
+  async roda({ x, y, dx = 0, dy = 0 }) {
+    // A roda do mouse. Precisa existir porque a folha do nível pode ser maior
+    // que a janela (até 48x32 casas), e o editor de nível não tem a ferramenta
+    // mão — ela é do editor de blocos. Sem rolar, a captura só alcança as 16
+    // primeiras colunas.
+    await pag.mouse.move(css(x), css(y));
+    await pag.mouse.wheel(dx, dy);
+    await pag.waitForTimeout(350);
+    return {};
+  },
   async digita({ texto }) { await pag.keyboard.type(texto, { delay: 55 }); return {}; },
   async endereco() { return { url: pag.url() }; },
   async titulo() { return { titulo: await pag.title() }; },

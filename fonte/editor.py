@@ -85,6 +85,96 @@ def espera_tela(*palavras, limite=25, regiao=None):
     raise RuntimeError(f"esperei {limite}s e nenhuma de {palavras} apareceu na tela")
 
 
+def _barrinha(rotulo):
+    """(x_esquerda, x_direita, y) da barrinha daquele rotulo, medida pela COR.
+
+       A barra e um retangulo cinza claro sobre o painel escuro, na mesma
+       altura do rotulo. Medir as duas pontas dela da as duas ancoras que
+       faltavam: a esquerda e o MINIMO do controle e a direita e o MAXIMO."""
+    import numpy as _np
+    from PIL import Image as _I
+    a, _ = nav.captura("/tmp/_ed_barra.png")
+    p = nav.acha_texto(rotulo, arquivo=a, regiao=(0.45, 0.1, 1.0, 0.9))
+    if not p:
+        return None
+    im = _np.asarray(_I.open(a).convert("RGB"), dtype=int)
+    linha = im[p[1], :, :]
+    # o trilho e cinza (canais proximos) e mais claro que o fundo do painel
+    cinza = ((linha.max(axis=1) - linha.min(axis=1)) < 30) & (linha.max(axis=1) > 60)
+    xs = _np.nonzero(cinza[p[0]:p[0] + 700])[0]
+    if len(xs) < 50:
+        return None
+    return p[0] + int(xs.min()), p[0] + int(xs.max()), p[1]
+
+
+def colunas_do_nivel():
+    """Quantas colunas o nivel TEM, medidas na folha — sem passar pelo que eu
+       pedi. Ate 32 colunas o editor mantem a casa em 64 px."""
+    import comum
+    volta_ao_nivel()
+    f = comum.folha_do_nivel()
+    if not f:
+        return None
+    return int(round((f[1] - f[0]) / 64.0))
+
+
+def tamanho_do_nivel(colunas, tentativas=6):
+    """Poe o nivel com `colunas` colunas, pelo painel Settings.
+
+       O Flowlab nasce com 16x12 e vai ate 48x32. Isso nao e so o tamanho da
+       folha: e o tamanho do JOGO — a pagina desenha o nivel inteiro, entao
+       fase mais comprida sai com as pecas um pouco menores (medido: 32 px por
+       casa com 16 colunas, 29,6 com 48).
+
+       Tem de ser feito ANTES de montar a fase: alargar depois CENTRALIZA o que
+       ja existe, e nenhuma coluna continua onde estava.
+
+       DOIS INSTRUMENTOS. Quem POE e a barrinha (o valor cai onde o mouse
+       desce); quem CONFERE e a FOLHA, que nao sabe o que eu pedi. E a posicao
+       do clique nao e calculada, e APRENDIDA: medir o trilho pela cor me deu
+       um trilho mais largo que o verdadeiro, e clicar no meio dele resultou em
+       26 colunas quando eu pedia 32. Com dois pontos (clique, colunas) a reta
+       sai sozinha.
+
+       A ALTURA nao se toca: querer fase mais COMPRIDA nao e querer fase mais
+       alta, e mexer no que nao precisa so cria chance de estragar — tentando
+       ajusta-la por OCR eu a deixei em 14."""
+    import comum
+    medidos = []
+    for k in range(tentativas):
+        agora = colunas_do_nivel()
+        if agora == colunas:
+            print(f"   nivel com {colunas} colunas, conferido na folha", flush=True)
+            return colunas
+        p = nav.acha_texto("settings")
+        if not p:
+            raise RuntimeError("nao achei o Settings na barra de baixo")
+        comum.clique(*p); time.sleep(3)
+        b = _barrinha("width")
+        if not b:
+            raise RuntimeError("nao achei a barrinha de Width no painel")
+        x0, x1, y = b
+        if len(medidos) >= 2 and medidos[-1][1] != medidos[-2][1]:
+            (xa, va), (xb, vb) = medidos[-2], medidos[-1]
+            x = xa + (xb - xa) * (colunas - va) / float(vb - va)
+        else:
+            frac = (colunas - 16) / 32.0 + 0.18 * len(medidos)
+            x = x0 + (x1 - x0) * frac
+        x = int(max(x0, min(x1, x)))
+        comum.clique(x, y); time.sleep(1.0)
+        c = nav.acha_texto("cancel", arquivo=nav.captura("/tmp/_ed_ok.png")[0],
+                           regiao=(0.45, 0.6, 1.0, 0.95))
+        if not c:
+            raise RuntimeError("nao achei o Cancel do painel de Settings")
+        comum.clique(c[0] + 182, c[1]); time.sleep(3.5)
+        deu = colunas_do_nivel()
+        print(f"   cliquei em {x} (trilho {x0}..{x1}) -> {deu} colunas", flush=True)
+        if deu:
+            medidos.append((x, deu))
+    raise RuntimeError(f"pedi {colunas} colunas e a folha mede "
+                       f"{colunas_do_nivel()} (cliques: {medidos})")
+
+
 def jogo_novo():
     """Cria um jogo novo e abre o projeto vazio. Devolve o endereco do jogo."""
     nav.vai("https://flowlab.io/games/mine", espera=4)

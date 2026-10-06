@@ -37,6 +37,94 @@ def celula(c, r):
     return (GRADE_X + CELULA * c + CELULA // 2, GRADE_Y + CELULA * r + CELULA // 2)
 
 
+def folha_do_nivel(arquivo=None, minimo=400):
+    """(x0, x1, y0, y1) da folha do nivel, medida na tela.
+
+       A folha e o nivel inteiro e e branca. Mas branco puro tambem existe no
+       canto de baixo a direita — o circulo do avatar e a palavra "Saved" — e
+       a primeira versao disto devolvia o retangulo que ENVOLVE todo pixel
+       branco da tela: a folha terminava em y=1244 e eu lia 1596, o que dava
+       uma fase de 19 fileiras onde havia 14.
+
+       O conserto e medir pela MASSA: fico com as fileiras e as colunas que tem
+       pelo menos `minimo` pixels brancos. Um texto e um circulo nao fazem 400
+       pixels numa linha; a folha faz dois mil."""
+    import numpy as _np
+    from PIL import Image as _I
+    a = arquivo or nav.captura("/tmp/_folha.png")[0]
+    im = _np.asarray(_I.open(a).convert("RGB"), dtype=int)
+    br = (im > 250).all(axis=2)
+    if br.sum() < 5000:
+        return None
+    porfila = br.sum(axis=1)
+    porcol = br.sum(axis=0)
+    ys = _np.nonzero(porfila >= minimo)[0]
+    xs = _np.nonzero(porcol >= minimo)[0]
+    if not len(ys) or not len(xs):
+        return None
+    return int(xs.min()), int(xs.max()), int(ys.min()), int(ys.max())
+
+
+def enquadra_nivel(colunas=16, linhas=12, giros=8):
+    """Afasta o zoom ate a folha INTEIRA caber na janela, e calibra a grade.
+
+       O editor de nivel do Flowlab nao tem a ferramenta mao — ela e do editor
+       de blocos — e a roda do mouse da ZOOM, nao rolagem. Entao o jeito de
+       alcancar a coluna 40 de um nivel de 48 e afastar ate tudo caber.
+
+       Qualquer coisa pode devolver o zoom ao padrao (um `Esc` basta), por isso
+       isto e uma peca e nao um passo solto: quem precisa da grade chama aqui,
+       e recebe uma grade MEDIDA no enquadramento de agora."""
+    for k in range(giros):
+        try:
+            return calibra_grade(colunas, linhas)
+        except RuntimeError:
+            nav.rola(1470, 900, 0, 400)
+            time.sleep(1.0)
+    return calibra_grade(colunas, linhas)      # a ultima tentativa fala por si
+
+
+def calibra_grade(colunas=16, linhas=12):
+    """MEDE a grade do nivel na tela em vez de supor 64 px por casa.
+
+       Por que: `GRADE_X/GRADE_Y/CELULA` nasceram cravados do nivel padrao de
+       16x12. O Flowlab permite ate 48x32, e com o zoom afastado para alcancar
+       as colunas de la o 64 deixa de valer — e clique fora da casa nao da
+       erro, so nao faz nada. Foi assim que o passo da grade de sprites (85
+       supostos contra 89 medidos) deixou a estrela da Aula 2 com o desenho
+       padrao do Flowlab.
+
+       A regua e a LARGURA da folha branca, nao a altura. A primeira versao
+       usava as duas e exigia que concordassem: numa fase com lava na fileira
+       de baixo elas nao concordam, porque a lava TAPA o branco — a altura deu
+       59,6 px por fileira contra 63,9 da largura, a tolerancia deixou passar
+       raspando, e a media saiu 62. Objeto que encosta na beirada de baixo e o
+       caso normal, nao a excecao; ja na horizontal as fases comecam e terminam
+       com ceu.
+
+       A guarda que ficou no lugar e outra, e essa e invariante: as duas
+       beiradas brancas tem de estar DENTRO da janela. Encostada na borda, a
+       folha esta cortada, e dividir a largura visivel pelo numero de colunas
+       da um numero menor — bonito e errado.
+
+       Devolve (x0, y0, lado) e deixa `celula` calibrada."""
+    global GRADE_X, GRADE_Y, CELULA
+    f = folha_do_nivel()
+    if not f:
+        raise RuntimeError("nao achei a folha branca do nivel na tela")
+    x0, x1, y0, _y1 = f
+    J = nav.janela()
+    larga = J["w"] * 2
+    if x0 <= 2 or x1 >= larga - 3:
+        raise RuntimeError(
+            f"a folha branca vai de {x0} a {x1} numa tela de {larga} px: ela "
+            "esta CORTADA pela janela, e a medida nao vale (afaste o zoom)")
+    lado = (x1 - x0) / float(colunas)
+    GRADE_X, GRADE_Y, CELULA = x0, y0, int(round(lado))
+    return GRADE_X, GRADE_Y, CELULA
+
+
+
 LINHA_CHAO = 8
 LINHA_ANDAR = 7
 COL_JOGADOR = 6
