@@ -525,10 +525,15 @@ def abre_fisica(tentativas=4):
        clica estraga o estado; guarda que para, nao."""
     for k in range(tentativas):
         a, _ = nav.captura("/tmp/_c1_fis0.png")
-        txt = " ".join(t for t, *_ in rs.ocr_forte(a, psm="6")).lower()
-        if "collision shape" in txt:
+        # PROCURA CADA PALAVRA na escada inteira, em vez de pegar a primeira
+        # leitura com conteudo e procurar dentro dela. Com o ceu pintado o
+        # painel passou a ler "type name parent reset display order
+        # multiplayer" — todos os rotulos menos `edit sprite` —, e este portao
+        # recusava as quatro tentativas sem nunca chegar a usar a ancora que
+        # estava logo abaixo, e que funcionava.
+        if rs.procura_forte("collision shape", arquivo=a, psm="6"):
             return True                       # ja estou na fisica
-        if "edit sprite" not in txt:
+        if not rs.procura_forte("edit sprite", arquivo=a, psm="6"):
             # o painel pode so nao ter sido lido: insisto em vez de abortar
             time.sleep(1.2)
             continue
@@ -563,8 +568,7 @@ def abre_fisica(tentativas=4):
         if p:
             clique(p[0], p[1]); time.sleep(2.5)
             a2, _ = nav.captura("/tmp/_c1_fis1.png")
-            if "collision shape" in " ".join(
-                    t for t, *_ in rs.ocr_forte(a2, psm="6")).lower():
+            if rs.tem_texto("collision shape", arquivo=a2):
                 return (int(p[0]), int(p[1]))
             time.sleep(1.0)
             continue
@@ -593,8 +597,7 @@ def abre_fisica(tentativas=4):
         if p:
             clique(p[0], p[1]); time.sleep(2.5)
             a2, _ = nav.captura("/tmp/_c1_fis1.png")
-            if "collision shape" in " ".join(
-                    t for t, *_ in rs.ocr_forte(a2, psm="6")).lower():
+            if rs.tem_texto("collision shape", arquivo=a2):
                 # devolve o PONTO, para quem grava o clipe apontar a seta nele
                 return (int(p[0]), int(p[1]))
         time.sleep(1.2)

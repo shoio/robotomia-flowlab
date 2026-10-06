@@ -709,6 +709,18 @@ def ocr_forte(arquivo=None, regiao=None, psm="6", idioma="por+eng", escada=ESCAD
     return []
 
 
+def tem_texto(alvo, arquivo=None, regiao=None, psm="6"):
+    """Esta palavra esta na tela? Percorre a ESCADA inteira atras DELA.
+
+       A diferenca para `"x" in " ".join(ocr_forte(...))` nao e de estilo: o
+       `ocr_forte` para na primeira leitura com CONTEUDO, e essa leitura pode
+       trazer todos os outros rotulos e justamente nao o que eu procuro. Com o
+       ceu pintado, o painel do objeto lia "type name parent reset display
+       order multiplayer" e nunca `edit sprite` — e dois portoes do curso
+       recusavam, cada um numa funcao diferente, no mesmo dia."""
+    return bool(procura_forte(alvo, arquivo=arquivo, regiao=regiao, psm=psm))
+
+
 def procura_forte(alvo, arquivo=None, regiao=None, psm="6", escada=ESCADA, exato=False):
     """Procura UM texto percorrendo a escada inteira, e para quando ACHA ELE —
        nao quando a leitura tem qualquer coisa.

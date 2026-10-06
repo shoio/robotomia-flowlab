@@ -79,7 +79,24 @@ def le_tela(regiao=None):
 
 
 def na_tela(*palavras, regiao=None):
-    """Alguma dessas palavras esta na tela agora?"""
+    """Alguma dessas palavras esta na tela agora?
+
+       Procura CADA palavra percorrendo a escada inteira do OCR, em vez de
+       pegar a primeira leitura com conteudo e procurar dentro dela. A
+       diferenca derrubou a captura da Aula 3: o painel do objeto estava
+       aberto com `Behaviors` bem visivel, e `le_tela` devolvia "type name
+       parent reset display order multiplayer" — todos os outros rotulos, e
+       justamente ele nao. Parar na primeira leitura com conteudo e o mesmo
+       que nao procurar, e isso ja estava escrito na glosa do
+       `rs.procura_forte`, que eu nao estava usando aqui."""
+    # UMA foto, passada adiante: sem `arquivo`, o `procura_forte` tenta
+    # capturar sozinho por um caminho que a bancada nao remenda.
+    a, _ = nav.captura("/tmp/_ed_natela.png")
+    achadas = [p for p in palavras
+               if rs.procura_forte(p, arquivo=a, regiao=regiao, psm="6")]
+    if achadas:
+        return achadas
+    # a barra de baixo tem letra pequena e vale a leitura ampliada
     txt = le_tela(regiao)
     return [p for p in palavras if p.lower() in txt]
 
@@ -275,15 +292,32 @@ def abre_objeto(x=None, y=None):
     return True
 
 
-def recupera(escolha="recover"):
-    """Responde ao 'Recover unsaved work' quando ele aparece."""
+def recupera(escolha="discard"):
+    """Responde ao 'Recover unsaved work' quando ele aparece.
+
+       Esse dialogo e MODAL: enquanto ele esta na tela, arrasto nao arrasta e
+       clique nao clica. Ele me custou horas — eu media uma mesa que nao
+       aceitava bloco e procurava a causa no bloco, na cor, no ponto de
+       soltura e no motor, com uma janela por cima de tudo.
+
+       Por padrao DESCARTA. O que ele oferece recuperar sao as edicoes de
+       comportamento que a tentativa ANTERIOR deixou pela metade — e numa
+       captura o que vale e o estado salvo, nao o lixo da falha passada.
+
+       O botao se acha pela ESCADA inteira: a leitura unica trazia o titulo do
+       dialogo e nao os botoes, e `recupera` devolvia False com o dialogo na
+       tela — era chamado em quatro lugares e nunca dispensava nada."""
     a, _ = nav.captura("/tmp/_ed_rec.png")
-    txt = " ".join(t for t, *_ in rs.ocr_forte(a, psm="6")).lower()
-    if "recover unsaved" not in txt and "unsaved work" not in txt:
+    if not (rs.tem_texto("recover unsaved", arquivo=a)
+            or rs.tem_texto("unsaved work", arquivo=a)):
         return False
-    # o titulo do dialogo tambem diz "Recover": o BOTAO e a ocorrencia de baixo
-    achados = [(t, x, y, w, h) for t, x, y, w, h in rs.ocr_forte(a, psm="6")
-               if escolha in t.strip().lower()]
+    achados = []
+    for escala, limiar in rs.ESCADA:
+        for t_, x, y, w, h in rs.ocr(a, psm="6", escala=escala, limiar=limiar):
+            if escolha in t_.strip().lower():
+                achados.append((t_, x, y, w, h))
+        if achados:
+            break
     if not achados:
         return False
     t, x, y, w, h = max(achados, key=lambda i: i[2])
@@ -322,8 +356,7 @@ def fecha_roda():
        por que: a mensagem que sobrava era "a mesa nao mudou ali"."""
     import comum
     a, _ = nav.captura("/tmp/_ed_roda.png")
-    txt = " ".join(t for t, *_ in rs.ocr_forte(a, psm="6")).lower()
-    if "cancel" not in txt or "create" not in txt:
+    if not (rs.tem_texto("cancel", arquivo=a) and rs.tem_texto("create", arquivo=a)):
         return False
     p = nav.acha_texto("cancel", arquivo=a)
     if not p:
@@ -385,10 +418,18 @@ def objeto_ou_abre(x=None, y=None):
     rs.clique_img(px, py, escala=2.0, janela=J)
     time.sleep(1.5)
     a, _ = nav.captura("/tmp/_ed_radial3.png")
-    texto = " ".join(t for t, *_ in rs.ocr_forte(a, psm="6")).lower()
-    escolha = "edit" if "edit" in texto and "create" not in texto else "create"
+    # CADA PALAVRA na escada inteira. A leitura unica parava na primeira com
+    # conteudo e podia nao trazer `create` nem `edit` — e ai o menu "nao tinha
+    # aberto", com ele aberto na tela.
+    tem_create = rs.tem_texto("create", arquivo=a)
+    tem_edit = rs.tem_texto("edit", arquivo=a)
+    escolha = "edit" if tem_edit and not tem_create else "create"
     p = nav.acha_texto(escolha, arquivo=a)
-    if not p and ("cancel" in texto or "delete" in texto):
+    if not p:
+        p = rs.procura_forte(escolha, arquivo=a, psm="6")
+        p = (p[1] + p[3] // 2, p[2] + p[4] // 2) if p else None
+    if not p and (rs.tem_texto("cancel", arquivo=a)
+                  or rs.tem_texto("delete", arquivo=a)):
         # O MENU ESTA ABERTO, so que o OCR nao le a metade de cima dele
         # ('Clone' e 'Edit', branco sobre o circulo escuro). 'Cancel' e
         # 'Delete', embaixo, ele le. Entao me ancoro no que foi LIDO e ando o

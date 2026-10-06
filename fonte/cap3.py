@@ -52,6 +52,7 @@ COL_ESTRELA = 15
 COLS_LAVA   = list(range(0, 16))
 
 DENSIDADE = 30          # medido na Aula 2: pula 273 px e anda 60 px por toque
+CEU = "1A1A40"          # noite; a lava que sobe pede um ceu escuro
 SUBIDA    = "0.5"       # digitado positivo; um clique no `−` deixa -0.5
 
 # OS DESENHOS, da biblioteca do Flowlab (pacote do ENDESGA). Ate a Aula 2 todo
@@ -149,7 +150,16 @@ def novo():
     A.url = editor.jogo_novo()
     print("   jogo:", A.url, flush=True)
     A.guarda_url()
+    comum.calibra_grade(16, 12)
     A.cap("p01_vazio")
+    # O CEU. O campo de cor do nivel nasce em FFFFFF — e e por isso que todos
+    # os jogos do curso eram brancos de folha de papel. Um campo so, no painel
+    # `Game Levels`, ao lado do nome do nivel.
+    A.gesto("pintar_o_ceu", "g14", (0, 0),
+            lambda: editor.cor_do_ceu(CEU), espera=2.0)
+    editor.volta_ao_nivel()
+    A.cap("p01b_ceu")
+    print(f"   ceu em #{CEU}", flush=True)
     return True
 
 
@@ -513,24 +523,25 @@ def prova_vitoria():
 
         # O JOGO ESTA ACESO NESTE QUADRO?
         #
-        # O fundo do nivel e BRANCO PURO enquanto o jogo roda. Quando o Flowlab
-        # escurece tudo — ele faz isso quando a pagina perde o foco — nao sobra
-        # um pixel branco: medido, 569.000 contra 0. E o escurecimento nao
-        # atinge as cores por igual: o azul do boneco sobrevive a tolerancia
-        # 46, o dourado da estrela nao sobrevive a 25. Entao "a estrela sumiu"
-        # num quadro escuro nao e uma leitura ruim, e leitura NENHUMA.
+        # Isto importa porque o Flowlab ESCURECE o jogo inteiro quando a pagina
+        # perde o foco, e o escurecimento nao atinge as cores por igual: o azul
+        # do boneco sobrevive a tolerancia 46, o dourado da estrela nao
+        # sobrevive a 25. Entao "a estrela sumiu" num quadro escuro nao e uma
+        # leitura ruim, e leitura NENHUMA.
         #
-        # A janela se calibra sozinha pela LAVA, que atravessa o nivel inteiro:
-        # ela da as beiradas da esquerda e da direita, e o teto dela da o chao
-        # da faixa que eu olho.
+        # QUEM RESPONDE E A LAVA. A versao anterior contava BRANCO PURO no
+        # fundo do nivel (569.000 aceso contra 0 apagado) — e isso parou de
+        # valer no dia em que a aula passou a PINTAR O CEU: com fundo de noite
+        # nao ha um pixel branco, e a sonda reprovaria todo quadro. A lava
+        # atravessa o nivel inteiro, nunca sai de cena, e e a cor mais saturada
+        # da fase: se ela aparece com a cor CHEIA, o quadro esta aceso. E ela ja
+        # estava sendo medida aqui, para dar as beiradas.
         ml = comum.mascara_cor(im, cor_lava, tol_lava)
         ys, xs = np.nonzero(ml)
         aceso, beiradas = False, None
         if len(xs) >= 400:
-            x0, x1, yl = int(xs.min()), int(xs.max()), int(ys.min())
-            faixa = im[max(0, yl - 500):yl, x0:x1]
-            aceso = int((faixa > 250).all(axis=2).sum()) > 5000
-            beiradas = (x0, x1)            # a lava atravessa o nivel inteiro
+            aceso = True
+            beiradas = (int(xs.min()), int(xs.max()))
 
         return (a, centro(cor_jog, tol_jog, 60),
                 centro(cor_estrela, tol_estrela, 100), beiradas, aceso)

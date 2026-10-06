@@ -4,7 +4,7 @@
   "depois": "g01_b.png",
   "alvo": [
    1182,
-   895
+   898
   ],
   "botao": "esq",
   "clicado": true
@@ -14,7 +14,7 @@
   "depois": "g02_b.png",
   "alvo": [
    1062,
-   892
+   896
   ],
   "botao": "esq",
   "clicado": true
@@ -23,8 +23,8 @@
   "antes": "g03_a.png",
   "depois": "g03_b.png",
   "alvo": [
-   1814,
-   1270
+   1820,
+   1268
   ],
   "botao": "esq",
   "clicado": true
@@ -53,8 +53,8 @@
   "antes": "g06_a.png",
   "depois": "g06_b.png",
   "alvo": [
-   1164,
-   998
+   1170,
+   996
   ],
   "botao": "esq",
   "clicado": true
@@ -64,7 +64,7 @@
   "depois": "g07_b.png",
   "alvo": [
    1038,
-   271
+   270
   ],
   "botao": "esq",
   "clicado": true
@@ -93,8 +93,8 @@
   "antes": "g08_a.png",
   "depois": "g08_b.png",
   "alvo": [
-   1837,
-   421
+   1650,
+   485
   ],
   "botao": "esq",
   "clicado": false
@@ -127,5 +127,15 @@
   ],
   "botao": "esq",
   "clicado": true
+ },
+ "pintar_o_ceu": {
+  "antes": "g14_a.png",
+  "depois": "g14_b.png",
+  "alvo": [
+   1296,
+   1298
+  ],
+  "botao": "esq",
+  "clicado": false
  }
 }

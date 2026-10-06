@@ -186,6 +186,12 @@ aconteceu, neste curso ou nos anteriores:
       não outra tirada depois.
 - [ ] **A sonda está medindo o ator certo?** Uma série constante em 447 era a
       ESTRELA sendo lida como lava.
+- [ ] **A peça certa já existe e o chamador não foi trocado?** Cinco vezes numa
+      sessão: `_acha_no_painel` olhava os dois lados e só a Aula 1 a usava;
+      `prepara_menos`/`clica_menos` existiam e a captura chamava a versão
+      antiga; `procura_forte` percorre a escada atrás de UMA palavra e
+      `na_tela` pegava a primeira leitura qualquer. **`grep` dos chamadores
+      antes de dar por consertado** — a glosa no código não troca ninguém.
 - [ ] **A régua depende de uma propriedade ACIDENTAL do que ela mede?** Cinco
       vezes numa sessão: passo da grade de sprites «é 85» (era 89), casa do
       nível «é 64» (varia com o zoom), mínimo da barrinha «é 16» (é 4), zoom
