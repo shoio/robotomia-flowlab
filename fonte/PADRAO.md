@@ -277,6 +277,37 @@ inteira**, do `novo`. Não há meio-termo barato.
 
 ---
 
+## 2j. ✅ O bloco `Keyboard` DISPARA pela bancada (medido 07-10)
+
+A nota antiga dizia que `Keyboard`, `MouseClick` e `Timer` não disparavam nem
+pela bancada. **Para o `Keyboard` isso é falso hoje.** Medido num jogo de
+descarte, com `Keyboard[A].down → Destroyer.in` no boneco, e com o controle
+nos MESMOS segundos: a seta direita o levou de x=1309 a 1472, e logo depois a
+tecla `a` o **destruiu** — tela acesa, boneco sumido. O que não disparava era o
+`keyboard.press` de duração ZERO do motor, consertado depois.
+
+Isso libera a Aula 4 (nave e tiro) para ser provada por máquina. `MouseClick` e
+`Timer` continuam **sem medida** — meça antes de desenhar em cima deles.
+
+⚠️ **Três armadilhas no caminho, e as três davam o mesmo resultado falso:**
+
+1. **Bloco `Keyboard` novo não tem tecla.** «Current key:» vem **vazio**. O
+   primeiro teste não media nada, e «não disparou» era indistinguível do real.
+2. **`Activate on any key` troca o tipo da saída para TEXTO** — e isso
+   **derruba o fio** que já existia para uma entrada não-texto. Pior: o
+   Flowlab passa a RECUSAR a ligação, e `liga_fixo` falha com «nenhum fio
+   apareceu». Segundo teste vazio, por outro motivo.
+3. Só a **foto do fio** desmentiu os dois.
+
+⭐ **E o `Change Key` aceita tecla da bancada:** clicar nele e mandar a tecla
+deixa «Current key: A». A configuração do bloco é automatizável.
+
+**Regra:** teste de «não aconteceu» prova, na mesma rodada, que o caminho
+inteiro existia — o bloco configurado, o fio no lugar, e um CONTROLE que
+mostre que o gesto chega.
+
+---
+
 ## 3. As três armadilhas de FÍSICA que não aparecem no editor
 
 Todas custaram horas na Aula 3, e nenhuma dá erro em lugar nenhum:
