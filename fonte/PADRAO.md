@@ -355,6 +355,18 @@ aconteceu, neste curso ou nos anteriores:
       `sos` de três aulas. `grep -n "pinte\|latinha\|balde\|quadrado"`.
 - [ ] **A foto bate com o texto?** Figura só se confere com o olho; o `ck` que
       descreve o que a foto não mostra é uma mentira silenciosa.
+- [ ] **A função que ESCREVE confere o que escreveu?** `cor_do_ceu` abria o
+      painel, digitava a cor, apertava Enter, imprimia «céu em #87CEEB» e
+      devolvia — sem olhar nada. Uma aula inteira foi capturada de um jogo
+      BRANCO com o passo 3 jurando que o céu estava pintado. O invariante é o
+      que a criança vê (a cor da folha), não o texto do campo.
+- [ ] **Estou lendo um arquivo que outro processo está escrevendo?** Três vezes
+      numa madrugada eu medi fotos da pasta da aula no meio da captura e tirei
+      conclusão da versão anterior — uma delas me fez acusar um defeito que não
+      existia. E o irmão silencioso: duas coisas minhas rodando OCR ao mesmo
+      tempo liam a imagem UMA DA OUTRA, porque o temporário tinha nome fixo.
+      Arquivo de ferramenta leva o PID; arquivo de captura só se lê depois que
+      o processo saiu.
 - [ ] **O passo que manda clicar diz ONDE?**
 - [ ] **Cabe em 50 minutos?** Um passo com três blocos, dois fios e um número é
       dois passos.
