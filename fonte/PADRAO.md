@@ -317,6 +317,33 @@ mostre que o gesto chega.
 | `Spawn` | ✅ cria objeto | `Spawn X/Y` são **coordenadas do NÍVEL em pixels**, não relativas a quem cria: com 0/0 o objeto nasceu no canto de cima à esquerda do nível |
 | `MouseClick` | ⬜ **sem medida** | medir antes de desenhar em cima dele |
 
+## 2l. O TIRO da Aula 4 é `Emitter`, não `Spawn` — medido no protótipo
+
+`Spawn` precisaria de `Extractor(X)` + `Extractor(Y)` + fios para o tiro nascer
+na nave, porque **`Spawn X/Y` são coordenadas do NÍVEL**. O `Emit` resolve tudo
+isso: nasce **no próprio objeto**, já sai andando numa direção e **expira
+sozinho** — some a tarefa de «limpar o que sai da tela» que o plano previa.
+
+A aula inteira do tiro é **um bloco e um fio**:
+`Keyboard[Espaço].down → Emitter.emit`.
+
+Medido no protótipo (jogo `3152613`):
+
+| o que | valor | como se mediu |
+|---|---|---|
+| nome na palheta | `Emit` | — |
+| **título na mesa** | **`Emitter`** | ⚠️ e o pino de entrada também se chama `emit`: `acha_bloco("Emit")` casa com o RÓTULO DO PINO, 86 px abaixo do título |
+| `Emit Angle` | 0 = direita, **90 = BAIXO**, **270 = cima** | com 90 o tiro nasceu ABAIXO da nave; com 270, acima |
+| `Expire After` | em **trinta avos de segundo** | o padrão `10` dá **um terço de segundo** — some antes de a criança ver |
+| `Emit Force` | 25 é rápido demais para a minha câmera | com o tiro parado (`movable` desmarcado) ele fica visível; solto, atravessa a tela entre dois quadros meus |
+| física do tiro | **`movable` marcado, gravidade desmarcada** | de fábrica o tiro nasce `movable: False` e **não anda** — a terceira vez que o `movable` morde este curso |
+
+⭐ **`movable` já mordeu três vezes:** o boneco que não pulava (Aula 2), a lava
+que não subia (Aula 3) e agora o tiro que não anda. Na Aula 4 isso deixa de ser
+armadilha e vira **conteúdo**: a criança marca a caixinha e vê o tiro sair.
+
+---
+
 ⛔ **Duas armadilhas de desenho de teste que me custaram meia hora cada:**
 
 1. **Entrada só aceita UM fio.** Ligar um segundo bloco à mesma entrada é

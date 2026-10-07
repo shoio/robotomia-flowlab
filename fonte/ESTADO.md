@@ -111,3 +111,8 @@ propósito).
 
   Os outros 43 são rascunhos das medições e de capturas antigas. Apagar em
   lote depende dele pedir.
+
+- **`3152613` é o PROTÓTIPO da Aula 4** — não é rascunho. Nele estão provados
+  o `Keyboard[Espaço] → Emitter`, a direção do tiro e a física que ele precisa
+  (§2l do `PADRAO.md`). Ele vira o jogo da aula ou é apagado quando o `cap4.py`
+  criar o seu.

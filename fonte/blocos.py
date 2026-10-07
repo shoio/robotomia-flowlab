@@ -360,6 +360,7 @@ def acha_bloco(nome, regiao=TELA, tentativas=3):
 # '@/start', 'reset' virava '@jreset' e as vezes sumia. A bolinha, essa e um
 # circulo claro — geometria, nao leitura.
 PORTAS = {
+    "Emitter": {"esq": ["angle", "emit"], "dir": ["out"]},
     "Always":    {"esq": [],                       "dir": ["out"]},
     "Once":      {"esq": [],                       "dir": ["out"]},
     "Timer":     {"esq": ["delay", "reset", "start"], "dir": ["out", "done"]},
@@ -804,6 +805,12 @@ def pino(bloco, rotulo, lado):
 #   chave: nome do bloco -> lado -> rotulo -> (dx, dy)
 DESLOC = {
     "Collision": {"esq": {}, "dir": {"hit": (247, 57)}},
+    # ⚠️ NA PALHETA ele se chama `Emit`; NA MESA o titulo e `Emitter` — e o
+    # pino de entrada tambem se chama `emit`. `acha_bloco("Emit")` casa com o
+    # ROTULO DO PINO, 86 px abaixo do titulo, e todos os deslocamentos saem
+    # errados. Procure sempre por `Emitter`.
+    "Emitter":  {"esq": {"angle": (-27, 46), "emit": (-27, 87)},
+                 "dir": {"out": (246, 66)}},
     # medidos na captura de tela, no rascunho da Aula 3
     "Always":   {"esq": {}, "dir": {"out": (251, 54)}},
     "Velocity": {"esq": {"x": (-31, 40), "y": (-31, 76), "forward": (-31, 114)},
