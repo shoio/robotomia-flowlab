@@ -114,7 +114,25 @@ def instala():
     nav.titulo = lambda: _chama("titulo")["titulo"]
     nav.carregando = lambda: False
 
-    def vai(url, espera=2.0):
+    def vai(url, espera=2.0, tentativas=3):
+        """Navega, e INSISTE quando o `beforeunload` aborta.
+
+           Sair de uma pagina com edicoes de comportamento nao salvas dispara o
+           aviso do Chrome. O motor aceita o dialogo, mas a navegacao pode
+           voltar `net::ERR_ABORTED` — e o pior nao e o erro: e que a pagina
+           fica com as edicoes penduradas, e na abertura seguinte do objeto
+           aparece o `Recover unsaved work`, que e MODAL e trava tudo o que vier
+           depois. Isso me custou horas medindo uma mesa por baixo de uma
+           janela."""
+        for k in range(tentativas):
+            try:
+                _chama("ir", url=url, espera=int(espera * 1000))
+                nav.espera_parar()
+                return nav.endereco()
+            except RuntimeError as e:
+                if "ERR_ABORTED" not in str(e) and "has been closed" not in str(e):
+                    raise
+                time.sleep(2.0)
         _chama("ir", url=url, espera=int(espera * 1000))
         nav.espera_parar()
         return nav.endereco()

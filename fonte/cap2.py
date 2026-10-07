@@ -222,6 +222,7 @@ def movimento():
     x, y = celula(COL_JOGADOR, LINHA_CHAO - 1)
     editor.objeto_ou_abre(x, y)
     editor.abre_comportamentos()
+    blocos.contexto(A.url or open(f"{D}/jogo.txt").read().strip(), (x, y))
     blocos.abre_categoria("Behavior Bundles")
     b = blocos.bloco_ou_solta("Run & Jump", 1500, 760)
     A.cap("p05_run_and_jump")
@@ -252,6 +253,7 @@ def camera():
     x, y = celula(COL_JOGADOR, LINHA_CHAO - 1)
     editor.objeto_ou_abre(x, y)
     editor.abre_comportamentos()
+    blocos.contexto(A.url or open(f"{D}/jogo.txt").read().strip(), (x, y))
     cam = blocos.bloco_ou_solta("Camera", 1200, 1150)
     A.cap("p12_camera")
     p = blocos.abre_ajustes(cam)
@@ -304,6 +306,7 @@ def lava():
     x, y = celula(COLS_LAVA[0], LINHA_LAVA)
     editor.objeto_ou_abre(x, y)
     editor.abre_comportamentos()
+    blocos.contexto(A.url or open(f"{D}/jogo.txt").read().strip(), (x, y))
     c = blocos.bloco_ou_solta("Collision", 1120, 1220)
     A.cap("p10_collision")
     # NA MESMA FILEIRA do Collision, de proposito. O detector de fio
@@ -335,6 +338,7 @@ def estrela():
     clique(*comum.SPRITE_OK); time.sleep(2); nav.espera_parar(limite=15)
     A.cap("p13_estrela")
     editor.abre_comportamentos()
+    blocos.contexto(A.url or open(f"{D}/jogo.txt").read().strip(), (x, y))
     c = blocos.bloco_ou_solta("Collision", 1120, 1220)
     d = blocos.bloco_ou_solta("Destroyer", 1700, 1220)     # mesma fileira
     blocos.liga_fixo(c, "hit", d, "in")

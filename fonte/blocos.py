@@ -136,6 +136,51 @@ def item_palheta(nome, tentativas=3):
     raise RuntimeError(f"o bloco '{nome}' nao aparece na palheta")
 
 
+# O CONTEXTO DA MESA, para poder RECARREGAR entre um bloco e outro.
+#
+# Medido, e e a restricao mais cara que o Flowlab me impos: **so o PRIMEIRO
+# arrasto da palheta depois de carregar a pagina funciona**. O segundo nao cai,
+# e dali em diante a mesa nao aceita mais nada da palheta — embora continue
+# aceitando mover bloco que ja esta nela e desfazer com cmd+Z.
+#
+# Isso explica a sequencia que me confundiu por horas: a captura punha os tres
+# blocos de uma etapa (cada um numa mesa recem-aberta), e a etapa seguinte, que
+# precisa de dois blocos na MESMA mesa, so conseguia o primeiro. E explica por
+# que "repetir a etapa" as vezes resolvia: a repeticao vinha depois de uma
+# navegacao.
+CONTEXTO = {"url": None, "celula": None, "soltou": 0}
+
+
+def contexto(url=None, celula=None):
+    """Diz ao `solta` como voltar a esta mesa depois de recarregar a pagina."""
+    if url:
+        CONTEXTO["url"] = url
+    if celula:
+        CONTEXTO["celula"] = tuple(celula)
+    CONTEXTO["soltou"] = 0
+    return CONTEXTO
+
+
+def _recarrega_e_reabre():
+    """Recarrega a pagina e volta para a mesma mesa de blocos."""
+    import editor as _ed, comum as _cm
+    if not (CONTEXTO["url"] and CONTEXTO["celula"]):
+        return False
+    nav.vai(CONTEXTO["url"], espera=10)
+    time.sleep(2)
+    _ed.recupera()
+    _ed.volta_ao_nivel()
+    _cm.calibra_grade(16, 12)
+    cx, cy = CONTEXTO["celula"]
+    _ed.objeto_ou_abre(cx, cy)
+    _ed.abre_comportamentos()
+    time.sleep(2.5)
+    _ed.recupera()
+    _ed.fecha_roda()
+    CONTEXTO["soltou"] = 0
+    return True
+
+
 def solta(nome, x, y, tentativas=3, titulo=None, exige_titulo=True):
     """Arrasta um bloco da palheta para (x, y) e CONFERE que ele nasceu ali.
 
@@ -150,6 +195,10 @@ def solta(nome, x, y, tentativas=3, titulo=None, exige_titulo=True):
     import numpy as _np
     for k in range(tentativas):
         import editor as _ed
+        # UM BLOCO POR CARREGAMENTO: se ja soltei nesta pagina, recarrego antes
+        # de tentar o proximo. Sem isso o segundo bloco de uma mesa nunca nasce.
+        if CONTEXTO["soltou"] > 0:
+            _recarrega_e_reabre()
         _ed.fecha_roda()          # a roda Create/Cancel tapa o meio da mesa
         antes, _ = nav.captura("/tmp/_bl_antes_solta.png")
         p = item_palheta(nome)
@@ -174,6 +223,7 @@ def solta(nome, x, y, tentativas=3, titulo=None, exige_titulo=True):
         x0, x1 = max(0, x - 220), min(A.shape[1], x + 320)
         mudou = int((_np.abs(A[y0:y1, x0:x1] - B[y0:y1, x0:x1]) > 30).sum())
         if mudou > 3000:
+            CONTEXTO["soltou"] += 1
             try:
                 return acha_bloco(titulo or nome)
             except RuntimeError:

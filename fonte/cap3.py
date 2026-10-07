@@ -209,6 +209,7 @@ def movimento():
     x, y = celula(COL_JOGADOR, LINHA_CHAO - 1)
     editor.objeto_ou_abre(x, y)
     editor.abre_comportamentos()
+    blocos.contexto(A.url or open(f"{D}/jogo.txt").read().strip(), (x, y))
     blocos.abre_categoria("Behavior Bundles")
     b = blocos.bloco_ou_solta("Run & Jump", 1500, 760)
     A.cap("p05_run_and_jump")
@@ -278,6 +279,7 @@ def lava_sobe():
     x, y = celula(COLS_LAVA[0], LINHA_LAVA)
     editor.objeto_ou_abre(x, y)
     editor.abre_comportamentos()
+    blocos.contexto(A.url or open(f"{D}/jogo.txt").read().strip(), (x, y))
     al = blocos.bloco_ou_solta("Always", 1150, 600)
     A.cap("p11_always")
     nu = blocos.bloco_ou_solta("Number", 1500, 900)
@@ -316,6 +318,7 @@ def lava_mata():
     x, y = celula(COLS_LAVA[0], LINHA_LAVA)
     editor.objeto_ou_abre(x, y)
     editor.abre_comportamentos()
+    blocos.contexto(A.url or open(f"{D}/jogo.txt").read().strip(), (x, y))
     # Longe da beirada direita de proposito: soltar um bloco perto dela faz a
     # mesa ROLAR sozinha, e os blocos que ja estavam la saem de vista — eu
     # media pinos de um bloco que nao estava mais onde eu pensava.
@@ -346,6 +349,7 @@ def estrela():
     clique(*SPRITE_OK); time.sleep(2); nav.espera_parar(limite=15)
     A.cap("p17_estrela")
     editor.abre_comportamentos()
+    blocos.contexto(A.url or open(f"{D}/jogo.txt").read().strip(), (x, y))
     c = blocos.bloco_ou_solta("Collision", 1120, 620)
     d = blocos.bloco_ou_solta("Destroyer", 1700, 620)
     blocos.liga_fixo(c, "hit", d, "in")

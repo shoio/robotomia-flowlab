@@ -148,6 +148,44 @@ muda, ele põe o vizinho, volta ao alvo e cobra a mudança.
 
 ---
 
+## 2d. ⚠️ A mesa de blocos: UM arrasto da palheta por carregamento de página
+
+**Medido, e é a restrição mais cara que o Flowlab impõe à captura.** Só o
+**primeiro** arrasto da palheta depois de carregar a página solta bloco. O
+segundo não cai, e dali em diante a mesa não aceita mais nada vindo da palheta
+— embora continue aceitando **mover** bloco que já está nela e **desfazer** com
+`cmd+Z`.
+
+Isso explica, de uma vez, tudo o que me custou uma sessão inteira:
+
+- as etapas que põem **um** bloco por mesa sempre funcionaram;
+- a etapa que precisa de **dois** blocos na mesma mesa (`Collision` +
+  `Restart Game`) só conseguia o primeiro;
+- «repetir a etapa» às vezes resolvia — porque a repetição vinha depois de uma
+  navegação;
+- e os diagnósticos se contradiziam porque cada um era o segundo, o terceiro ou
+  o quarto arrasto da mesma página. **Nenhum media o que eu pensava.**
+
+Pelo caminho inventei quatro explicações plausíveis e erradas — fio diagonal,
+fundo azul, mesa cansada, motor velho. Todas «funcionavam» uma vez, porque a
+primeira tentativa depois de qualquer navegação funciona.
+
+**E há um segundo bloqueio, modal, que nasce do primeiro:** quando uma captura
+falha no meio, ela deixa edições de comportamento NÃO SALVAS. Ao navegar para
+fora, o `beforeunload` do Chrome dispara e a navegação pode abortar. Na abertura
+seguinte do objeto aparece o **`Recover unsaved work`** — e ele é MODAL: com ele
+na tela, arrasto não arrasta e clique não clica.
+
+`editor.recupera()` existia e era chamado em quatro lugares **sem nunca
+disparar**, porque achava o botão com a leitura que para na primeira com
+conteúdo. Hoje ele percorre a escada e **descarta** por padrão.
+
+**Antes de investigar por que um gesto não funciona: fotografe a TELA INTEIRA e
+olhe.** Eu recortava a mesa e analisava o recorte, com o diálogo logo acima do
+recorte, meia dúzia de vezes seguidas.
+
+---
+
 ## 3. As três armadilhas de FÍSICA que não aparecem no editor
 
 Todas custaram horas na Aula 3, e nenhuma dá erro em lugar nenhum:
