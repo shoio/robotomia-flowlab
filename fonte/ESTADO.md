@@ -98,9 +98,16 @@ propósito).
   bancada**, antes de a aula ser desenhada (§2k do `PADRAO.md`): o `Keyboard`
   solto dispara, o `Timer` dispara sozinho e o `Spawn` cria objeto. Só o
   `MouseClick` continua sem medida. Falta escrever os 20 passos e o `cap4.py`.
-- **Os jogos de rascunho na conta.** Sobraram vários `New Game` sem uso. Três
-  deles são Aulas 2 descartadas nesta madrugada: `3151717` (o boneco que não
-  pula), `3152352` e `3152363` se a recaptura não for a última. O endereço que
-  vale é sempre o de `aulaN/jogo.txt` — na conta todos se chamam `New Game` e
-  nenhum tem miniatura, então não há como escolher pelo nome. Apagar depende
-  dele pedir.
+- **Os jogos de rascunho na conta: sobram 46.** Dois foram apagados em 07-10
+  (`3151717`, o boneco que não pulava, e `3152352`, a captura que falhou na
+  estrela). O Flowlab guarda os apagados **uma semana** na lixeira.
+
+  ⚠️ **O endereço que vale é SEMPRE o de `aulaN/jogo.txt`, lido na hora.** Eu
+  escrevi aqui que `3152363` «seria descartável se a recaptura não fosse a
+  última», e depois repeti isso como fato — e ele é a Aula 2 que está no ar.
+  Na conta todos se chamam `New Game` e nenhum tem miniatura: não há como
+  reconhecer pelo nome, só pelo id. O script de apagar recusa qualquer id que
+  esteja num `jogo.txt`.
+
+  Os outros 43 são rascunhos das medições e de capturas antigas. Apagar em
+  lote depende dele pedir.
