@@ -94,11 +94,10 @@ propósito).
   nem comportamentos. Dá profundidade de verdade, mas são 2 a 3 passos novos —
   não cabe na Aula 2, que já está em 20. Decisão do Julio: aula própria ou
   passo extra.
-- **Aula 4 (nave e tiro).** Antes de desenhar, **medir se o bloco `Keyboard`
-  solto dispara pela bancada**. O que já se sabe: as setas do pacote
-  `Run & Jump` disparam (e o miolo dele são blocos `Keyboard`), e um `Keyboard`
-  solto nunca foi medido. Se não disparar, **parar e avisar** — a mão dele é o
-  instrumento.
+- **Aula 4 (nave e tiro).** As três peças novas já estão **medidas na
+  bancada**, antes de a aula ser desenhada (§2k do `PADRAO.md`): o `Keyboard`
+  solto dispara, o `Timer` dispara sozinho e o `Spawn` cria objeto. Só o
+  `MouseClick` continua sem medida. Falta escrever os 20 passos e o `cap4.py`.
 - **Os jogos de rascunho na conta.** Sobraram vários `New Game` sem uso. Três
   deles são Aulas 2 descartadas nesta madrugada: `3151717` (o boneco que não
   pula), `3152352` e `3152363` se a recaptura não for a última. O endereço que

@@ -308,6 +308,26 @@ mostre que o gesto chega.
 
 ---
 
+## 2k. As três peças da Aula 4, medidas antes de desenhar a aula
+
+| bloco | medido | o que ficou sabido |
+|---|---|---|
+| `Keyboard` | ✅ dispara | bloco novo vem **sem tecla**; `Change Key` aceita tecla da bancada; `Activate on any key` troca a saída para TEXTO e **derruba o fio** |
+| `Timer` | ✅ dispara sozinho | nasce com `auto start` (nada ligado ao `start`), atraso em **décimos** de segundo (10 = 1 s), `Repeat: 1` |
+| `Spawn` | ✅ cria objeto | `Spawn X/Y` são **coordenadas do NÍVEL em pixels**, não relativas a quem cria: com 0/0 o objeto nasceu no canto de cima à esquerda do nível |
+| `MouseClick` | ⬜ **sem medida** | medir antes de desenhar em cima dele |
+
+⛔ **Duas armadilhas de desenho de teste que me custaram meia hora cada:**
+
+1. **Entrada só aceita UM fio.** Ligar um segundo bloco à mesma entrada é
+   recusado pelo Flowlab — e o `liga_fixo` dizia que tinha ligado, porque
+   contava o fio que já estava lá (§ `prova_fio_entre_pinos.py`).
+2. **`Spawn` do PRÓPRIO tipo que contém o spawner é uma bomba.** Mandei o
+   boneco criar bonecos, cada um com o mesmo `Timer`: o canvas ficou preto em
+   segundos. Para medir `Spawn`, crie um tipo que **não** tenha o spawner.
+
+---
+
 ## 3. As três armadilhas de FÍSICA que não aparecem no editor
 
 Todas custaram horas na Aula 3, e nenhuma dá erro em lugar nenhum:
