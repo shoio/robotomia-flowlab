@@ -250,7 +250,41 @@ def cor_do_ceu(hexa, abrir=True):
     rs.tecla(0, cmd=True); time.sleep(0.3)
     rs.digita_teclas(hexa); time.sleep(0.5)
     rs.tecla(36); time.sleep(1.8)                  # Enter
+    # CONFERE NA FOLHA, nao no campo.
+    #
+    # Esta funcao ja dizia "ceu em #87CEEB" e devolvia o ponto sem olhar nada:
+    # numa captura inteira da Aula 2 ela escreveu, apertou Enter, o painel
+    # fechou — e o nivel continuou BRANCO. Vinte fotos da aula sairam de um
+    # jogo branco com o passo 3 jurando que o ceu estava pintado, e o que
+    # denunciou foi o olho numa folha de contato, nao um guarda.
+    #
+    # O invariante e a cor da FOLHA do nivel, que e o que a crianca vê — nao o
+    # texto do campo, que pode estar escrito certo e nao ter sido aplicado.
+    alvo = tuple(int(hexa[i:i + 2], 16) for i in (0, 2, 4))
+    lida = cor_da_folha()
+    if max(abs(a - b) for a, b in zip(alvo, lida)) > 20:
+        nav.captura("/tmp/_ed_ceu_falhou.png")
+        raise RuntimeError(f"escrevi #{hexa} no campo da cor e a folha do nivel "
+                           f"continua {lida} (esperava {alvo}) — a cor NAO foi "
+                           "aplicada; a foto esta em /tmp/_ed_ceu_falhou.png")
     return q
+
+
+def cor_da_folha(arquivo=None):
+    """A cor do FUNDO da folha do nivel, medida no alto dela (onde nao ha peca).
+
+       Mede no terco de cima e no meio horizontal: e a parte da folha que fica
+       vazia em qualquer fase deste curso."""
+    import comum
+    import numpy as _np
+    from PIL import Image as _I
+    a = arquivo or nav.captura("/tmp/_ed_folha.png")[0]
+    x0, x1, y0, y1 = comum.folha_do_nivel(a)
+    L, A = x1 - x0, y1 - y0
+    im = _np.asarray(_I.open(a).convert("RGB"), dtype=int)
+    rec = im[int(y0 + A * 0.10):int(y0 + A * 0.35),
+             int(x0 + L * 0.35):int(x0 + L * 0.65)]
+    return tuple(int(v) for v in rec.reshape(-1, 3).mean(axis=0).round())
 
 
 def jogo_novo():

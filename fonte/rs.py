@@ -129,7 +129,18 @@ def ocr(arquivo=None, regiao=None, psm="11", idioma="por+eng", escala=2, limiar=
         im = im.resize((im.width * escala, im.height * escala), Image.LANCZOS)
     if limiar is not None:
         im = im.point(lambda v: 0 if v > limiar else 255)
-    p = f"{SP}/_ocr.png"; im.save(p)
+    # NOME POR PROCESSO. Era um so, fixo, e duas coisas minhas OCR-ando ao mesmo
+    # tempo liam a imagem UMA DA OUTRA: eu salvava aqui, o outro processo
+    # salvava por cima, e o tesseract lia o recorte errado. Nao da erro — da
+    # uma leitura plausivel de outra tela.
+    #
+    # Foi assim que a captura da Aula 2 pintou o ceu no lugar errado: o campo
+    # `FFFFFF` do painel `Game Levels` foi lido como estando onde esta o nome
+    # do nivel, a cor foi digitada no campo do NOME, e vinte fotos sairam de um
+    # jogo branco com o passo 3 jurando que o ceu estava pintado. Medido: a
+    # MESMA chamada, no MESMO arquivo, devolveu (1296,1298) e (1080,1298) em
+    # dois processos que rodaram juntos.
+    p = f"{SP}/_ocr_{os.getpid()}.png"; im.save(p)
     r = subprocess.run(["tesseract", p, "-", "-l", idioma, "--psm", psm, "tsv"],
                        capture_output=True, text=True)
     itens = []
@@ -791,6 +802,44 @@ def _por_linha(itens):
     return saida
 
 
+def _prefixo_cortado(junto, pedaco):
+    """O trecho esta na linha E TERMINA onde a palavra termina?
+
+       O ramo do prefixo existe para um unico caso: o OCR corta o FIM de um
+       rotulo comprido ('affected by gravi' por 'affected by gravity'). Palavra
+       cortada acaba onde acaba — se vier letra depois, nao foi corte, foi
+       outra palavra. Sem esta condicao, 'level 1' casava com o cabecalho
+       `GAME LEVELS` (o prefixo 'level' mora dentro de 'levels') e devolvia um
+       ponto 30 px acima do campo que eu queria."""
+    i = junto.find(pedaco)
+    while i >= 0:
+        fim = i + len(pedaco)
+        if fim >= len(junto) or not junto[fim].isalnum():
+            return True
+        i = junto.find(pedaco, i + 1)
+    return False
+
+
+def palavras_do_trecho(palavras, junto, trecho):
+    """As palavras da linha que o TRECHO cobre, em ordem.
+
+       Por que nao a primeira palavra da linha: o alvo pode chegar partido em
+       dois pedacos de OCR, ou casar so por prefixo, e ai 'a primeira palavra
+       da linha' aponta para OUTRO CAMPO. No painel `Game Levels` do Flowlab a
+       linha e «Level 1 | FFFFFF | Current | 1 - +»: procurar 'ffffff' e
+       devolver a primeira palavra devolve o campo do NOME, 250 px ao lado."""
+    inicio = junto.index(trecho)
+    fim = inicio + len(trecho)
+    pos, escolhidas = 0, []
+    for t, x, y, w, h in palavras:
+        texto = t.strip().lower().strip("[]|.,:")
+        ini_p, fim_p = pos, pos + len(texto)
+        pos = fim_p + 1
+        if ini_p < fim and fim_p > inicio:
+            escolhidas.append((t, x, y, w, h))
+    return escolhidas or list(palavras[:1])
+
+
 def procura_forte(alvo, arquivo=None, regiao=None, psm="6", escada=ESCADA, exato=False):
     """Procura UM texto percorrendo a escada inteira, e para quando ACHA ELE —
        nao quando a leitura tem qualquer coisa.
@@ -813,7 +862,12 @@ def procura_forte(alvo, arquivo=None, regiao=None, psm="6", escada=ESCADA, exato
        casamento e por conteudo inteiro), e so depois se olha palavra por
        palavra, com o piso."""
     alvo_l = alvo.lower()
-    minimo = max(3, int(len(alvo_l) * 0.6))
+    # PISO DE 5, nao de 3. Com 3, o alvo 'ffffff' casava com qualquer linha
+    # que contivesse 'fff' — e o OCR le o campo de cor do Flowlab como
+    # 'FFFEFF'. A linha inteira batia, e o ponto devolvido era o do campo do
+    # NOME do nivel. A cor foi digitada ali, o nivel continuou branco, e vinte
+    # fotos da Aula 2 sairam de um jogo branco.
+    minimo = max(5, int(len(alvo_l) * 0.6))
     for escala, limiar in escada:
         itens = ocr(arquivo, regiao=regiao, psm=psm, escala=escala, limiar=limiar)
         linhas = _por_linha(itens)
@@ -825,15 +879,11 @@ def procura_forte(alvo, arquivo=None, regiao=None, psm="6", escada=ESCADA, exato
         #    porta que o piso por palavra abria: nenhum prefixo de
         #    'game levels' com 6 letras ou mais cabe em 'new game'.
         if not exato:
-            primeira = alvo_l.split()[0]
             for junto, palavras in linhas:
                 pedaco = next((alvo_l[:k] for k in range(len(alvo_l), minimo - 1, -1)
-                               if alvo_l[:k] in junto), None)
+                               if _prefixo_cortado(junto, alvo_l[:k])), None)
                 if pedaco:
-                    for t, x, y, w, h in palavras:
-                        if primeira in t.lower():
-                            return (t, x, y, w, h)
-                    return palavras[0]
+                    return palavras_do_trecho(palavras, junto, pedaco)[0]
         # 2) palavra por palavra
         for t, x, y, w, h in itens:
             lido = t.strip().lower().strip("[]|.,:")

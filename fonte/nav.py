@@ -16,7 +16,7 @@
      janelas do Chrome DISCORDAM (para o sistema a do Flowlab era a primeira,
      para o AppleScript a da frente era um PDF): eu navegaria numa e
      fotografaria a outra. A janela se casa pelo TITULO da aba."""
-import subprocess, time, os, sys
+import os, subprocess, time, sys
 import Quartz
 from PIL import Image, ImageChops
 
@@ -189,7 +189,7 @@ def espera_parar(limite=25.0, quieto=1.2, passo=0.4):
     inicio = time.time()
     ultimo, parado_desde = None, None
     while time.time() - inicio < limite:
-        a, _ = cap_bruta(J, "/tmp/_nav_espera.png")
+        a, _ = cap_bruta(J, f"/tmp/_nav_espera_{os.getpid()}.png")
         im = Image.open(a).convert("L")
         im = im.resize((im.width // 4, im.height // 4))
         if ultimo is not None:
@@ -207,7 +207,7 @@ def espera_parar(limite=25.0, quieto=1.2, passo=0.4):
 
 
 def texto_da_tela(regiao=None, limiar=None, psm="6"):
-    a, _ = captura("/tmp/_nav_ocr.png")
+    a, _ = captura(f"/tmp/_nav_ocr_{os.getpid()}.png")
     return " ".join(t for t, *_ in rs.ocr_forte(a, regiao=regiao, psm=psm))
 
 
@@ -215,7 +215,7 @@ def acha_texto(alvo, regiao=None, limiar=None, psm="6", arquivo=None):
     """(x, y) em pixels da imagem do primeiro texto que casa, ou None.
        Junta as palavras da mesma linha antes de comparar: o OCR quebra
        'My Games' em duas."""
-    a = arquivo or captura("/tmp/_nav_ocr.png")[0]
+    a = arquivo or captura(f"/tmp/_nav_ocr_{os.getpid()}.png")[0]
     alvo = alvo.lower()
     itens = (rs.ocr(a, regiao=regiao, psm=psm, escala=2, limiar=limiar)
              if limiar is not None else rs.ocr_forte(a, regiao=regiao, psm=psm))
@@ -226,12 +226,17 @@ def acha_texto(alvo, regiao=None, limiar=None, psm="6", arquivo=None):
         palavras.sort()
         junto = " ".join(p[1] for p in palavras).lower()
         if alvo in junto:
-            primeira = alvo.split()[0]
-            for x, t, y, w, h in palavras:
-                if primeira in t.lower():
-                    return (x + w // 2, y + h // 2)
-            x, t, y, w, h = palavras[0]
-            return (x + w // 2, y + h // 2)
+            # AS PALAVRAS DO TRECHO, nao a primeira da linha. O alvo pode vir
+            # partido em dois pedacos de OCR, e ai a primeira palavra da linha
+            # aponta para outro campo — no painel `Game Levels` isso devolvia o
+            # campo do NOME do nivel quando eu procurava o campo da COR.
+            achadas = rs.palavras_do_trecho(
+                [(t, x, y, w, h) for x, t, y, w, h in palavras], junto, alvo)
+            x0 = min(p[1] for p in achadas)
+            x1 = max(p[1] + p[3] for p in achadas)
+            y0 = min(p[2] for p in achadas)
+            y1 = max(p[2] + p[4] for p in achadas)
+            return ((x0 + x1) // 2, (y0 + y1) // 2)
     # a leitura por linhas usa UMA escala; se nao achou, percorro a escada
     achado = rs.procura_forte(alvo, a, regiao=regiao, psm=psm)
     if achado:
@@ -285,7 +290,7 @@ def acha_cor(rgb, tol=26, regiao=None, minimo=400, arquivo=None,
        onde o botao tem 24 mil. Tamanho e o que separa os dois, e nenhuma
        tolerancia de cor resolveria."""
     import numpy as _np
-    a = arquivo or captura("/tmp/_nav_cor.png")[0]
+    a = arquivo or captura(f"/tmp/_nav_cor_{os.getpid()}.png")[0]
     im = _np.asarray(Image.open(a).convert("RGB"), dtype=int)
     A, L = im.shape[0], im.shape[1]
     y0, x0 = 0, 0
