@@ -847,6 +847,29 @@ def pino_fixo(bloco, rotulo, lado):
     return (bloco.x + dx, bloco.y + dy)
 
 
+def _toca_o_pino(im, p, lado, longe=(16, 42), alto=10, claro=150):
+    """Sai (ou chega) fio DESTE pino?
+
+       A faixa entre dois pinos nao basta: um fio VIZINHO que cruze a regiao
+       passa por ligacao. Medido, e foi assim que `liga_fixo` aprovou um fio
+       que nunca existiu — `Timer.out -> Destroyer.in` dava True com o fio de
+       `Keyboard.down -> Destroyer.in` cruzando o caminho, e o Flowlab tinha
+       RECUSADO a segunda ligacao na mesma entrada.
+
+       O invariante que separa os dois e o pedacinho logo DEPOIS do pino: o
+       fio sai dele na horizontal. Medido na mesma foto: no `out` ligado o
+       brilho continua 233 ate 56 px adiante; no `done` ao lado, 53 px abaixo,
+       ele cai para 71 (o fundo) ja aos 12 px. O circulo do pino e claro nos
+       dois casos — por isso a faixa comeca depois dele."""
+    x, y = int(p[0]), int(p[1])
+    a0, a1 = max(0, y - alto), y + alto + 1
+    if lado == "dir":
+        faixa = im[a0:a1, x + longe[0]: x + longe[1]]
+    else:
+        faixa = im[a0:a1, max(0, x - longe[1]): max(0, x - longe[0])]
+    return faixa.size > 0 and int(faixa.max()) >= claro
+
+
 def _ha_fio(arquivo, p1, p2, folga=34, claro=200, minimo=40, blocos_=()):
     """Ja existe um fio ligando estes dois pinos?
 
@@ -876,6 +899,10 @@ def _ha_fio(arquivo, p1, p2, folga=34, claro=200, minimo=40, blocos_=()):
     if float(_np.median(miolo)) > 150:
         raise RuntimeError("a mesa de blocos esta com a SIMULACAO rodando "
                            "(fundo claro): pare antes de conferir fio")
+    # O FIO TEM DE TOCAR OS DOIS PINOS. A faixa entre eles sozinha aprova o fio
+    # do vizinho que cruza a regiao.
+    if not (_toca_o_pino(im, p1, "dir") and _toca_o_pino(im, p2, "esq")):
+        return False
     x0, x1 = sorted((p1[0], p2[0]))
     y0, y1 = sorted((p1[1], p2[1]))
     horizontal = (x1 - x0) >= (y1 - y0)
