@@ -1,7 +1,7 @@
 {
  "criar_objeto": {
-  "antes": "g01_a.png",
-  "depois": "g01_b.png",
+  "antes": "g01_a.jpg",
+  "depois": "g01_b.jpg",
   "alvo": [
    1182,
    898
@@ -10,8 +10,8 @@
   "clicado": true
  },
  "escolher_create": {
-  "antes": "g02_a.png",
-  "depois": "g02_b.png",
+  "antes": "g02_a.jpg",
+  "depois": "g02_b.jpg",
   "alvo": [
    1062,
    896
@@ -20,8 +20,8 @@
   "clicado": true
  },
  "abrir_physics": {
-  "antes": "g03_a.png",
-  "depois": "g03_b.png",
+  "antes": "g03_a.jpg",
+  "depois": "g03_b.jpg",
   "alvo": [
    1820,
    1268
@@ -30,8 +30,8 @@
   "clicado": true
  },
  "marcar_movable": {
-  "antes": "g04_a.png",
-  "depois": "g04_b.png",
+  "antes": "g04_a.jpg",
+  "depois": "g04_b.jpg",
   "alvo": [
    1370,
    545
@@ -40,8 +40,8 @@
   "clicado": true
  },
  "peso_do_pulo": {
-  "antes": "g05_a.png",
-  "depois": "g05_b.png",
+  "antes": "g05_a.jpg",
+  "depois": "g05_b.jpg",
   "alvo": [
    1654,
    690
@@ -50,8 +50,8 @@
   "clicado": true
  },
  "fisica_da_lava": {
-  "antes": "g06_a.png",
-  "depois": "g06_b.png",
+  "antes": "g06_a.jpg",
+  "depois": "g06_b.jpg",
   "alvo": [
    1170,
    996
@@ -60,18 +60,18 @@
   "clicado": true
  },
  "desligar_gravidade": {
-  "antes": "g07_a.png",
-  "depois": "g07_b.png",
+  "antes": "g07_a.jpg",
+  "depois": "g07_b.jpg",
   "alvo": [
    1038,
-   270
+   273
   ],
   "botao": "esq",
   "clicado": true
  },
  "lava_atravessa": {
-  "antes": "g10_a.png",
-  "depois": "g10_b.png",
+  "antes": "g10_a.jpg",
+  "depois": "g10_b.jpg",
   "alvo": [
    724,
    345
@@ -80,8 +80,8 @@
   "clicado": true
  },
  "lava_sente_o_toque": {
-  "antes": "g11_a.png",
-  "depois": "g11_b.png",
+  "antes": "g11_a.jpg",
+  "depois": "g11_b.jpg",
   "alvo": [
    1034,
    345
@@ -90,8 +90,8 @@
   "clicado": true
  },
  "botao_menos": {
-  "antes": "g08_a.png",
-  "depois": "g08_b.png",
+  "antes": "g08_a.jpg",
+  "depois": "g08_b.jpg",
   "alvo": [
    1650,
    485
@@ -100,8 +100,8 @@
   "clicado": false
  },
  "jogar": {
-  "antes": "g09_a.png",
-  "depois": "g09_b.png",
+  "antes": "g09_a.jpg",
+  "depois": "g09_b.jpg",
   "alvo": [
    1051,
    1586
@@ -114,13 +114,14 @@
   "depois": "g12_b.jpg",
   "alvo": [
    720,
-   265
+   273
   ],
-  "botao": "esq"
+  "botao": "esq",
+  "clicado": true
  },
  "escolher_sprite": {
-  "antes": "g13_a.png",
-  "depois": "g13_b.png",
+  "antes": "g13_a.jpg",
+  "depois": "g13_b.jpg",
   "alvo": [
    2307,
    184
@@ -129,13 +130,23 @@
   "clicado": true
  },
  "pintar_o_ceu": {
-  "antes": "g14_a.png",
-  "depois": "g14_b.png",
+  "antes": "g14_a.jpg",
+  "depois": "g14_b.jpg",
   "alvo": [
-   1296,
-   1298
+   1309,
+   1299
   ],
   "botao": "esq",
   "clicado": false
+ },
+ "abrir_niveis": {
+  "antes": "g14a_a.jpg",
+  "depois": "g14a_b.jpg",
+  "alvo": [
+   1429,
+   1584
+  ],
+  "botao": "esq",
+  "clicado": true
  }
 }
