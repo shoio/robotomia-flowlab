@@ -200,6 +200,25 @@ def jogador():
     arrasta_slider("friction")
     A.cap("p04_fisica")
     fecha_painel_objeto()
+    # CONFERE DEPOIS DE FECHAR, reabrindo.
+    #
+    # Quem GRAVA a fisica e o OK do painel — e houve um dia em que o detector
+    # do OK, que escolhia pela COR, caiu no CEU (o azul do ceu fica a 38 do
+    # azul do botao) e o clique desmarcou `movable`. O jogo publicado ficou
+    # com um boneco que CORRE e NAO PULA: `Velocity` funciona em objeto
+    # parado, `Impulse` nao. O editor nao acusa nada; quem escreve o motivo e
+    # o proprio Flowlab, dentro do pacote: "This object is not movable, so
+    # Impulse will have no effect". Reabrir e olhar custa seis segundos.
+    editor.objeto_ou_abre(x, y)
+    comum.abre_fisica(); time.sleep(1.5)
+    a, _ = nav.captura("/tmp/_conf_mov.png")
+    pm = comum._acha_no_painel("movable", a)
+    cm = comum._caixinha(a, pm) if pm else None
+    if not (cm and cm[2]):
+        raise RuntimeError("depois de fechar o painel, `movable` do jogador NAO "
+                           f"esta marcado (li {cm}) — sem ele o pulo nao sai")
+    print("   movable conferido depois de fechar", flush=True)
+    fecha_painel_objeto()
     return True
 
 

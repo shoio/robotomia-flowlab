@@ -227,17 +227,49 @@ def clique(x, y, duplo=False):
     nav.clique_seguro(x, y, duplo=duplo)
 
 
+def _ponto_do_ok(arquivo):
+    """O centro do botao OK azul. Pelo ROTULO primeiro, pela cor so depois.
+
+       Identificar botao por COR quebra quando a aula pinta de azul uma coisa
+       que nao e botao — e foi o que aconteceu: com o teto de tamanho ou sem
+       ele, o ceu se parte em pedacos de 97 mil pixels que passam por botao. O
+       que distingue o OK do ceu nao e a cor nem o tamanho: e a palavra escrita
+       dentro dele. Ela so passou a ser legivel quando a escada de OCR ganhou
+       os degraus de limiar 200 — branco sobre azul nao aparecia em nenhum dos
+       anteriores."""
+    achado = rs.procura_forte("ok", arquivo=arquivo, psm="6", exato=True)
+    if achado:
+        _t, x, y, w, h = achado
+        return (x + w // 2, y + h // 2)
+    p = (nav.acha_cor(AZUL_OK, tol=40, regiao=(0.0, 0.45, 1.0, 0.98),
+                      minimo=800, maximo=120000, arquivo=arquivo)
+         or nav.acha_cor(AZUL_OK, tol=40, regiao=(0.0, 0.05, 1.0, 0.98),
+                         minimo=800, maximo=120000, arquivo=arquivo))
+    return (p[0], p[1]) if p else OK_PAINEL
+
+
 def fecha_painel_objeto():
     """Fecha o painel do objeto pelo OK azul, achado pela COR.
 
        O painel nasce do LADO da casa clicada: para a lava, que comeca na
        coluna 1, ele abre a ESQUERDA da tela. Procurando o azul so na metade
        direita eu caia no ponto de reserva — espaco vazio — e o painel ficava
-       aberto, com o clique seguinte caindo dentro dele."""
+       aberto, com o clique seguinte caindo dentro dele.
+
+       ⚠️ `maximo`: o OK tem ~24 mil pixels azuis; o CEU da Aula 2 (87CEEB) tem
+       786 mil e fica a 38 de distancia dele, dentro da tolerancia 40. Sem o
+       teto, o "OK" encontrado era o CEU — e o clique caia dentro do painel de
+       fisica, em cima da caixinha `movable`, DESMARCANDO-A. O jogo publicado
+       da Aula 2 tinha um boneco que corria e nao pulava, e o Flowlab escrevia
+       o motivo dentro do pacote `Run & Jump`: *"This object is not movable, so
+       Impulse will have no effect"*. A Aula 3 escapou so porque o ceu dela e
+       de NOITE.
+       Este teto ja existia em `abre_fisica`, logo abaixo, e eu nao o levei
+       para a irmaazinha — a porta que eu acabei de guardar e a que mais
+       esconde a vizinha."""
     for _ in range(3):
-        p = (nav.acha_cor(AZUL_OK, tol=40, regiao=(0.0, 0.45, 1.0, 0.98), minimo=800)
-             or nav.acha_cor(AZUL_OK, tol=40, regiao=(0.0, 0.05, 1.0, 0.98), minimo=800))
-        alvo = (p[0], p[1]) if p else OK_PAINEL
+        a, _ = nav.captura("/tmp/_c1_okbusca.png")
+        alvo = _ponto_do_ok(a)
         clique(*alvo)
         time.sleep(1.8); nav.espera_parar(limite=12)
         a, _ = nav.captura("/tmp/_c1_ok.png")

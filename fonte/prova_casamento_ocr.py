@@ -24,6 +24,7 @@ import rs
 D = os.path.join(os.path.dirname(os.path.abspath(__file__)), "provas", "fotos")
 JOGO = os.path.join(D, "pagina_do_jogo.png")
 EDITOR = os.path.join(D, "editor_do_nivel.png")
+BIBLIOTECA = os.path.join(D, "biblioteca_de_sprites.png")
 
 # a regra VELHA, escrita aqui para a sabotagem ficar re-provavel
 def _casa_velho(lido, alvo_l):
@@ -71,6 +72,24 @@ def main():
         if not achou:
             erros.append(f"a pagina do jogo deixou de casar com {p!r}")
 
+    # ── 3b. O VIZINHO QUE EU QUEBREI com o primeiro conserto ──────────
+    # O piso de 60% sozinho matou 'Flowlab Sprites': o OCR entrega 'Flowlab' e
+    # 'Sprites' em palavras separadas, e nenhuma das duas cobre 60% de um alvo
+    # de 15 letras. A captura da Aula 2 parou com o nome aceso na tela.
+    # pelo MESMO caminho do chamador de verdade: `abre_grade_sprite` le so a
+    # faixa da direita. Medir a tela inteira aqui mediria outra coisa.
+    FAIXA = (0.72, 0.0, 1.0, 1.0)
+    for p in ("flowlab sprites", "my other games", "my sprites", "browse",
+              "blocks", "characters", "terrain", "kenney sprites"):
+        achou = rs.tem_texto(p, arquivo=BIBLIOTECA, regiao=FAIXA)
+        print(f"biblioteca,      {p!r}: {achou}  (esperado True)")
+        if not achou:
+            erros.append(f"a biblioteca de sprites deixou de casar com {p!r}")
+    fora = rs.tem_texto("game levels", arquivo=BIBLIOTECA, regiao=FAIXA)
+    print(f"biblioteca,      'game levels': {fora}  (esperado False)")
+    if fora:
+        erros.append("a biblioteca casou com 'game levels', que nao esta nela")
+
     # ── 4. o corte do fim do rotulo continua valendo ──────────────────
     # 'Behavior' por 'Behaviors' e o motivo de o ramo `lido in alvo` existir.
     if not ("behavior" in "behaviors" and len("behavior") >= max(3, int(len("behaviors") * 0.6))):
@@ -85,6 +104,22 @@ def main():
     if not velho:
         erros.append("a sabotagem nao reproduziu o defeito: esta prova nao "
                      "esta medindo o que diz medir")
+
+    # ── 6. SABOTAGEM 2: so o piso, sem juntar a linha ─────────────────
+    # Este foi o conserto que eu quase publiquei sozinho. A prova guarda o
+    # caso dele para que ninguem o reintroduza achando que simplifica.
+    def _so_piso(lido, alvo_l):
+        minimo = max(3, int(len(alvo_l) * 0.6))
+        return alvo_l in lido or (lido in alvo_l and len(lido) >= minimo)
+
+    meio = _com_regra(_so_piso,
+                      lambda: rs.procura_forte("flowlab sprites", arquivo=BIBLIOTECA,
+                                               regiao=FAIXA) is not None)
+    print(f"SABOTAGEM (so o piso), biblioteca, 'flowlab sprites': {meio}"
+          "  (esperado False — e o defeito que ele cria)")
+    if meio:
+        erros.append("a segunda sabotagem nao reproduziu o defeito: o piso "
+                     "sozinho deveria perder 'Flowlab Sprites'")
 
     if erros:
         for e in erros:

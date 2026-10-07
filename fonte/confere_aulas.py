@@ -30,8 +30,8 @@ def confere(aulas=None):
             erros.append(f"aula {n}: {m}")
 
         passos = A["passos"]
-        if not (19 <= len(passos) <= 20):
-            erra(f"tem {len(passos)} passos; o padrao e 19 ou 20 (o que cabe em 50 min)")
+        if not (19 <= len(passos) <= 21):
+            erra(f"tem {len(passos)} passos; o padrao e de 19 a 21 (o que cabe em 50 min)")
 
         # 1. numeracao sem buraco
         for i, p in enumerate(passos, 1):
@@ -77,6 +77,44 @@ def confere(aulas=None):
             if re.search(r"\bclique\b", so_corpo) and not re.search(
                     r"(em <span class=ui>|no <span class=ui>|na <span class=ui>|dentro|canto|coluna|fileira|linha|casa|bolinha|figura|caixinha|ponta|barrinha|quadradinho|metade)", so_corpo):
                 erra(f"{onde}: manda clicar e nao diz onde")
+
+        # 6b. DUAS FOTOS IGUAIS, byte a byte, sao uma promessa quebrada.
+        #
+        # Nasceu da `p13_limite` da Aula 2: a pagina diz "escreva o limite da
+        # camera" e mostrava a MESMA figura do passo anterior, porque a captura
+        # fechava o painel antes de fotografar. A crianca compara a tela dela
+        # com a figura e nao encontra o que o texto promete — e nenhuma trava
+        # via isso, porque as duas fotos existiam e abriam.
+        import hashlib
+        vistas = {}
+        for p in passos:
+            img = p.get("img")
+            if not img or not os.path.exists(img):
+                continue
+            h = hashlib.md5(open(img, "rb").read()).hexdigest()
+            if h in vistas and vistas[h][1] != img:
+                erra(f"passo {p['n']}: a foto {img} e IGUAL, byte a byte, a do "
+                     f"passo {vistas[h][0]} ({vistas[h][1]})")
+            vistas.setdefault(h, (p["n"], img))
+
+        # 6c. FOTO PUBLICADA MAIS VELHA QUE A CAPTURA.
+        #
+        # `para_jpeg` apaga o PNG depois de converter, entao PNG e JPEG com o
+        # mesmo nome, lado a lado, ja querem dizer que a conversao nao rodou
+        # desde a ultima captura — e se o PNG for mais NOVO, o que a pagina
+        # mostra e a captura ANTERIOR. Foi o que aconteceu com a Aula 2: as
+        # fotos do ceu azul estavam na pasta em PNG e a pagina publicava os
+        # JPEG do jogo branco, de duas horas antes. `git status` nao ajuda:
+        # ele diz "modificado", nao "velho".
+        for p in passos:
+            img = p.get("img")
+            if not img or not img.endswith(".jpg"):
+                continue
+            png = img[:-4] + ".png"
+            if os.path.exists(png) and os.path.exists(img):
+                if os.path.getmtime(png) > os.path.getmtime(img):
+                    erra(f"passo {p['n']}: {img} e MAIS VELHO que a captura "
+                         f"{png} — falta rodar para_jpeg.py {slug}")
 
         # 7. o fim da aula promete alguma coisa jogavel
         if "link" not in A.get("fim", "").lower():

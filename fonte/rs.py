@@ -722,8 +722,21 @@ def linha_da_saida(janela, alvo, arquivo="/tmp/_saidal.png"):
 # de ser quase preto e virou azul-acinzentado medio, e o limiar 90 passou a
 # afogar o titulo branco dos blocos. Medido na mesma foto: com limiar None o
 # tesseract devolve 23 itens de lixo; com 110 a 170, le `RestartGame` limpo.
+#
+# E os degraus de 200 entraram na noite da Aula 2: a escada toda parava em 170,
+# e com isso TODO rotulo branco sobre BOTAO AZUL do Flowlab era invisivel —
+# `Browse`, `Blocks`, `Characters`, `Objects`, `Terrain`, `Town`, e o nome do
+# pacote quando ele esta SELECIONADO. Medido na mesma foto: em 170 nenhum
+# aparece, em 190 todos aparecem. O azul tem brilho ~130, perto demais do
+# limiar para o branco se separar dele.
+#
+# O caso que isso custou: `abre_grade_sprite` procurava 'Flowlab Sprites' e
+# nao achava — porque o pacote ja estava ABERTO, e aberto quer dizer azul. O
+# erro saia como "nao achei na biblioteca de sprites" com o nome aceso na tela.
+# Um rotulo mudar de legibilidade ao ser SELECIONADO e a mesma armadilha de
+# identificar coisa por cor: o que muda nao e o texto, e o fundo.
 ESCADA = ((1, None), (1, 90), (1, 130), (1, 170), (2, None), (2, 90),
-          (2, 140), (3, 90), (1, 150))
+          (2, 140), (3, 90), (1, 150), (2, 200), (1, 200))
 
 
 def ocr_forte(arquivo=None, regiao=None, psm="6", idioma="por+eng", escada=ESCADA):
@@ -755,24 +768,73 @@ def tem_texto(alvo, arquivo=None, regiao=None, psm="6"):
     return bool(procura_forte(alvo, arquivo=arquivo, regiao=regiao, psm=psm))
 
 
+def _por_linha(itens):
+    """Agrupa as palavras que estao na MESMA linha e devolve [(junto, itens)].
+
+       O tesseract devolve PALAVRA por palavra. Sem juntar, um alvo de duas
+       palavras nunca pode ser achado por conter o lido: 'Flowlab Sprites' se
+       apresenta como 'Flowlab' e 'Sprites', e nenhuma das duas e o alvo."""
+    linhas = []
+    for t, x, y, w, h in sorted(itens, key=lambda i: (i[2], i[1])):
+        folga = max(6, int(h * 0.6))
+        for linha in linhas:
+            if abs(linha[0] - y) <= folga:
+                linha[1].append((t, x, y, w, h))
+                break
+        else:
+            linhas.append([y, [(t, x, y, w, h)]])
+    saida = []
+    for _y, palavras in linhas:
+        palavras.sort(key=lambda i: i[1])
+        junto = " ".join(p[0] for p in palavras).strip().lower().strip("[]|.,:")
+        saida.append((junto, palavras))
+    return saida
+
+
 def procura_forte(alvo, arquivo=None, regiao=None, psm="6", escada=ESCADA, exato=False):
     """Procura UM texto percorrendo a escada inteira, e para quando ACHA ELE —
        nao quando a leitura tem qualquer coisa.
 
        A diferenca importa: numa area grande e quase vazia, a primeira escala
        devolve dois nomes que estao ali e nao o que eu procuro, e parar na
-       primeira leitura com conteudo e o mesmo que nao procurar."""
+       primeira leitura com conteudo e o mesmo que nao procurar.
+
+       QUANTO DO ALVO a leitura precisa cobrir. O ramo "lido dentro do alvo"
+       existe porque o OCR corta o fim de rotulo comprido ('Behavior' por
+       'Behaviors'); so que, com piso fixo de 3 letras, QUALQUER palavra do
+       alvo servia — e 'New Game', o titulo em letra grande da PAGINA DO JOGO,
+       casava com 'Game Levels', que so existe no EDITOR. Quem decidia com
+       isso era `no_jogo`: ele dizia "estou no editor" com o jogo na tela.
+
+       O piso sozinho nao basta, e por pouco eu nao publiquei so ele: alvo de
+       DUAS palavras chega em palavras separadas, e nenhuma delas cobre 60% do
+       alvo. 'Flowlab Sprites' parou de ser achado na biblioteca, com o nome
+       escrito e aceso na tela. Entao primeiro junta-se a LINHA (e ai o
+       casamento e por conteudo inteiro), e so depois se olha palavra por
+       palavra, com o piso."""
     alvo_l = alvo.lower()
-    # Quanto do ALVO a leitura precisa cobrir para contar como ele. O ramo
-    # `lido in alvo_l` existe porque o OCR corta o fim de rotulo comprido
-    # ('Behavior' por 'Behaviors'); so que, com piso fixo de 3 letras, QUALQUER
-    # palavra do alvo servia — e 'New Game' no titulo da pagina do jogo casava
-    # com 'Game Levels', que so existe no EDITOR. Quem decidia com isso era
-    # `no_jogo`: ele dizia "estou no editor" com o jogo na tela, e a prova da
-    # Aula 3 parou sem ter nada de errado com a fase.
     minimo = max(3, int(len(alvo_l) * 0.6))
     for escala, limiar in escada:
         itens = ocr(arquivo, regiao=regiao, psm=psm, escala=escala, limiar=limiar)
+        linhas = _por_linha(itens)
+        # 1) a LINHA inteira, que e onde um alvo de varias palavras aparece.
+        #    E aceito um PREFIXO do alvo, de 60% para cima: o OCR corta o fim
+        #    do rotulo comprido, e no painel de fisica 'affected by gravity'
+        #    chega como 'affected by gravi'. O corte e sempre no FIM, nunca no
+        #    comeco, entao prefixo e a forma certa de tolera-lo — e nao abre a
+        #    porta que o piso por palavra abria: nenhum prefixo de
+        #    'game levels' com 6 letras ou mais cabe em 'new game'.
+        if not exato:
+            primeira = alvo_l.split()[0]
+            for junto, palavras in linhas:
+                pedaco = next((alvo_l[:k] for k in range(len(alvo_l), minimo - 1, -1)
+                               if alvo_l[:k] in junto), None)
+                if pedaco:
+                    for t, x, y, w, h in palavras:
+                        if primeira in t.lower():
+                            return (t, x, y, w, h)
+                    return palavras[0]
+        # 2) palavra por palavra
         for t, x, y, w, h in itens:
             lido = t.strip().lower().strip("[]|.,:")
             if exato:

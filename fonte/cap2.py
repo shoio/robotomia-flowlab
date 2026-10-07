@@ -212,6 +212,25 @@ def jogador():
     arrasta_slider("friction")
     A.cap("p04_fisica")
     fecha_painel_objeto()
+    # CONFERE DEPOIS DE FECHAR, reabrindo.
+    #
+    # Quem GRAVA a fisica e o OK do painel — e houve um dia em que o detector
+    # do OK, que escolhia pela COR, caiu no CEU (o azul do ceu fica a 38 do
+    # azul do botao) e o clique desmarcou `movable`. O jogo publicado ficou
+    # com um boneco que CORRE e NAO PULA: `Velocity` funciona em objeto
+    # parado, `Impulse` nao. O editor nao acusa nada; quem escreve o motivo e
+    # o proprio Flowlab, dentro do pacote: "This object is not movable, so
+    # Impulse will have no effect". Reabrir e olhar custa seis segundos.
+    editor.objeto_ou_abre(x, y)
+    comum.abre_fisica(); time.sleep(1.5)
+    a, _ = nav.captura("/tmp/_conf_mov.png")
+    pm = comum._acha_no_painel("movable", a)
+    cm = comum._caixinha(a, pm) if pm else None
+    if not (cm and cm[2]):
+        raise RuntimeError("depois de fechar o painel, `movable` do jogador NAO "
+                           f"esta marcado (li {cm}) — sem ele o pulo nao sai")
+    print("   movable conferido depois de fechar", flush=True)
+    fecha_painel_objeto()
     return True
 
 
@@ -259,8 +278,11 @@ def camera():
     p = blocos.abre_ajustes(cam)
     A.gesto("limite_da_camera", "g07", (0, 0),
             lambda: blocos.campo_do_painel("right", COLUNAS - 1), espera=1.4)
-    blocos.fecha_ajustes(); time.sleep(0.8)
+    # A FOTO COM O PAINEL ABERTO. Antes ela era tirada depois de `fecha_ajustes`
+    # e saia IGUAL, byte a byte, a `p12_camera` — a pagina prometia "escreva o
+    # limite" e mostrava a mesma figura do passo anterior, sem o numero.
     A.cap("p13_limite")
+    blocos.fecha_ajustes(); time.sleep(0.8)
     print(f"   camera com limite direito em {COLUNAS - 1}", flush=True)
     time.sleep(2)
     editor.fecha_comportamentos(); time.sleep(2.5)
@@ -359,14 +381,39 @@ def prova():
     # as cores saem dos SPRITES, e a do jogador e a que mais se distingue da
     # lava e da estrela — a mais comum dele e a pele, que puxa para o amarelo
     cor_jog, tol_jog = _rastreio("Jogador", "Lava", "Estrela")
-    print(f"   rastreando o boneco por {cor_jog} (tol {tol_jog})", flush=True)
+    cor_lava, tol_lava = _rastreio("Lava", "Jogador", "Estrela")
+    print(f"   rastreando o boneco por {cor_jog} (tol {tol_jog})"
+          f" e a lava por {cor_lava} (tol {tol_lava})", flush=True)
+
+    def leitura():
+        """UMA foto, e as duas medidas saem dela: onde esta o boneco, e se o
+           quadro esta ACESO.
+
+           Herdado da Aula 3, onde isto foi medido: o Flowlab ESCURECE o jogo
+           inteiro quando a pagina perde o foco, e as teclas param de chegar
+           nele. O mesmo gesto que leva o boneco 128 px para cima com o jogo
+           aceso leva ZERO com ele apagado — foi exatamente o `pulo: subiu 0
+           px` que parou esta captura. Quem responde se o quadro esta aceso e a
+           LAVA: ela atravessa o nivel inteiro, nunca sai de cena, e e a cor
+           mais saturada da fase."""
+        from PIL import Image as _I
+        import numpy as _np
+        a, _ = nav.captura("/tmp/_c2_j.png")
+        im = _np.asarray(_I.open(a).convert("RGB"), dtype=int)
+        g = comum.centro_por_cor(a, cor_jog, tol=tol_jog, minimo=60)
+        aceso = comum.mascara_cor(im, cor_lava, tol_lava).sum() >= 400
+        return ((g[0], g[1]) if g else None), aceso
+
+    def acorda():
+        """Clique DENTRO do jogo antes de cada gesto. Na Aula 3 o registro
+           mostra o escurecimento voltando a cada gesto e sumindo a cada
+           clique — entao nao basta clicar uma vez no comeco."""
+        clique(1470, 620)
+        time.sleep(0.6)
 
     def pos():
-        """O centro de TODOS os pixels da cor: no jogo o sprite sai pequeno e
-           partido, e exigir uma mancha unica dizia que o boneco sumiu."""
-        a, _ = nav.captura("/tmp/_c2_j.png")
-        g = comum.centro_por_cor(a, cor_jog, tol=tol_jog, minimo=60)
-        return (g[0], g[1]) if g else None
+        q, aceso = leitura()
+        return q if aceso else None
 
     editor.volta_ao_editor(); time.sleep(2)
     editor.volta_ao_nivel()
@@ -376,11 +423,15 @@ def prova():
         raise RuntimeError("nao achei o botao Play (estou mesmo no editor?)")
     A.gesto("jogar", "g06", p, lambda: clique(*p), espera=6)
     editor.exige_jogo()
-    clique(1470, 620); time.sleep(2)
-    base = pos()
+    acorda(); time.sleep(1.4)
+    base, aceso = leitura()
+    if not (base and aceso):
+        raise RuntimeError("abri o jogo e nao vi o boneco num quadro aceso — "
+                           "daqui nenhuma medida vale")
     A.cap("p16_jogo")
     # 1) o pulo sobe
     alturas = []
+    acorda()
     rs.segura_tecla(126, 0.2)
     for _ in range(6):
         time.sleep(0.12)
@@ -389,7 +440,15 @@ def prova():
     validos = [a for a in alturas if a]
     sobe = base[1] - min(validos) if validos else 0
     A.cap("p17_pulo")
+    # A SERIE INTEIRA, sempre. "0 px" tem duas causas opostas — o boneco nao
+    # pulou, ou nenhuma leitura valeu (quadro apagado) — e o numero sozinho nao
+    # as separa. Com a serie na tela, `[None]*6` e `[712]*6` se leem de longe.
+    print(f"   base {base[1]}  serie do pulo: {alturas}", flush=True)
     print(f"   pulo: subiu {sobe} px", flush=True)
+    if not validos:
+        raise RuntimeError("nenhuma das 6 leituras do pulo pegou o boneco num "
+                           "quadro aceso — isto e falta de medida, nao e um "
+                           "pulo de zero")
     if sobe < 60:
         raise RuntimeError(f"o pulo subiu so {sobe} px — a aula promete pular "
                            "entre plataformas")
@@ -409,6 +468,7 @@ def prova():
     # saido do lugar. Prova que passa por acaso e pior que prova que falha.
     caiu = False
     for k in range(14):
+        acorda()
         rs.segura_tecla(123, 0.3)          # 123 = seta esquerda
         for _ in range(5):
             q = pos()                       # a captura ja leva ~0,4 s

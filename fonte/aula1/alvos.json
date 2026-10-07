@@ -73,8 +73,8 @@
   "botao": "esq"
  },
  "jogar": {
-  "antes": "g06_a.png",
-  "depois": "g06_b.png",
+  "antes": "g06_a.jpg",
+  "depois": "g06_b.jpg",
   "alvo": [
    1051,
    1586
