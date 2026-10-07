@@ -99,6 +99,9 @@ propósito).
   `Run & Jump` disparam (e o miolo dele são blocos `Keyboard`), e um `Keyboard`
   solto nunca foi medido. Se não disparar, **parar e avisar** — a mão dele é o
   instrumento.
-- **Os jogos de rascunho na conta.** Sobraram vários `New Game` sem uso,
-  inclusive o `3151717` (a Aula 2 velha, com o boneco que não pula). Apagar
-  depende dele pedir.
+- **Os jogos de rascunho na conta.** Sobraram vários `New Game` sem uso. Três
+  deles são Aulas 2 descartadas nesta madrugada: `3151717` (o boneco que não
+  pula), `3152352` e `3152363` se a recaptura não for a última. O endereço que
+  vale é sempre o de `aulaN/jogo.txt` — na conta todos se chamam `New Game` e
+  nenhum tem miniatura, então não há como escolher pelo nome. Apagar depende
+  dele pedir.
