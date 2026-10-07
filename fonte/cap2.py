@@ -168,8 +168,14 @@ def novo():
     A.cap("p01_vazio")
     # O CEU. O campo da cor de fundo do nivel nasce em FFFFFF, e e por isso que
     # todos os jogos do curso eram brancos de folha de papel. Um campo so.
+    # DOIS gestos, duas abas na pagina. Com os dois num clipe so, a seta
+    # apontava para o campo da cor — que no quadro ANTES nem existe, porque o
+    # painel esta fechado. `confere_alvos` acusa isso: "a seta aponta para
+    # [1080,1298], onde quase nada mudou".
+    A.gesto("abrir_niveis", "g08a", (0, 0),
+            lambda: editor.abre_niveis(), espera=1.8)
     A.gesto("pintar_o_ceu", "g08", (0, 0),
-            lambda: editor.cor_do_ceu(CEU), espera=2.0)
+            lambda: editor.cor_do_ceu(CEU, abrir=False), espera=2.0)
     editor.volta_ao_nivel()
     A.cap("p02_ceu")
     print(f"   ceu em #{CEU}", flush=True)
@@ -430,16 +436,30 @@ def prova():
                            "daqui nenhuma medida vale")
     A.cap("p16_jogo")
     # 1) o pulo sobe
-    alturas = []
+    #
+    # E A FOTO E A DO BONECO NO AR. Antes ela era tirada DEPOIS das seis
+    # leituras, com ele ja de volta no chao — a pagina dizia "o pulo" e
+    # mostrava um boneco parado, igual, byte a byte, a foto do passo seguinte.
+    # Agora guardo cada quadro e publico o MAIS ALTO.
+    import shutil
+    alturas, quadros = [], []
     acorda()
     rs.segura_tecla(126, 0.2)
-    for _ in range(6):
+    for k in range(6):
         time.sleep(0.12)
-        q = pos()
-        alturas.append(q[1] if q else None)
+        q, aceso = leitura()
+        if q and aceso:
+            quadro = f"/tmp/_c2_pulo{k}.png"
+            shutil.copy("/tmp/_c2_j.png", quadro)
+            quadros.append((q[1], quadro))
+        alturas.append(q[1] if (q and aceso) else None)
     validos = [a for a in alturas if a]
     sobe = base[1] - min(validos) if validos else 0
-    A.cap("p17_pulo")
+    if quadros:
+        os.makedirs(D, exist_ok=True)
+        shutil.copy(min(quadros)[1], os.path.join(D, "p17_pulo.png"))
+    else:
+        A.cap("p17_pulo")
     # A SERIE INTEIRA, sempre. "0 px" tem duas causas opostas — o boneco nao
     # pulou, ou nenhuma leitura valeu (quadro apagado) — e o numero sozinho nao
     # as separa. Com a serie na tela, `[None]*6` e `[712]*6` se leem de longe.

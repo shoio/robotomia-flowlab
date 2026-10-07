@@ -208,7 +208,24 @@ def tamanho_do_nivel(colunas, tentativas=6):
                        f"{colunas_do_nivel()} (cliques: {medidos})")
 
 
-def cor_do_ceu(hexa):
+def abre_niveis():
+    """Abre o painel `Game Levels` da barra de baixo. Devolve o ponto clicado.
+
+       Existe separado de `cor_do_ceu` por causa do CLIPE: o passo tem dois
+       gestos (abrir o painel e escrever a cor) e, com os dois num clipe so, a
+       seta apontava para o campo da cor — que no quadro ANTES nao existe,
+       porque o painel ainda esta fechado. `confere_alvos` acusou: "a seta
+       aponta para [1080,1298], onde quase nada mudou". Dois gestos, duas
+       setas, duas abas."""
+    import comum
+    p = nav.acha_texto("game levels")
+    if not p:
+        raise RuntimeError("nao achei o Game Levels na barra de baixo")
+    comum.clique(*p); time.sleep(2.5)
+    return p
+
+
+def cor_do_ceu(hexa, abrir=True):
     """Pinta o fundo do NIVEL com uma cor, pelo painel `Game Levels`.
 
        O campo fica ao lado do nome do nivel e nasce com `FFFFFF` — e e por
@@ -217,10 +234,8 @@ def cor_do_ceu(hexa):
 
        Devolve o ponto clicado, para o clipe da aula apontar para ele."""
     import comum
-    p = nav.acha_texto("game levels")
-    if not p:
-        raise RuntimeError("nao achei o Game Levels na barra de baixo")
-    comum.clique(*p); time.sleep(2.5)
+    if abrir:
+        abre_niveis()
     a, _ = nav.captura("/tmp/_ed_ceu.png")
     q = None
     for alvo in ("ffffff", "level 1"):

@@ -225,6 +225,52 @@ tela de verdade diz `TELA_DE_VERDADE=1`, em voz alta.
 
 ---
 
+## 2h. ⚠️ O céu azul desmarcava `movable` — e o jogo foi publicado assim
+
+`AZUL_OK` é `(126,168,224)`. O céu da Aula 2 é `87CEEB` = `(135,206,235)`.
+Distância `(9, 38, 11)` — **dentro da tolerância 40**. Com o nível pintado,
+`fecha_painel_objeto` achava um pedaço de CÉU em vez do botão, e o clique caía
+dentro do painel de física, **em cima da caixinha `movable`**.
+
+Em jogo, isso dá um boneco que **anda e não pula**: `Velocity` move objeto
+parado, `Impulse` (o pulo) não. A Aula 3 escapou só porque o céu dela é de
+noite.
+
+Três coisas a guardar:
+
+1. **O teto de tamanho não resolve.** Eu já tinha consertado a função irmã
+   (`abre_fisica`) com um limite de pixels; trazido para cá, ele passa — o céu
+   se parte em pedaços de 97 mil pixels e o botão tem 24 mil.
+2. **O que separa os dois é a PALAVRA escrita no botão.** `_ponto_do_ok` lê o
+   rótulo e só cai na cor como reserva. Isso só foi possível depois de a escada
+   de OCR ganhar os degraus de limiar **200** — branco sobre azul não aparecia
+   em nenhum degrau anterior, e com isso **todo** rótulo de botão azul do
+   Flowlab era invisível (`Browse`, `Blocks`, `Characters`, e o nome do pacote
+   de sprites **quando ele está selecionado**).
+3. **Conferir depois de fechar.** `jogador()` reabre a física e exige `movable`
+   marcado. Quem grava é o OK; se o OK for outra coisa, nada acusa.
+
+`prova_ok_nao_e_o_ceu.py` tranca os três.
+
+---
+
+## 2i. ⚠️ Retomar uma etapa do meio FOTOGRAFA O FIM
+
+Cada etapa é tolerante de propósito (`objeto_ou_abre` edita o que já existe,
+`bloco_ou_solta` acha o bloco que já está na mesa) para que a captura possa ser
+retomada depois de um erro. **Essa mesma tolerância faz a foto mentir**: rodar
+`plataformas` num jogo já completo não dá erro nenhum e salva o cenário PRONTO
+com o nome do passo «faça o chão».
+
+Três passos da Aula 2 saíram assim, e o que os pegou foi uma regra boba do
+`confere_aulas`: *duas fotos da mesma aula não podem ser iguais byte a byte*.
+Fotos do fim que fossem apenas **parecidas** teriam passado.
+
+**Regra:** etapa do meio refeita num jogo pronto exige **recapturar a aula
+inteira**, do `novo`. Não há meio-termo barato.
+
+---
+
 ## 3. As três armadilhas de FÍSICA que não aparecem no editor
 
 Todas custaram horas na Aula 3, e nenhuma dá erro em lugar nenhum:

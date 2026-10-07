@@ -31,7 +31,7 @@ AULA = {
     sos=[("Cliquei no nome e não aconteceu nada","Clique na figura, não no texto."),
          ("Abriu o tutorial do Flowlab","Esse é o da direita. Volte e escolha o da esquerda.")]),
 
-  dict(n=3, titulo="Pinte o céu", img="aula2/p02_ceu.jpg", clipe="pintar_o_ceu.gif",
+  dict(n=3, titulo="Pinte o céu", img="aula2/p02_ceu.jpg", clipe=[("Abrir o painel", "abrir_niveis.gif"), ("Escrever a cor", "pintar_o_ceu.gif")],
     corpo="Antes de construir, tire o branco de folha de papel.<br><br>Clique em <span class=ui>Game Levels</span>, na fileira de baixo. Ao lado do nome <span class=ui>Level 1</span> há um campo escrito <span class=ui>FFFFFF</span> — é a <b>cor do fundo</b> do seu jogo.<br><br>Clique nele, apague, escreva <b>87CEEB</b> e aperte Enter. O fundo vira <b>azul de céu</b>.<br><br>Pode escolher outra cor se quiser: <b>FFD9A0</b> dá fim de tarde, <b>1A1A40</b> dá noite. São seis letras e números que o computador lê como uma cor.",
     ck="O retângulo do jogo deixou de ser branco e ficou azul.",
     sos=[("Não achei o FFFFFF","Ele fica à direita do nome <span class=ui>Level 1</span>, dentro do painel <span class=ui>Game Levels</span>."),

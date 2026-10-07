@@ -33,7 +33,7 @@ AULA = {
     ck="Sobrou a folha branca vazia, com a fileira <span class=ui>Play · Library · Game Levels · Layer · Settings</span> embaixo.",
     sos=[("Abriu o Flowlab Tutorial","Volte para <span class=ui>My Games</span>, apague esse jogo nos três pontinhos e comece de novo.")]),
 
-  dict(n=4, titulo="Pinte o céu de NOITE", img="aula3/p01b_ceu.jpg", clipe="pintar_o_ceu.gif",
+  dict(n=4, titulo="Pinte o céu de NOITE", img="aula3/p01b_ceu.jpg", clipe=[("Abrir o painel", "abrir_niveis.gif"), ("Escrever a cor", "pintar_o_ceu.gif")],
     corpo="Antes de construir, tire o branco de folha de papel — hoje o jogo se passa de noite, porque a lava <b>brilha</b>.<br><br>Clique em <span class=ui>Game Levels</span>, na fileira de baixo. Ao lado do nome <span class=ui>Level 1</span> há um campo escrito <span class=ui>FFFFFF</span> — é a <b>cor do fundo</b> do seu jogo.<br><br>Clique nele, apague, escreva <b>1A1A40</b> e aperte Enter. O fundo vira <b>azul bem escuro</b>.<br><br>São seis letras e números que o computador lê como uma cor. Com o fundo escuro, o vermelho da lava aparece de longe — e é ele que a criança precisa ver subindo.",
     ck="A folha do nível ficou <b>azul bem escura</b>, quase preta.",
     sos=[("O campo não aceita o que eu escrevo","Apague as seis letras antigas primeiro, escreva as seis novas e aperte Enter. Sem o Enter ele volta para a cor de antes."),

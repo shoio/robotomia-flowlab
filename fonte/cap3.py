@@ -155,8 +155,14 @@ def novo():
     # O CEU. O campo de cor do nivel nasce em FFFFFF — e e por isso que todos
     # os jogos do curso eram brancos de folha de papel. Um campo so, no painel
     # `Game Levels`, ao lado do nome do nivel.
+    # DOIS gestos, duas abas na pagina. Com os dois num clipe so, a seta
+    # apontava para o campo da cor — que no quadro ANTES nem existe, porque o
+    # painel esta fechado. `confere_alvos` acusa isso: "a seta aponta para
+    # [1080,1298], onde quase nada mudou".
+    A.gesto("abrir_niveis", "g14a", (0, 0),
+            lambda: editor.abre_niveis(), espera=1.8)
     A.gesto("pintar_o_ceu", "g14", (0, 0),
-            lambda: editor.cor_do_ceu(CEU), espera=2.0)
+            lambda: editor.cor_do_ceu(CEU, abrir=False), espera=2.0)
     editor.volta_ao_nivel()
     A.cap("p01b_ceu")
     print(f"   ceu em #{CEU}", flush=True)
@@ -271,7 +277,14 @@ def lava_fisica():
     # cai em vez de subir
     A.gesto("fisica_da_lava", "g06", (0, 0),
             lambda: comum.abre_fisica(), espera=2.5)
-    marca_caixa("movable", True)
+    # COM CLIPE. Este gesto ficou anos sem um: o passo da aula pedia
+    # `lava_movable.gif` e o arquivo existia, de uma captura de tres dias
+    # antes — com o nivel ainda BRANCO, no meio de dezesseis clipes de ceu
+    # escuro. Nenhum guarda via: o arquivo existia, abria, e a seta apontava
+    # para onde a tela tinha mudado. Quem viu foi o olho, numa folha de
+    # contato com os dezessete lado a lado.
+    A.gesto("lava_movable", "g12", (0, 0),
+            lambda: marca_caixa("movable", True), espera=1.2)
     A.gesto("desligar_gravidade", "g07", (0, 0),
             lambda: marca_caixa("affected by gravity", False), espera=1.2)
     # SEM 'is solid' a lava ATRAVESSA as plataformas. Medido em jogo: com ela

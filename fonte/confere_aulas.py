@@ -6,7 +6,7 @@
    Cada regra nasceu de um defeito real do curso de Roblox ou desta noite de
    Flowlab — nenhuma e preferencia de estilo.
 """
-import os, re, sys, glob
+import os, re, sys, glob, json
 
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
@@ -115,6 +115,40 @@ def confere(aulas=None):
                 if os.path.getmtime(png) > os.path.getmtime(img):
                     erra(f"passo {p['n']}: {img} e MAIS VELHO que a captura "
                          f"{png} — falta rodar para_jpeg.py {slug}")
+
+        # 6d. MIDIA DE OUTRO JOGO.
+        #
+        # `aulaN/jogo.txt` e reescrito toda vez que a captura cria o jogo da
+        # aula; tudo o que foi fotografado DAQUELE jogo veio depois. Entao um
+        # quadro mais velho que o `jogo.txt` e de OUTRO jogo — e o que ele
+        # mostra pode nao existir mais.
+        #
+        # Nasceu de `lava_movable.gif`: o passo pedia o clipe, o arquivo
+        # existia, abria, e a seta apontava para onde a tela tinha mudado —
+        # mas os quadros eram de tres dias antes, com o nivel ainda BRANCO,
+        # no meio de dezesseis clipes de ceu escuro. Nenhum guarda via. Quem
+        # viu foi o olho, numa folha de contato com os dezessete lado a lado.
+        cam_jogo = os.path.join(slug, "jogo.txt")
+        if os.path.exists(cam_jogo):
+            nascimento = os.path.getmtime(cam_jogo)
+            alvos = os.path.join(slug, "alvos.json")
+            quadros = {}
+            if os.path.exists(alvos):
+                for chave, c in json.load(open(alvos)).items():
+                    for campo in ("antes", "depois"):
+                        if isinstance(c.get(campo), str):
+                            quadros.setdefault(c[campo], set()).add(chave)
+            for arq, chaves in sorted(quadros.items()):
+                cam = os.path.join(slug, arq)
+                if os.path.exists(cam) and os.path.getmtime(cam) < nascimento:
+                    erra(f"o quadro {arq} (clipe {'/'.join(sorted(chaves))}) e "
+                         f"mais VELHO que o jogo desta aula — e de outro jogo")
+            for p in passos:
+                img = p.get("img")
+                if (img and img.startswith(slug + "/") and os.path.exists(img)
+                        and os.path.getmtime(img) < nascimento):
+                    erra(f"passo {p['n']}: a foto {img} e mais VELHA que o jogo "
+                         "desta aula — e de outro jogo")
 
         # 7. o fim da aula promete alguma coisa jogavel
         if "link" not in A.get("fim", "").lower():
