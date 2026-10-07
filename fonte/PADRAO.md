@@ -11,7 +11,8 @@ lugar — aqui, no `PADRAO.md` do curso de Roblox, ou na memória.
 O formato da aula é o mesmo e **não se reinventa**: leia
 `~/Coding/robotomia-roblox/fonte/PADRAO.md` §1, §2 e §7. O que vale igual:
 
-- 19–20 passos, 50 minutos, projeto novo a cada aula, termina jogável;
+- 19–21 passos, 50 minutos, projeto novo a cada aula, termina jogável
+  (o teto subiu de 20 para 21 quando o passo do céu entrou nas Aulas 2 e 3);
 - **nenhum passo supõe que o aluno já sabe fazer aquilo** — repita o
   procedimento inteiro, mesmo repetindo o vizinho;
 - quadro verde (`ck`) descreve o que **aparece na tela**;
@@ -26,12 +27,17 @@ dele vai a **lista dos blocos e dos fios**.
 ## 1. O laço de uma aula
 
 1. **Provar a mecânica** no editor de verdade, antes de escrever uma linha.
-2. Escrever o roteiro dos 20 passos, um por linha.
+2. Escrever o roteiro dos 19 a 21 passos, um por linha.
 3. `capN.py` constrói o jogo capturando a cada gesto.
 4. Clipes, JPEG, guardas.
 5. **Jogar** e provar as promessas, uma a uma.
 6. **Engenharia reversa**: reler como aluno, um passo por vez.
-7. Build, publicar, conferir **no ar**.
+7. **Olhar a folha de contato** (`folha_de_contato.py aulaN`): todas as figuras
+   lado a lado, numa imagem só. Dois defeitos desta madrugada só apareceram
+   assim — um clipe do nível BRANCO no meio de dezesseis de céu escuro, e três
+   passos mostrando o cenário PRONTO onde o texto promete o cenário pela
+   metade. Os arquivos existiam, abriam e passavam em todos os guardas.
+8. Build, publicar, conferir **no ar**.
 
 O passo 1 é onde mora quase todo o tempo. Os §2 e §3 abaixo são para encurtá-lo.
 

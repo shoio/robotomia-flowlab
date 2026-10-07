@@ -30,7 +30,7 @@ semana passada).
 ## 2. As doze aulas
 
 Cada aula termina com **um jogo que da para jogar e mandar o link** no mesmo
-dia. 19 ou 20 passos, 50 minutos.
+dia. 19 a 21 passos, 50 minutos.
 
 | # | Aula | O jogo que sai pronto | O que e novo |
 |---|---|---|---|
@@ -62,7 +62,7 @@ Igual ao `PADRAO.md` do Roblox, com uma diferenca: **nao ha bloco de codigo
 digitado**; no lugar dele ha o **quadro de ligacao** — a lista dos blocos que
 entram e de quais fios ligam onde.
 
-- 19-20 passos, cada um com **foto da tela de verdade**;
+- 19 a 21 passos, cada um com **foto da tela de verdade**;
 - passos de gesto novo ganham **clipe** (GIF curto com o cursor);
 - **quadro verde** (`ck`): como o aluno sabe que deu certo, pelo que APARECE;
 - **quadro laranja** (`sos`): sintoma na voz da crianca + conserto;
@@ -101,7 +101,7 @@ pixel, cor e OCR — que e exatamente o que o curso de Roblox ja faz.
 1. **Provar a mecanica no editor**, antes de escrever a aula. Foi assim que a
    Aula 10 do Roblox nasceu certa, e foi por nao fazer isso que oito aulas de
    la estao escritas e nunca provadas.
-2. Escrever o roteiro dos 20 passos.
+2. Escrever o roteiro dos 19 a 21 passos.
 3. `capN.py`: o robo constroi o jogo no Flowlab, capturando a cada gesto.
 4. Montar clipes, converter para JPEG, rodar os guardas.
 5. **Jogar o jogo** e provar que ele faz o que a aula promete.
