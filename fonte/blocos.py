@@ -114,12 +114,36 @@ def abre_categoria(nome):
     return True
 
 
+# O texto dos itens da palheta comeca por volta de x=70 (antes vem o icone) e
+# acaba antes de x=330. Ponto fora dessa faixa nao e o item: e o icone, a
+# beirada, ou uma leitura que juntou a linha errada.
+PALHETA_X = (62, 330)
+
+
+def _ponto_de_item(p):
+    """O ponto esta mesmo sobre o TEXTO de um item da palheta?"""
+    return bool(p) and PALHETA_X[0] <= p[0] <= PALHETA_X[1]
+
+
 def item_palheta(nome, tentativas=3):
-    """(x, y) do item da palheta, abrindo categoria se precisar."""
+    """(x, y) do item da palheta, abrindo categoria se precisar.
+
+       CONFERE a faixa do x. Medido: a mesma chamada devolveu (115,474) — em
+       cima do texto — e (42,1116), que e o icone na beirada. Arrastar do ponto
+       errado nao da erro: ele arrasta a PALHETA, o bloco nao nasce, e a falha
+       aparece como "a mesa nao mudou ali" — que foi o que me fez procurar a
+       causa na mesa, no fundo, no motor e no ponto de soltura durante horas."""
     for k in range(tentativas):
         p = nav.acha_texto(nome.lower(), regiao=PALHETA)
-        if p:
+        if _ponto_de_item(p):
             return p
+        if p:
+            # leu o nome, mas num x que nao e o do item: insiste, que a proxima
+            # leitura costuma vir limpa
+            time.sleep(0.8)
+            p2 = nav.acha_texto(nome.lower(), regiao=PALHETA)
+            if _ponto_de_item(p2):
+                return p2
         if k == 0:
             # a palheta e sanfona: abrir uma categoria fecha a outra. Entao
             # percorro TODAS, nao um punhado escolhido a dedo — foi assim que
@@ -162,10 +186,19 @@ def contexto(url=None, celula=None):
 
 
 def _recarrega_e_reabre():
-    """Recarrega a pagina e volta para a mesma mesa de blocos."""
+    """SALVA, recarrega a pagina e volta para a mesma mesa de blocos.
+
+       O `fecha_comportamentos` (o OK azul da mesa) e o que COMMITA os blocos.
+       Sem ele, o recarregamento DESCARTA tudo o que foi solto desde que a mesa
+       abriu — e foi exatamente isso que o meu proprio conserto causou: eu
+       soltava o `Collision`, recarregava para poder soltar o `RestartGame`, e
+       o recarregamento levava o `Collision` embora. Os dois blocos "sumiam" e
+       eu procurava a causa no gesto do fio, que estava certo o tempo todo."""
     import editor as _ed, comum as _cm
     if not (CONTEXTO["url"] and CONTEXTO["celula"]):
         return False
+    _ed.fecha_comportamentos(); time.sleep(2.5)      # OK: commita os blocos
+    _cm.fecha_painel_objeto(); time.sleep(1.5)
     nav.vai(CONTEXTO["url"], espera=10)
     time.sleep(2)
     _ed.recupera()
@@ -197,7 +230,20 @@ def solta(nome, x, y, tentativas=3, titulo=None, exige_titulo=True):
         import editor as _ed
         # UM BLOCO POR CARREGAMENTO: se ja soltei nesta pagina, recarrego antes
         # de tentar o proximo. Sem isso o segundo bloco de uma mesa nunca nasce.
-        if CONTEXTO["soltou"] > 0:
+        # RECARREGAR E ULTIMO RECURSO, nao rotina.
+        #
+        # Eu cheguei a recarregar a pagina antes de CADA bloco, convencido de
+        # que o Flowlab so aceitava um arrasto da palheta por carregamento.
+        # Esse modelo era errado: o que falhava era o PONTO DE ORIGEM do
+        # arrasto — `item_palheta` devolvia (42,1116), o icone na beirada, em
+        # vez de (115,474), o texto do item. Arrastar do ponto errado arrasta a
+        # PALHETA, o bloco nao nasce, e o erro sai como "a mesa nao mudou ali",
+        # apontando para o destino quando o defeito estava na origem.
+        #
+        # Com a guarda de faixa no `item_palheta`, o arrasto normal funciona.
+        # O recarregamento fica como recuperacao da ULTIMA tentativa, que custa
+        # 12 segundos e so se paga quando tudo o mais falhou.
+        if k == tentativas - 1 and CONTEXTO["url"]:
             _recarrega_e_reabre()
         _ed.fecha_roda()          # a roda Create/Cancel tapa o meio da mesa
         antes, _ = nav.captura("/tmp/_bl_antes_solta.png")
@@ -223,7 +269,6 @@ def solta(nome, x, y, tentativas=3, titulo=None, exige_titulo=True):
         x0, x1 = max(0, x - 220), min(A.shape[1], x + 320)
         mudou = int((_np.abs(A[y0:y1, x0:x1] - B[y0:y1, x0:x1]) > 30).sum())
         if mudou > 3000:
-            CONTEXTO["soltou"] += 1
             try:
                 return acha_bloco(titulo or nome)
             except RuntimeError:

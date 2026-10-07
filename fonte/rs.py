@@ -164,6 +164,24 @@ def acha(alvo, arquivo=None, regiao=None, psm="11"):
 
 # ────────────────────────── mouse e teclado ────────────────────────
 
+_MOTOR_DE_PE = None
+
+
+def _motor_de_pe():
+    """O motor da bancada atende? Medido UMA vez por processo — isto roda antes
+       de cada clique, e uma conexao por gesto custaria mais que o gesto."""
+    global _MOTOR_DE_PE
+    if _MOTOR_DE_PE is None:
+        import socket
+        porta = int(os.environ.get("BANCADA_PORTA", "8765"))
+        try:
+            with socket.create_connection(("127.0.0.1", porta), timeout=0.25):
+                _MOTOR_DE_PE = True
+        except OSError:
+            _MOTOR_DE_PE = False
+    return _MOTOR_DE_PE
+
+
 def _exige_bancada_instalada():
     """A PORTA DO DANO: com `BANCADA=1` pedida, nada vai para a tela de verdade.
 
@@ -176,8 +194,24 @@ def _exige_bancada_instalada():
        tela dele, achando que estava na bancada.
 
        Fail-open mudo e a pior forma: a variavel de ambiente dizia uma coisa e
-       o programa fazia outra, sem uma palavra. Agora para."""
+       o programa fazia outra, sem uma palavra. Agora para.
+
+       E O AVESSO, que e o caso que a bandeira escrita para o caso dificil nao
+       cobria: a guarda acima so dispara com `BANCADA=1` POSTA — e o erro que
+       eu repeti foi NAO a por. Com o motor de pe, eu rodei tres sondas de
+       diagnostico sem ela: fotografei o Chrome do Julio, cliquei nele e levei
+       a aba dele para a pagina do jogo, e passei meia hora lendo uma tela que
+       nao era a que a captura estava construindo. Entao: motor de pe e
+       `BANCADA` ausente agora PARA tambem. Quem precisa mesmo da tela de
+       verdade (o `vigia_tela`, uma medida na maquina dele) diz isso com
+       `TELA_DE_VERDADE=1` — em voz alta, uma vez, em vez de por omissao."""
     if os.environ.get("BANCADA") != "1":
+        if _motor_de_pe() and os.environ.get("TELA_DE_VERDADE") != "1":
+            raise RuntimeError(
+                "o motor da bancada esta DE PE e `BANCADA=1` nao foi pedida — "
+                "este gesto iria para a tela do Julio. Rode com `BANCADA=1` "
+                "(e importe `comum`), ou diga `TELA_DE_VERDADE=1` se a tela de "
+                "verdade e mesmo o alvo.")
         return
     if not getattr(sys.modules.get("rs"), "_BANCADA_INSTALADA", False):
         raise RuntimeError(
@@ -729,11 +763,23 @@ def procura_forte(alvo, arquivo=None, regiao=None, psm="6", escada=ESCADA, exato
        devolve dois nomes que estao ali e nao o que eu procuro, e parar na
        primeira leitura com conteudo e o mesmo que nao procurar."""
     alvo_l = alvo.lower()
+    # Quanto do ALVO a leitura precisa cobrir para contar como ele. O ramo
+    # `lido in alvo_l` existe porque o OCR corta o fim de rotulo comprido
+    # ('Behavior' por 'Behaviors'); so que, com piso fixo de 3 letras, QUALQUER
+    # palavra do alvo servia — e 'New Game' no titulo da pagina do jogo casava
+    # com 'Game Levels', que so existe no EDITOR. Quem decidia com isso era
+    # `no_jogo`: ele dizia "estou no editor" com o jogo na tela, e a prova da
+    # Aula 3 parou sem ter nada de errado com a fase.
+    minimo = max(3, int(len(alvo_l) * 0.6))
     for escala, limiar in escada:
         itens = ocr(arquivo, regiao=regiao, psm=psm, escala=escala, limiar=limiar)
         for t, x, y, w, h in itens:
             lido = t.strip().lower().strip("[]|.,:")
-            if (lido == alvo_l) if exato else (alvo_l in lido or lido in alvo_l and len(lido) >= 3):
+            if exato:
+                bate = lido == alvo_l
+            else:
+                bate = (alvo_l in lido) or (lido in alvo_l and len(lido) >= minimo)
+            if bate:
                 return (t, x, y, w, h)
     return None
 

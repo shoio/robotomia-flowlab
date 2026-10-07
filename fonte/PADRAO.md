@@ -148,41 +148,80 @@ muda, ele põe o vizinho, volta ao alvo e cobra a mudança.
 
 ---
 
-## 2d. ⚠️ A mesa de blocos: UM arrasto da palheta por carregamento de página
+## 2d. ⚠️ O arrasto da palheta: o defeito está na ORIGEM, não no destino
 
-**Medido, e é a restrição mais cara que o Flowlab impõe à captura.** Só o
-**primeiro** arrasto da palheta depois de carregar a página solta bloco. O
-segundo não cai, e dali em diante a mesa não aceita mais nada vindo da palheta
-— embora continue aceitando **mover** bloco que já está nela e **desfazer** com
-`cmd+Z`.
+`blocos.item_palheta(nome)` devolve, **de forma intermitente**, um ponto que
+não está sobre o item: medido, a mesma chamada deu `(115, 474)` — em cima do
+texto «Restart Game» — e `(42, 1116)`, que é o **ícone na beirada**.
 
-Isso explica, de uma vez, tudo o que me custou uma sessão inteira:
+**Arrastar do ponto errado não dá erro.** Ele arrasta a PALHETA, o bloco não
+nasce, e a falha sai como *«soltei X em (…) e a mesa não mudou ali»* — uma
+mensagem que aponta para o **destino** quando o defeito está na **origem**.
 
-- as etapas que põem **um** bloco por mesa sempre funcionaram;
-- a etapa que precisa de **dois** blocos na mesma mesa (`Collision` +
-  `Restart Game`) só conseguia o primeiro;
-- «repetir a etapa» às vezes resolvia — porque a repetição vinha depois de uma
-  navegação;
-- e os diagnósticos se contradiziam porque cada um era o segundo, o terceiro ou
-  o quarto arrasto da mesma página. **Nenhum media o que eu pensava.**
+Isso me custou a maior parte de uma sessão, e gerou quatro modelos errados que
+eu cheguei a escrever aqui como se fossem fato: fio diagonal engana o detector,
+o fundo azul estragou o OCR, a mesa cansa, e **«o Flowlab só aceita um arrasto
+da palheta por carregamento de página»**. Esse último chegou a virar código —
+recarregar antes de cada bloco, 12 s cada. Nenhum era a causa.
 
-Pelo caminho inventei quatro explicações plausíveis e erradas — fio diagonal,
-fundo azul, mesa cansada, motor velho. Todas «funcionavam» uma vez, porque a
-primeira tentativa depois de qualquer navegação funciona.
+**A guarda:** o texto dos itens fica entre x≈62 e x≈330 (antes vem o ícone).
+Ponto fora dessa faixa é recusado e relido. `blocos.PALHETA_X`.
 
-**E há um segundo bloqueio, modal, que nasce do primeiro:** quando uma captura
-falha no meio, ela deixa edições de comportamento NÃO SALVAS. Ao navegar para
-fora, o `beforeunload` do Chrome dispara e a navegação pode abortar. Na abertura
-seguinte do objeto aparece o **`Recover unsaved work`** — e ele é MODAL: com ele
-na tela, arrasto não arrasta e clique não clica.
+**A lição geral:** quando a mensagem de erro descreve o DESTINO de um gesto,
+conferir a ORIGEM antes. E quando um sintoma é intermitente, desconfiar de um
+endereço que é RELIDO a cada vez, não de um estado que se acumula.
+
+---
+
+## 2e. ⚠️ O modal `Recover unsaved work`
+
+Captura que falha no meio deixa edições de comportamento **não salvas**. Ao
+navegar para fora, o `beforeunload` do Chrome dispara e a navegação pode
+abortar. Na abertura seguinte do objeto aparece o **`Recover unsaved work`** —
+e ele é MODAL: com ele na tela, arrasto não arrasta e clique não clica.
 
 `editor.recupera()` existia e era chamado em quatro lugares **sem nunca
 disparar**, porque achava o botão com a leitura que para na primeira com
-conteúdo. Hoje ele percorre a escada e **descarta** por padrão.
+conteúdo. Hoje percorre a escada e **descarta** por padrão.
+
+E o `OK` azul da mesa é o que **commita** os blocos: recarregar sem fechar a
+mesa descarta tudo o que foi solto desde que ela abriu.
 
 **Antes de investigar por que um gesto não funciona: fotografe a TELA INTEIRA e
-olhe.** Eu recortava a mesa e analisava o recorte, com o diálogo logo acima do
-recorte, meia dúzia de vezes seguidas.
+olhe.** Eu recortava a mesa e analisava o recorte, com o diálogo logo acima.
+
+---
+
+## 2f. ⚠️ O OCR achava o alvo por um PEDAÇO dele
+
+`rs.procura_forte` casava quando o lido era substring do ALVO e tinha 3 letras
+ou mais. O ramo existe por um motivo bom — o OCR corta o fim de rótulo
+comprido, e «Behavior» precisa valer por «Behaviors». Só que, com piso de 3
+letras, **qualquer palavra do alvo servia**: «New Game», o título em letra
+grande da *página do jogo*, casava com `Game Levels`, que só existe no
+**editor**.
+
+Quem decidia com esse casamento era `editor.no_jogo()`. Ele dizia «estou no
+editor» com o jogo desenhado na tela, e a prova da Aula 3 parou sem haver nada
+errado com a fase. Guarda que erra para o lado de recusar não acusa dano, o que
+o torna mais difícil de ver que o contrário.
+
+Hoje o piso é **60 % do comprimento do alvo**. `prova_casamento_ocr.py` tranca
+os dois lados com duas fotos de verdade: a página do jogo **não** pode casar
+com `game levels`, e o editor **tem** de casar.
+
+---
+
+## 2g. ⚠️ A bancada tem DUAS metades, e eu errei a segunda
+
+`BANCADA=1` posta sem os remendos instalados já era barrada. O caso que de
+fato se repetiu é o avesso: **não pôr a variável**. Com o motor de pé, três
+sondas minhas de diagnóstico fotografaram o Chrome do Julio, clicaram nele e
+levaram a aba dele para a página do jogo — e eu passei meia hora lendo uma tela
+que não era a que a captura estava construindo.
+
+Agora motor de pé + `BANCADA` ausente também **para**. Quem precisa mesmo da
+tela de verdade diz `TELA_DE_VERDADE=1`, em voz alta.
 
 ---
 
