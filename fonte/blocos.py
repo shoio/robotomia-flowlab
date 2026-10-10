@@ -1194,6 +1194,36 @@ def campo_do_painel(rotulo, valor, abaixo=67, folga=10):
     nav.clique_seguro(*alvo); time.sleep(0.8)
     rs.tecla(0, cmd=True); time.sleep(0.3)        # cmd+A
     rs.digita_teclas(str(valor)); time.sleep(0.8)
+    # TAB ANTES DE LER. Com o campo ainda em foco o cursor fica piscando dentro
+    # dele e entra na leitura: medido, "27" saiu como "2A". O Tab fecha a
+    # edicao sem fechar o painel (o Enter fecharia).
+    rs.tecla(48); time.sleep(0.6)
+    # LE DE VOLTA, no proprio campo.
+    #
+    # Esta funcao escrevia e voltava sem olhar — e a irma dela (`cor_do_ceu`)
+    # fez exatamente o que se teme: digitou no campo do NOME do nivel em vez do
+    # campo da COR, disse que tinha pintado, e uma aula inteira foi capturada
+    # de um jogo branco. Aqui o campo e o limite da camera: errado, a fase fica
+    # cortada em 15 colunas e so o jogo denuncia.
+    # REACHA O ROTULO depois do Tab, em vez de reusar o ponto de antes: o Tab
+    # move o foco para o campo seguinte e o painel ANDA. Medido — com a
+    # coordenada velha o guarda reprovou um `right` que estava escrito 27,
+    # certinho, na tela. Guarda que reprova o caso CERTO e pior que guarda
+    # nenhum: ele aborta uma captura boa.
+    b, _ = nav.captura("/tmp/_bl_campo2.png")
+    p2 = nav.acha_texto(rotulo, arquivo=b) or p
+    campo = (p2[0] + folga, p2[1] + abaixo)
+    perto = (max(0.0, (campo[0] - 150) / 2940), max(0.0, (campo[1] - 30) / 1604),
+             min(1.0, (campo[0] + 230) / 2940), min(1.0, (campo[1] + 34) / 1604))
+    # `tem_texto`, nao `ocr_forte`: o `ocr_forte` para na PRIMEIRA leitura com
+    # conteudo, e aqui a primeira veio `['o','|']` — lixo das bordas do campo.
+    # `tem_texto` percorre a escada inteira atras DO VALOR. Este projeto ja
+    # tropecou nisso em cinco lugares; aqui eu repeti o tropeco.
+    if not rs.tem_texto(str(valor), arquivo=b, regiao=perto):
+        lido = [t.strip() for t, *_ in rs.ocr_forte(b, regiao=perto, psm="7")]
+        raise RuntimeError(f"escrevi '{valor}' no campo '{rotulo}' e li {lido} "
+                           "de volta — o texto nao entrou no campo certo")
+    print(f"   {rotulo} = {valor}", flush=True)
     return alvo
 
 

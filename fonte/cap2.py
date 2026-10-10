@@ -215,6 +215,14 @@ def jogador():
         raise RuntimeError("nao achei o controle Density no painel de fisica")
     alvo = (int(pd[0] + 155 + 2.75 * DENSIDADE), pd[1])
     A.gesto("peso_do_pulo", "g05", alvo, lambda: clique(*alvo), espera=1.2)
+    # LE DE VOLTA: a FAIXA, nao o valor exato. A aula ensina "perto de 30", e o
+    # que a fisica precisa e um peso que deixe pular sem sair voando. Exigir
+    # "34.4" na unha ja reprovou um 34.0 perfeitamente bom.
+    peso = comum.le_numero_do_painel("density")
+    if peso is None or not (20 <= peso <= 45):
+        raise RuntimeError(f"cliquei no peso e o painel mostra {peso} — fora da "
+                           "faixa que o pulo desta aula precisa (20 a 45)")
+    print(f"   peso = {peso}", flush=True)
     arrasta_slider("friction")
     A.cap("p04_fisica")
     fecha_painel_objeto()

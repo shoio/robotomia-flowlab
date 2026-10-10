@@ -410,6 +410,42 @@ def marca_caixa(rotulo, quero=True):
     raise RuntimeError(f"nao consegui deixar '{rotulo}' como {quero}")
 
 
+LARGURA_LINHA_PAINEL = 700   # do rotulo ao numero da mesma linha, medido
+
+
+def le_numero_do_painel(rotulo, arquivo=None, folga=22):
+    """O NUMERO que o painel de fisica mostra ao lado deste rotulo.
+
+       Existe para a regra que custou duas recapturas inteiras da Aula 2:
+       **toda etapa que escreve tem de ler de volta**. `arrasta_slider` e o
+       clique do `density` escreviam e voltavam sem olhar — e o painel MUDA de
+       altura (marcar `movable` faz nascer uma linha e empurra tudo para
+       baixo), entao errar a linha e silencioso.
+
+       Medido na foto de referencia: o rotulo fica em x~1545 e o numero em
+       x~1997, na MESMA fileira (±10 px)."""
+    a = arquivo or nav.captura("/tmp/_c1_num.png")[0]
+    p = _acha_no_painel(rotulo.lower(), a)
+    if not p:
+        return None
+    # O MAIS PERTO do rotulo, nao o primeiro que a leitura devolver. Medido:
+    # procurando "o primeiro numero a direita, na mesma fileira", o `density`
+    # leu 1.0 — um "1" solto na beira da janela, a 1365 px de distancia. O
+    # numero da linha fica a ~450 px do rotulo.
+    candidatos = []
+    for t, x, y, w, h in rs.ocr_forte(a, psm="6"):
+        if abs((y + h // 2) - p[1]) > folga:
+            continue
+        dx = x - p[0]
+        if not (0 < dx <= LARGURA_LINHA_PAINEL):
+            continue
+        try:
+            candidatos.append((dx, float(t.strip().replace(",", "."))))
+        except ValueError:
+            continue
+    return min(candidatos)[1] if candidatos else None
+
+
 def arrasta_slider(rotulo, ate_direita=True):
     """Arrasta um controle deslizante do painel de fisica ate a ponta.
        Acha pela ETIQUETA (Density, Friction) porque o painel MUDA de altura:
@@ -424,6 +460,17 @@ def arrasta_slider(rotulo, ate_direita=True):
     alvo = p[0] + 430 if ate_direita else p[0] + 155
     clique(alvo, p[1])
     time.sleep(1.0)
+    # LE DE VOLTA. Este clique escrevia e voltava sem olhar — e o painel muda
+    # de altura, entao errar a linha e silencioso. A propria glosa acima
+    # registra um dia em que "arrastar para a direita" deixou 3.0 no lugar de
+    # 100. As duas recapturas inteiras da Aula 2 foram desta familia: escrita
+    # que ninguem confere aparece so no jogo, ou depois de publicada.
+    if ate_direita:
+        lido = le_numero_do_painel(rotulo)
+        if lido is None or lido < 95:
+            raise RuntimeError(f"arrastei '{rotulo}' ate a ponta e o painel "
+                               f"mostra {lido} (esperava 100) — o clique nao pegou")
+        print(f"   {rotulo} = {lido}", flush=True)
     return p
 
 
@@ -531,10 +578,25 @@ def nomeia_tipo(nome):
             break
     if not p:
         raise RuntimeError("nao achei o campo Type")
-    clique(p[0] + 40, p[1] + 54, duplo=True); time.sleep(0.6)
+    campo = (p[0] + 40, p[1] + 54)
+    clique(campo[0], campo[1], duplo=True); time.sleep(0.6)
     rs.tecla(0, cmd=True); time.sleep(0.25)
     rs.digita_teclas(nome); time.sleep(0.4)
     rs.tecla(48); time.sleep(0.8)          # Tab: o Enter FECHA o painel
+    # LE DE VOLTA. O TIPO e o que a lista do `Collision` mostra: se ele nao
+    # entrar, a lava nao tem como saber em quem bater — e isso so aparece no
+    # JOGO, depois da aula montada. Escrita sem leitura de volta foi o que
+    # custou duas recapturas inteiras da Aula 2.
+    b, _ = nav.captura("/tmp/_c1_tipo2.png")
+    faixa = (max(0.0, (campo[0] - 60) / 2940), max(0.0, (campo[1] - 26) / 1604),
+             min(1.0, (campo[0] + 330) / 2940), min(1.0, (campo[1] + 30) / 1604))
+    # `tem_texto` percorre a escada inteira atras DO NOME; o `ocr_forte` para
+    # na primeira leitura com conteudo, que pode ser lixo das bordas do campo.
+    if not rs.tem_texto(nome, arquivo=b, regiao=faixa):
+        lido = " ".join(t.strip() for t, *_ in rs.ocr_forte(b, regiao=faixa, psm="7"))
+        raise RuntimeError(f"escrevi o tipo '{nome}' e li '{lido}' de volta — "
+                           "o nome nao entrou no campo Type")
+    print(f"   tipo = {nome}", flush=True)
     return True
 
 
