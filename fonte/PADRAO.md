@@ -398,6 +398,103 @@ custa uma recaptura inteira. Quem mexer numa delas na próxima vez, migra.
 
 ---
 
+## 2n. ⛔ O REMENDO DA BANCADA SUMIA, e todo arrasto ia para a tela de verdade
+
+Custou uma noite da Aula 4. Sintoma: `solta` não largava bloco nenhum na mesa —
+`mudou 0 px`, sem erro, sem nada na tela.
+
+`bancada.instala()` troca `blocos.arrasta_devagar` por uma lambda que fala com o
+motor. Mas `bancada.liga_se_pedido()` mora dentro do `comum.py`, e na ordem de
+import das capturas (`import rs, nav, editor, blocos, comum`) quem carrega
+primeiro é o `blocos`: ele importa `comum` no meio do próprio carregamento, o
+`instala()` recebe um módulo **pela metade**, põe a lambda — e logo depois o
+`def arrasta_devagar` do próprio arquivo a **sobrescreve**.
+
+O estrago é assimétrico e por isso mudo: `rs._evento_mouse` continuava remendado
+(só o MOVER sobrevive; apertar e soltar são engolidos), `nav.janela` devolvia a
+área da bancada e as fotos saíam certas — mas os eventos de arrasto iam **crus
+para a tela de verdade, na origem**, fora do navegador.
+
+Prova de dois segundos:
+
+```
+BANCADA=1 python3 -c "import rs, nav, editor, blocos, comum; print(blocos.arrasta_devagar)"
+# -> <function arrasta_devagar ...>            (remendo PERDIDO)
+BANCADA=1 python3 -c "import comum; import blocos;            print(blocos.arrasta_devagar)"
+# -> <function instala.<locals>.<lambda> ...>  (remendo de pé)
+```
+
+⭐ Conserto: a escolha mora **dentro** da função, em tempo de chamada, não num
+remendo de import. Quem for trocar peça de `rs`/`nav`/`blocos` por causa da
+bancada daqui para a frente: faça igual, não por atribuição no `instala()`.
+
+### E a sonda que escondia isso
+
+Três sondas minhas deram VERDE e me fizeram descartar as hipóteses certas. Elas
+chamavam `solta(..., tentativas=1)` — e dentro do laço está
+`if k == tentativas - 1: _recarrega_e_reabre()`. Com `tentativas=1` isso vale
+**já na primeira volta**: a sonda recarregava a página antes de cada arrasto, que
+é justamente o caminho de recuperação. Ela consertava o defeito antes de medi-lo.
+Para sondar `solta`, use `tentativas=2` ou mais.
+
+## 2o. ⚠️ O `−` do painel de um bloco fica a +186 do rótulo, não a +220
+
+`prepara_menos` devolvia o ponto `(rótulo + 220, +70)`. Medido na foto: com o
+ponto no CENTRO de `Current value:`, o `−` está em **+186** e o `+` em **+249**,
+a 63 px um do outro. O +220 caía no vão, puxado para o `+`: três cliques num
+`Number` zerado davam `3` em vez de `-3`, e a nave andava para o lado errado.
+Na Aula 3 o mesmo +220 pegou o `−` por pouco — por isso o defeito atravessou uma
+aula inteira sem aparecer.
+
+## 2p. ⚠️ Reprocurar bloco SÓ PELO NOME devolve o primeiro da mesa
+
+`le_valor` e `escolhe_tipo_da_colisao` faziam `acha_bloco(bloco.nome)` sem
+recorte. A Aula 4 tem **dois** `Number` na mesa da nave (um por sentido): o de
+baixo mostrava `3` na tela, certinho, e a leitura trazia o `-3` do de cima — a
+guarda reprovava um valor correto e parava a captura.
+
+Os dois agora procuram na **faixa do próprio bloco** (`bloco.y ± `). Reprocurar
+continua valendo (zoom e rolagem movem tudo), mas perto de onde o bloco estava.
+Mesma regra para `bloco_ou_solta`/`solta`, que ganharam `regiao=`: sem ela, o
+segundo `Keyboard` de uma mesa devolve a coordenada do primeiro e os fios vão
+todos para o bloco errado, sem erro nenhum.
+
+## 2q. ⛔ `Ship Controls` NÃO é movimento de quatro setas
+
+Medido abrindo o pacote e fotografando o miolo:
+
+```
+Keyboard[Left].down  -> Number(-4) -> Rotation.add      (GIRA)
+Keyboard[Right].down -> Number(4)  -> Rotation.add      (GIRA)
+Keyboard[Up].down    -> Number(6)  -> Motor.forward     (acelera pelo nariz)
+```
+
+É girar-e-acelerar, estilo Asteroids. Em jogo a nave sai voando e não volta. E,
+pior para uma aula de tiro: com a nave girando, o `emit angle` 270 deixa de
+significar "para cima".
+
+A palheta de `Behavior Bundles` tem só `Run & Jump`, `Dangerous` e
+`Ship Controls`. `More Bundles` é **busca de pacotes da comunidade**, não lista
+local — conteúdo de terceiros, que muda sem aviso; não serve de base para aula.
+
+⭐ O movimento da Aula 4 é o trio da Aula 3 (`Number` → `Velocity`) com o
+`Always` trocado por `Keyboard` e o `y` por `x`. `-3` vai para a esquerda, `3`
+para a direita. **Sem gravidade e sem atrito do ar — o painel de física do
+Flowlab não tem amortecimento — a nave NÃO PARA ao soltar a tecla.** Isso não é
+defeito: é o espaço, e a aula ensina a frear com a seta oposta.
+
+## 2r. ⚠️ Média não mede FLUXO CONSTANTE
+
+A prova da Aula 4 media a altura MÉDIA do vermelho para provar que os inimigos
+descem. Com o canhão soltando sem parar e os inimigos expirando sozinhos, a
+média entra em **regime** e fica parada: li `[622, 588, 615, 586, 600, 594, 598,
+612]` num jogo em que eles desciam a tela inteira. A prova reprovava o certo.
+
+⭐ A régua passou a ser a própria tela: o vermelho mais BAIXO tem de passar da
+metade do caminho entre onde o inimigo nasce e o pé da fase — e os dois extremos
+são lidos na hora (o pé da fase sai do retângulo da cor do céu, que é cor que a
+aula pinta).
+
 ## 3. As três armadilhas de FÍSICA que não aparecem no editor
 
 Todas custaram horas na Aula 3, e nenhuma dá erro em lugar nenhum:

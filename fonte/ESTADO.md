@@ -1,9 +1,14 @@
-# Estado do curso de Flowlab — 07-10-2026, madrugada
+# Estado do curso de Flowlab — 11-10-2026, madrugada
 
-**Três aulas no ar, e nesta noite a Aula 2 estava publicada com um defeito que
-nenhum guarda via: o boneco corria e não pulava.** A causa e o conserto estão
-abaixo, junto com tudo o mais que mudou — para a próxima sessão não redescobrir
-nada.
+**Quatro aulas construídas e verdes. A Aula 4 está COMMITADA mas NÃO ESTÁ NO
+AR:** o `main` está 21 commits à frente do `origin/main`, e o push não foi dado
+porque ele publicaria também o trabalho de sessões anteriores que o Julio ainda
+não revisou. Para pôr no ar: `git push origin main`.
+
+O que custou esta noite está no `PADRAO.md`, §2n a §2r — e o maior deles é o
+§2n: o remendo da bancada sumia por ordem de import e **todo arrasto ia para a
+tela de verdade**, em silêncio, com esse defeito latente também em `cap1`,
+`cap2` e `cap3`.
 
 ## O que está pronto
 
@@ -12,8 +17,20 @@ nada.
 | 1 | pega-moedas | boneco anda, moeda some | sim |
 | 2 | pulo e plataformas | 28 colunas, **câmera que segue**, céu azul, lava que reinicia | pulo 198 px · reinício · câmera (chão desliza 192 px, boneco varia 164) |
 | 3 | a lava que sobe | céu de noite, lava que sobe sozinha, estrela no alto | lava sobe 170 px · reinício · estrela pega |
+| 4 | nave e tiro | céu de espaço, nave que anda para os dois lados, tiro no espaço, canhão que solta inimigos, tiro que destrói | esquerda move 86 px e direita traz 123 de volta · espaço faz nascer tiro · inimigo desce 687 px sozinho |
 
-Aulas 4 a 12: planejadas em `PLANO.md`, não construídas.
+Aulas 5 a 12: planejadas em `PLANO.md`, não construídas.
+
+## Pendente para o Julio
+
+- **Push.** Nada da Aula 4 está no ar até `git push origin main` (21 commits).
+- **Placar.** A Aula 4 não tem pontuação: nunca foi ensinada no curso e pediria
+  `Number` + `Label` + a camada de UI — 3 a 4 passos e uma quarta ideia nova.
+  Pergunta aberta: esticar a aula para ~60 min ou deixar o placar para uma aula
+  própria?
+- **Jogos de rascunho.** As corridas desta noite deixaram vários jogos novos na
+  conta. Só `fonte/aula4/jogo.txt` é o da aula; o `apaga_jogo.py` recusa apagar
+  qualquer id que esteja num `aulaN/jogo.txt`. Não apaguei nenhum sem pedir.
 
 ## ⚠️ O defeito da noite: o céu azul desmarcava `movable`
 
