@@ -53,6 +53,17 @@ def main():
         erros.append("a sabotagem nao reproduziu o defeito: esta prova nao "
                      "esta medindo o que diz medir")
 
+    # ── o PONTO DECIMAL que o tesseract come ──────────────────────────
+    # Medido ao vivo: `34.4` veio como `344` e a conferencia reprovou uma
+    # densidade certa. Este painel sempre mostra uma casa decimal.
+    for texto, esperado in (("34.4", 34.4), ("344", 34.4), ("100.0", 100.0),
+                            ("1000", 100.0), ("00", 0.0), ("1", None),
+                            ("abc", None)):
+        v = comum._numero_do_painel(texto)
+        print(f"  texto {texto!r:8} -> {v}   (esperado {esperado})")
+        if v != esperado:
+            erros.append(f"_numero_do_painel({texto!r}) deu {v}, esperava {esperado}")
+
     # ── CONTROLE: rotulo que nao existe devolve None, nao um numero qualquer ──
     nada = comum.le_numero_do_painel("velocidade da luz", arquivo=FOTO)
     print(f"rotulo inexistente: {nada}  (esperado None)")

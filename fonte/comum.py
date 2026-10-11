@@ -439,11 +439,33 @@ def le_numero_do_painel(rotulo, arquivo=None, folga=22):
         dx = x - p[0]
         if not (0 < dx <= LARGURA_LINHA_PAINEL):
             continue
-        try:
-            candidatos.append((dx, float(t.strip().replace(",", "."))))
-        except ValueError:
-            continue
+        v = _numero_do_painel(t)
+        if v is not None:
+            candidatos.append((dx, v))
     return min(candidatos)[1] if candidatos else None
+
+
+def _numero_do_painel(texto):
+    """O numero de uma linha do painel de fisica, com o PONTO recuperado.
+
+       Este painel mostra SEMPRE uma casa decimal (34.4, 0.0, 100.0) — nunca um
+       inteiro pelado. E o tesseract come o ponto: medido ao vivo, `34.4` veio
+       como `344` e a conferencia reprovou uma densidade certa. Como o formato
+       e conhecido, texto sem ponto se le com a ultima casa como decimal.
+
+       Isto e o mesmo motivo de `blocos.le_valor` existir: nesta interface o
+       ponto decimal e um quadradinho de poucos pixels, e o OCR o perde."""
+    t = texto.strip().replace(",", ".").rstrip("%")
+    if not t or not all(c.isdigit() or c == "." for c in t):
+        return None
+    if "." in t:
+        try:
+            return float(t)
+        except ValueError:
+            return None
+    if len(t) < 2:
+        return None
+    return float(t[:-1] + "." + t[-1])
 
 
 def arrasta_slider(rotulo, ate_direita=True):
