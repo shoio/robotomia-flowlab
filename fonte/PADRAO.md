@@ -617,6 +617,20 @@ pela cor da grama, e o desenho não tinha sido aplicado (ficou o losango padrão
 O rastreio deu `0` no editor E no jogo — **zero nos dois lados é sintoma de
 instrumento cego, não de prova**. Quem decidiu foi o olho.
 
+## 2v. ⛔ O `Alert` ESCURECE a tela e não desenha a caixa
+
+Medido na Aula 3 e quase repetido na Aula 6: na página do jogo, o `Alert`
+escurece tudo e **não desenha a caixa dentro do canvas**. A criança encosta na
+estrela e vê a tela apagar, sem uma palavra.
+
+⭐ Fim de jogo que FUNCIONA é a estrela que **some** — `Collision` +
+`Destroyer`, a dupla da moeda da Aula 1, já provada, e que diz "peguei" sem
+ambiguidade.
+
+Este fato estava escrito só num comentário dentro do `cap3.py`, e por isso eu
+cheguei a escrever a Aula 6 inteira com `Alert` antes de topar com ele. Fato que
+vale para o curso todo mora aqui, não dentro de uma captura.
+
 ## 3. As três armadilhas de FÍSICA que não aparecem no editor
 
 Todas custaram horas na Aula 3, e nenhuma dá erro em lugar nenhum:
