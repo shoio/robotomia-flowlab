@@ -495,6 +495,78 @@ metade do caminho entre onde o inimigo nasce e o pé da fase — e os dois extre
 são lidos na hora (o pé da fase sai do retângulo da cor do céu, que é cor que a
 aula pinta).
 
+## 2s. As peças da Aula 5, medidas antes de desenhar a aula
+
+Protótipo: `3155537`. Tudo abaixo foi visto na tela, não deduzido.
+
+**A palheta inteira, por categoria** (o que existe de verdade):
+
+- `Logic & Math`: `Number`, `Expression`, `Global Variable`, `Object Variable`,
+  `Ease`, **`Random`**, `Repeater`, `Filter`, `Switch`, `Toggle Switch`,
+  `Router`, `Logic Gate`, `Custom Behavior`
+- `Properties`: `Position`, `Rotation`, `Alpha`, `Size`, `Enabled`, `Animation`,
+  `Velocity`, `Spin`, `Material`, `Flip`, `Extractor`, `Display Order`,
+  `Shader`, `Blending`
+- `Components`: `Sound`, `Emit`, `Spawn`, `Attacher`, `Physics Joint`,
+  `Proximity`, `Push`, `Motor`, `Spin Motor`, `Impulse`, `PointAt`,
+  `Destroyer`, `Camera`, `Message`, `RayCast`
+- **`GUI`: `Alert`, `Bar`, `Label`, `Cursor`** ← o placar mora aqui
+- `Game Flow`: `Pause Game`, `Load Level`, `Restart Game`, `Fetch URL`,
+  `Save Value`, `Leaderboard`, `Achievement`, `Level Physics`, `User Info`,
+  `Clipboard`, `Full Screen`, `Cloud Game Save`
+
+**✅ O PLACAR, provado em jogo.** `Keyboard.down → Number.+` e
+`Number.out → Label.text`. Com o `Number` em 1, três toques no espaço deixaram o
+`Label` mostrando **4**: cada pulso no pino `+` **soma 1** (não soma o próprio
+valor — seria 8). E o `out` do `Number` atualiza o `Label` sozinho, sem precisar
+disparar o `get`. Para um placar, o `Number` começa em **0**.
+
+**O `Label`:** entradas `text`, `alpha`, `x`, `y` (e as mesmas quatro na saída).
+O painel tem caixa de texto, cor do texto e do contorno, fonte, alinhamento e
+réguas de `size`, `weight`, `alpha`, `outline`, `spacing`, mais `max width` e
+`attach to object`. **`size` nasce em 10, que é pequeno** — placar pede aumentar.
+
+⚠️ **O `Label` ESCREVE O PRÓPRIO TEXTO DENTRO DA FASE**, em letra grande. Um
+`Label` recém-solto desenha a palavra "Label" no nível, e `acha_bloco("Label")`
+casa com ELA, não com o título do bloco — medido: devolveu `x=959` com o bloco
+em `x=1460`. Procure sempre com `regiao=` fora do retângulo do nível.
+
+**O `Random`:** entradas `min`, `max`, `new`; saída `out`. Nasce com faixa
+`0-10`. Quem pede número novo é o pulso em `new`.
+
+**⛔ O `Impulse` NÃO MOVEU NADA, e o `Velocity` moveu.** Mesmo objeto, mesma
+mesa, mesmo fio no pino `y`, com `movable` marcado e gravidade ligada (o boneco
+caía e parava no chão, então era móvel). Com `Keyboard → Number(-25) → Impulse.y`
+a leitura foi `906, 906, 906, 906` — parado. Trocando só o bloco final por
+`Velocity.y`: `906 → 692 → 597 → 576` (subiu **330 px**) e **voltou a 906** em
+1,5 s, puxado pela gravidade. É exatamente a sensação de Flappy, e de quebra o
+pulo da Aula 5 fica sendo **o mesmo trio da Aula 3** — zero peça nova.
+
+**✅ A ALTURA SORTEADA, provada com número.** No `Fogo` (o obstáculo):
+`Once.out → Random.new` e `Random.out → Position.+y`. O `+y` é DESLOCAMENTO, e
+por isso não exige saber coordenada nenhuma da fase — cada cópia emitida nasce
+no soltador e desce um tanto sorteado. Medido com o jogo rodando: o topo do mais
+alto ficou entre 224 e 295, o pé do mais baixo entre 671 e 911, **687 px de
+espalhamento**, variando a cada amostra.
+
+⚠️ **O `Random` nasce em `0-10`**, que desloca dez pixels e não dá para ver. O
+`Max value` fica na linha ABAIXO do rótulo (o `campo_ao_lado` escrevia no vazio
+e lia `['|']`): use `campo_abaixo("max value", 600)`. A conferência mais barata é
+o próprio bloco, que passa a mostrar **`0-600`** embaixo do dado.
+
+⛔ **E a armadilha que eu quase registrei como verdade:** na primeira foto os
+fogos apareciam em alturas diferentes e eu dei o sorteio por provado. Olhando de
+novo, os mais à esquerda (os mais ANTIGOS) estavam mais baixos e os recém-soltos
+no alto — uma parábola de queda, não sorteio. Fui conferir a física do `Fogo` e
+`affected by gravity` estava **desmarcado**, então nem a parábola explicava. O
+`Random` estava em 0-10 o tempo todo: a figura concordava com a minha hipótese
+pelo motivo errado. Só o número (687 px, variando) provou alguma coisa.
+
+**⚠️ Pássaro com gravidade e SEM CHÃO sai da fase antes de a criança reagir.**
+Medido: cinco segundos depois do Play a tela já estava vazia, e o rastreio
+devolvia `None` em dez amostras seguidas. A Aula 5 precisa de chão — e ele ainda
+serve de fim de jogo.
+
 ## 3. As três armadilhas de FÍSICA que não aparecem no editor
 
 Todas custaram horas na Aula 3, e nenhuma dá erro em lugar nenhum:

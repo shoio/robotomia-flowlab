@@ -391,6 +391,12 @@ PORTAS = {
     "Destroyer": {"esq": ["in"],                   "dir": ["out"]},
     "Collision": {"esq": [],                       "dir": ["hit"]},
     "Keyboard":  {"esq": [],                       "dir": ["up", "down"]},
+    "Label":     {"esq": ["text", "alpha", "x", "y"],
+                  "dir": ["text", "alpha", "x", "y"]},
+    "Random":    {"esq": ["min", "max", "new"],    "dir": ["out"]},
+    "Position":  {"esq": ["x", "y", "maisx", "maisy"], "dir": ["x", "y"]},
+    "Once":      {"esq": [],                       "dir": ["out"]},
+    "Impulse":   {"esq": ["x", "y", "forward"],    "dir": ["out"]},
     "Number":    {"esq": ["in"],                   "dir": ["out"]},
     "Label":     {"esq": ["text", "show", "hide"], "dir": ["out"]},
     "Mailbox":   {"esq": [],                       "dir": ["out"]},
@@ -872,6 +878,28 @@ DESLOC = {
                  "dir": {"click": (247, 65)}},
     # medidos no rascunho da Aula 4
     "Keyboard": {"esq": {}, "dir": {"down": (245, 43), "up": (245, 85)}},
+    # ── as tres pecas da Aula 5, medidas na foto da mesa ──
+    # ⚠️ O `Label` ESCREVE O PROPRIO TEXTO NA FASE: um `Label` recem-solto
+    # desenha a palavra "Label" em letra grande dentro do retangulo do nivel, e
+    # `acha_bloco("Label")` casa com ELA, nao com o titulo do bloco (medido:
+    # devolveu x=959 quando o bloco estava em x=1460). Procure sempre com
+    # `regiao=` fora do retangulo do nivel.
+    "Label":   {"esq": {"text": (-30, 38), "alpha": (-30, 74),
+                        "x": (-30, 110), "y": (-30, 146)},
+                "dir": {"text": (242, 38), "alpha": (242, 74),
+                        "x": (242, 110), "y": (242, 146)}},
+    # MEDIDOS PELA MAQUINA (`mede_pinos`), nao a olho. Os que eu tinha estimado
+    # de um recorte erravam ate 26 px — o `Once.out` ficava em (254,31) quando
+    # esta em (244,57) — e um fio que erra o pino nao da erro: ele simplesmente
+    # nao nasce.
+    "Random":  {"esq": {"min": (-27, 41), "max": (-27, 79), "new": (-27, 117)},
+                "dir": {"out": (244, 77)}},
+    "Once":    {"esq": {}, "dir": {"out": (244, 57)}},
+    "Position": {"esq": {"x": (-27, 37), "y": (-27, 73),
+                         "maisx": (-27, 109), "maisy": (-27, 145)},
+                 "dir": {"x": (244, 61), "y": (244, 119)}},
+    "Impulse": {"esq": {"x": (-32, 42), "y": (-32, 78), "forward": (-32, 114)},
+                "dir": {"out": (242, 42), "out2": (242, 78), "out3": (242, 114)}},
     "MouseClick": {"esq": {}, "dir": {"down": (245, 43), "up": (245, 85)}},
     "Timer":    {"esq": {"delay": (-28, 39), "reset": (-28, 76), "start": (-28, 114)},
                  "dir": {"out": (247, 50), "done": (247, 103)}},
@@ -989,6 +1017,49 @@ def _ha_fio(arquivo, p1, p2, folga=34, claro=200, minimo=40, blocos_=()):
         if int((rec > claro).sum()) < minimo:
             return False
     return True
+
+
+def mede_pinos(bloco, arquivo=None):
+    """Os pinos de um bloco, MEDIDOS na tela, em deslocamento relativo ao titulo.
+
+       Serve para escrever uma linha nova de `DESLOC` sem estimar nada a olho.
+       Estimar de um recorte ja me custou uma noite: um deslocamento 26 px fora
+       faz `liga_fixo` dizer "nenhum fio apareceu", que e o mesmo erro de dez
+       outras causas.
+
+       Devolve a lista ordenada da esquerda para a direita, de cima para baixo.
+       Os de x negativo sao ENTRADAS; os de x ~+244, SAIDAS."""
+    import numpy as _np
+    a = arquivo or nav.captura("/tmp/_bl_pinos.png")[0]
+    im = _np.asarray(Image.open(a).convert("RGB"), dtype=int)
+    bx, by = bloco.x, bloco.y
+    y0, y1 = max(0, by - 60), min(im.shape[0], by + 230)
+    x0, x1 = max(0, bx - 80), min(im.shape[1], bx + 330)
+    rec = im[y0:y1, x0:x1]
+    m = (rec[:, :, 0] > 195) & (rec[:, :, 1] > 195) & (rec[:, :, 2] > 195)
+    vis = _np.zeros(m.shape, bool)
+    achados = []
+    for i in range(m.shape[0]):
+        for j in range(m.shape[1]):
+            if not m[i, j] or vis[i, j]:
+                continue
+            pilha, pix = [(i, j)], []
+            vis[i, j] = True
+            while pilha:
+                p, q = pilha.pop(); pix.append((p, q))
+                for dp, dq in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+                    np_, nq = p + dp, q + dq
+                    if 0 <= np_ < m.shape[0] and 0 <= nq < m.shape[1] \
+                       and m[np_, nq] and not vis[np_, nq]:
+                        vis[np_, nq] = True; pilha.append((np_, nq))
+            if not (120 <= len(pix) <= 900):
+                continue
+            ys = [p[0] for p in pix]; xs = [p[1] for p in pix]
+            alt, larg = max(ys) - min(ys) + 1, max(xs) - min(xs) + 1
+            if 0.7 <= alt / larg <= 1.4:          # bolinha e REDONDA
+                achados.append((int(x0 + sum(xs) / len(xs) - bx),
+                                int(y0 + sum(ys) / len(ys) - by)))
+    return sorted(achados, key=lambda p: (p[0], p[1]))
 
 
 def liga_fixo(origem, pino_saida, destino, pino_entrada):
@@ -1337,6 +1408,26 @@ def escolhe_na_lista(rotulo, nome):
     # O seletor, e nao o item da lista: ele aparece nos DOIS quadros, e o item
     # so existe num estado que nenhum quadro mostra.
     return p
+
+
+def campo_abaixo(rotulo, valor, dy=55):
+    """Escreve num campo que fica ABAIXO do seu rotulo, e confere.
+
+       O `campo_ao_lado` serve aos campos do `Emitter`, que ficam na MESMA
+       linha do rotulo. Ja o `Max value` do `Random` fica na linha de baixo:
+       ali o `campo_ao_lado` escrevia no vazio e lia `['|']` de volta."""
+    a, _ = nav.captura("/tmp/_bl_abaixo.png")
+    p = nav.acha_texto(rotulo, arquivo=a)
+    if not p:
+        raise RuntimeError(f"nao achei o rotulo '{rotulo}' no painel")
+    nav.clique_seguro(p[0] + 10, p[1] + dy); time.sleep(0.5)
+    rs.tecla(0, cmd=True); time.sleep(0.25)
+    rs.digita_teclas(str(valor)); time.sleep(0.6)
+    b, _ = nav.captura("/tmp/_bl_abaixo2.png")
+    if not rs.tem_texto(str(valor), arquivo=b):
+        raise RuntimeError(f"escrevi '{valor}' em '{rotulo}' e o painel nao o mostra")
+    print(f"   {rotulo} = {valor}", flush=True)
+    return True
 
 
 def marca_do_bloco(rotulo, quero=True, folga=150):
