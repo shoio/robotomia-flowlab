@@ -410,6 +410,53 @@ def marca_caixa(rotulo, quero=True):
     raise RuntimeError(f"nao consegui deixar '{rotulo}' como {quero}")
 
 
+def onde_estou(foto=None):
+    """As cinco perguntas que eu sempre faco quando uma etapa falha, respondidas
+       de uma vez — em TEXTO, nao em imagem.
+
+       Por que existe: toda diagnose minha comecava igual — tirar uma foto,
+       olhar, cortar, olhar de novo. Imagem e a coisa mais cara que eu leio, e
+       as respostas quase sempre cabiam numa linha: em que tela estou, tem
+       dialogo por cima, tem roda aberta, que cor tem a folha, qual e o
+       endereco. Com isto impresso no erro, a maioria das diagnoses nao precisa
+       de foto nenhuma."""
+    import editor as _ed
+    linhas = []
+    try:
+        a = foto or nav.captura("/tmp/_onde.png")[0]
+    except Exception as e:
+        return [f"nem consegui fotografar: {e}"]
+    linhas.append(f"foto           : {a}")
+    try:
+        linhas.append(f"endereco       : {nav.endereco()}")
+    except Exception:
+        pass
+    try:
+        vistas = _ed.na_tela("library", "game levels", "editor", "details",
+                             "triggers", "behavior bundles", "edit sprite",
+                             "collision shape", "create", "cancel",
+                             "recover unsaved work", "play")
+        linhas.append(f"rotulos na tela: {vistas}")
+        linhas.append("   tela         : " +
+                      ("MESA DE BLOCOS" if "triggers" in vistas else
+                       "PAINEL DO OBJETO" if "edit sprite" in vistas else
+                       "FISICA" if "collision shape" in vistas else
+                       "PAGINA DO JOGO" if "details" in vistas else
+                       "EDITOR" if "game levels" in vistas else "nao sei"))
+        if "recover unsaved work" in vistas:
+            linhas.append("   ⚠️ o MODAL `Recover unsaved work` esta aberto — "
+                          "ele bloqueia clique e arrasto")
+        if "create" in vistas and "cancel" in vistas:
+            linhas.append("   ⚠️ a RODA `Create/Cancel` esta aberta por cima")
+    except Exception as e:
+        linhas.append(f"rotulos na tela: nao consegui ler ({e})")
+    try:
+        linhas.append(f"cor da folha   : {_ed.cor_da_folha(a)}")
+    except Exception:
+        linhas.append("cor da folha   : nao achei a folha do nivel")
+    return linhas
+
+
 LARGURA_LINHA_PAINEL = 700   # do rotulo ao numero da mesma linha, medido
 
 

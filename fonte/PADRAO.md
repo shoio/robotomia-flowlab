@@ -355,6 +355,49 @@ armadilha e vira **conteúdo**: a criança marca a caixinha e vê o tiro sair.
 
 ---
 
+## 2m. ⚙️ Como se roda uma aula sem queimar tempo e token
+
+Quatro regras, cada uma de um custo medido:
+
+**1. Toda etapa que ESCREVE lê de volta, na hora.** As duas recapturas
+inteiras da Aula 2 tiveram a mesma forma: uma escrita silenciosa que só
+apareceu no fim, ou depois de publicada. Uma leitura de volta custa seis
+segundos. Já estão com ela: `cor_do_ceu` (mede a cor da folha), `marca_caixa`
+(lê a cor da caixinha), `arrasta_slider`, o `density`, `nomeia_tipo`,
+`campo_do_painel`, `liga_fixo`, `solta`.
+
+⚠️ **E o guarda tem de ser testado nos DOIS sentidos.** A primeira versão da
+leitura do `campo_do_painel` reprovou um `right` que estava escrito **27** na
+tela, certinho — guarda que reprova o caso certo aborta uma captura boa, e é
+pior que guarda nenhum.
+
+**2. A captura é assíncrona e muda.**
+
+```
+python3 fonte/roda_aula.py 4           # a aula inteira
+python3 fonte/roda_aula.py 4 prova     # de uma etapa em diante
+```
+
+Ele roda a captura, os clipes, os JPEG, os dois guardas e a folha de contato, e
+imprime **um veredito** com as medidas que a prova tirou em jogo. Não se
+acompanha pelo caminho: numa noite de trabalho eu gastei uma fatia enorme do
+orçamento olhando um processo de vinte minutos avançar, e nenhuma dessas
+leituras mudou nada do que eu fiz depois.
+
+**3. Quando algo falha, a diagnose vem em TEXTO.** `comum.onde_estou()`
+responde de uma vez: em que tela estou, tem diálogo por cima, tem roda aberta,
+que cor tem a folha, qual é o endereço. Está ligado no `main` das capturas, e
+sai junto com o erro. Imagem é a coisa mais cara que eu leio — a maioria das
+diagnoses não precisa de nenhuma.
+
+**4. Aula nova importa `aula_comum.py`.** `cria_objeto`, `da_fisica`,
+`confere_fisica`, `abre_mesa`/`fecha_mesa` — todos já com leitura de volta. As
+Aulas 1 a 3 **não** foram migradas de propósito: estão capturadas, provadas e
+publicadas, e refatorar forma aprovada exigiria provar neutralidade, que aqui
+custa uma recaptura inteira. Quem mexer numa delas na próxima vez, migra.
+
+---
+
 ## 3. As três armadilhas de FÍSICA que não aparecem no editor
 
 Todas custaram horas na Aula 3, e nenhuma dá erro em lugar nenhum:

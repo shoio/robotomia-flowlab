@@ -201,5 +201,14 @@ def main(modulo):
     fns = ETAPAS if not alvo else ETAPAS[nomes.index(alvo):]
     for f in fns:
         print(f"== {f.__name__} ==", flush=True)
-        f()
+        try:
+            f()
+        except Exception:
+            # A DIAGNOSE SAI JUNTO COM O ERRO, em texto. Sem isto toda
+            # investigacao minha comecava com uma foto, e foto e a coisa mais
+            # cara que eu leio.
+            print(f"\n⛔ a etapa `{f.__name__}` parou. Onde eu estava:", flush=True)
+            for l in comum.onde_estou():
+                print("   " + l, flush=True)
+            raise
     print("== fim ==", flush=True)

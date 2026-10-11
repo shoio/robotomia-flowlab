@@ -739,7 +739,13 @@ def main():
     fns = ETAPAS if not alvo else ETAPAS[nomes.index(alvo):]
     for f in fns:
         print(f"== {f.__name__} ==", flush=True)
-        f()
+        try:
+            f()
+        except Exception:
+            print(f"\n⛔ a etapa `{f.__name__}` parou. Onde eu estava:", flush=True)
+            for l in comum.onde_estou():
+                print("   " + l, flush=True)
+            raise
     print("== fim ==", flush=True)
 
 
