@@ -18,14 +18,14 @@ PLANO = [
     (2,  "Pulo e plataformas", "Três degraus, uma estrela no alto e lava embaixo. Caiu, recomeça.", True),
     (3,  "A lava que sobe", "A lava não fica parada: ela sobe sozinha. Suba a escada antes.", True),
     (4,  "Nave e tiro", "Uma nave que atira e inimigos que descem sozinhos.", True),
-    (5,  "Um botao so", "Um passarinho que so sabe subir, bolas de fogo em alturas sorteadas e um placar na tela.", True),
-    (6,  "Chave e porta", "Labirinto com chave: o jogo passa a ter memoria.", False),
-    (7,  "Empurra-blocos", "Quebra-cabeca: empurrar caixas ate os alvos.", False),
-    (8,  "Contra o relogio", "Percurso cronometrado, com recorde da partida.", False),
+    (5,  "Um botão só", "Um passarinho que só sabe subir, bolas de fogo em alturas sorteadas e um placar na tela.", True),
+    (6,  "Chave e porta", "Labirinto com chave: o jogo passa a ter memória.", False),
+    (7,  "Empurra-blocos", "Quebra-cabeça: empurrar caixas até os alvos.", False),
+    (8,  "Contra o relógio", "Percurso cronometrado, com recorde da partida.", False),
     (9,  "Inimigo que persegue", "IA simples, vida e barra de vida.", False),
-    (10, "Menu, fases e fim de jogo", "Tela de titulo, tres fases e tela de vitoria.", False),
-    (11, "Som, animacao e brilho", "O mesmo jogo, mas com vida.", False),
-    (12, "Projeto livre e mostra", "O jogo do aluno, publicado, com link para a familia.", False),
+    (10, "Menu, fases e fim de jogo", "Tela de título, três fases e tela de vitória.", False),
+    (11, "Som, animação e brilho", "O mesmo jogo, mas com vida.", False),
+    (12, "Projeto livre e mostra", "O jogo do aluno, publicado, com link para a família.", False),
 ]
 
 
