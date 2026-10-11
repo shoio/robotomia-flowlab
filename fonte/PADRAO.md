@@ -567,6 +567,22 @@ Medido: cinco segundos depois do Play a tela já estava vazia, e o rastreio
 devolvia `None` em dez amostras seguidas. A Aula 5 precisa de chão — e ele ainda
 serve de fim de jogo.
 
+## 2t. ⚠️ Sonda com `pasta("aulaN")` ESCREVE dentro da aula N
+
+Minhas sondas da Aula 5 começavam com `comum.pasta("aula4")` — copiei o
+cabeçalho da aula anterior e não troquei. Elas mediram no protótipo, mas
+gravaram as cores de `Passaro`, `Chao`, `Fogo` e `Soltador` dentro do
+`fonte/aula4/cores.json`, de uma aula **já publicada**.
+
+Nada na tela acusa: a página da Aula 4 não muda, os guardas passam, e o
+`git status` só diz "modificado". O estrago apareceria mais tarde, numa
+recaptura da Aula 4: `rastreio("Nave", …)` teria de separar a nave de um
+pássaro que não existe naquele jogo, e poderia recusar uma cor boa.
+
+⭐ Sonda mede em PROTÓTIPO e não deve escrever em pasta de aula. Antes de
+commitar depois de uma noite de sondas, `git status` nas pastas `aulaN/` —
+arquivo de aula antiga modificado sem eu ter capturado aquela aula é sintoma.
+
 ## 3. As três armadilhas de FÍSICA que não aparecem no editor
 
 Todas custaram horas na Aula 3, e nenhuma dá erro em lugar nenhum:
