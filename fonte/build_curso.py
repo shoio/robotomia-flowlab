@@ -17,7 +17,7 @@ PLANO = [
     (1,  "Pega-moedas", "Um boneco que corre e uma moeda que some. O primeiro jogo.", True),
     (2,  "Pulo e plataformas", "Três degraus, uma estrela no alto e lava embaixo. Caiu, recomeça.", True),
     (3,  "A lava que sobe", "A lava não fica parada: ela sobe sozinha. Suba a escada antes.", True),
-    (4,  "Nave e tiro", "Uma nave que atira e inimigos que descem sozinhos.", True),
+    (4,  "Nave e tiro", "Uma nave que atira e inimigos que descem sozinhos.", False),
     (5,  "Um botao so", "O passaro entre os canos: acaso e dificuldade que cresce.", False),
     (6,  "Chave e porta", "Labirinto com chave: o jogo passa a ter memoria.", False),
     (7,  "Empurra-blocos", "Quebra-cabeca: empurrar caixas ate os alvos.", False),
@@ -105,7 +105,15 @@ def monta():
         elif os.path.exists(alvo):
             os.remove(alvo)
     prontas = []
-    for construtor in (aula1, aula2, aula3, aula4):
+    # A BANDEIRA `pronta` do PLANO manda nos DOIS lugares: no cartao do indice
+    # e em quem e montado. Eu liguei a Aula 4 na lista do build antes de a
+    # captura dela existir, e o build inteiro travou no guarda — com as tres
+    # aulas que estavam no ar reféns de uma quarta que ainda nao tinha foto.
+    construtores = {1: aula1, 2: aula2, 3: aula3, 4: aula4}
+    for n, _tit, _sub, pronta in PLANO:
+        if not pronta or n not in construtores:
+            continue
+        construtor = construtores[n]
         a = construtor()
         pasta = os.path.join(SAIDA, a["slug"])
         os.makedirs(os.path.join(pasta, "fotos"), exist_ok=True)

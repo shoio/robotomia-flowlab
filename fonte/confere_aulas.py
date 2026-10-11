@@ -20,9 +20,13 @@ DELEGA = ["como na aula passada", "igual ao de cima", "use a receita",
 def confere(aulas=None):
     erros = []
     if aulas is None:
+        # so as aulas que o PLANO marca como PRONTAS: aula escrita e ainda nao
+        # capturada reprovaria por "foto sumida" e travaria o build das outras.
         import conteudo_a1, conteudo_a2, conteudo_a3, conteudo_a4
-        aulas = [conteudo_a1.AULA, conteudo_a2.AULA, conteudo_a3.AULA,
-                 conteudo_a4.AULA]
+        import build_curso as _b
+        prontas = {n for n, _t, _s, p_ in _b.PLANO if p_}
+        aulas = [m.AULA for m in (conteudo_a1, conteudo_a2, conteudo_a3,
+                                  conteudo_a4) if m.AULA["n"] in prontas]
 
     for A in aulas:
         n, slug = A["n"], A["slug"]
