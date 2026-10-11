@@ -1,14 +1,11 @@
-# Estado do curso de Flowlab — 11-10-2026, madrugada
+# Estado do curso de Flowlab — 11-10-2026
 
-**Quatro aulas construídas e verdes. A Aula 4 está COMMITADA mas NÃO ESTÁ NO
-AR:** o `main` está 21 commits à frente do `origin/main`, e o push não foi dado
-porque ele publicaria também o trabalho de sessões anteriores que o Julio ainda
-não revisou. Para pôr no ar: `git push origin main`.
+**Cinco aulas no ar**, em https://shoio.github.io/robotomia-flowlab/ — conferido
+em produção, não só commitado.
 
-O que custou esta noite está no `PADRAO.md`, §2n a §2r — e o maior deles é o
-§2n: o remendo da bancada sumia por ordem de import e **todo arrasto ia para a
-tela de verdade**, em silêncio, com esse defeito latente também em `cap1`,
-`cap2` e `cap3`.
+O que custou a madrugada está no `PADRAO.md`, §2n a §2t. O maior é o §2n: o
+remendo da bancada sumia por ordem de import e **todo arrasto ia para a tela de
+verdade**, em silêncio, com o defeito latente também em `cap1`, `cap2` e `cap3`.
 
 ## O que está pronto
 
@@ -18,12 +15,14 @@ tela de verdade**, em silêncio, com esse defeito latente também em `cap1`,
 | 2 | pulo e plataformas | 28 colunas, **câmera que segue**, céu azul, lava que reinicia | pulo 198 px · reinício · câmera (chão desliza 192 px, boneco varia 164) |
 | 3 | a lava que sobe | céu de noite, lava que sobe sozinha, estrela no alto | lava sobe 170 px · reinício · estrela pega |
 | 4 | nave e tiro | céu de espaço, nave que anda para os dois lados, tiro no espaço, canhão que solta inimigos, tiro que destrói | esquerda move 86 px e direita traz 123 de volta · espaço faz nascer tiro · inimigo desce 687 px sozinho |
+| 5 | um botão só | passarinho com gravidade, chão, bolas de fogo em alturas sorteadas, fim de jogo e **placar na tela** | espaço levanta 331 px e a gravidade traz de volta · fogo separado por 653 px num mesmo quadro · placar sobe sozinho |
 
-Aulas 5 a 12: planejadas em `PLANO.md`, não construídas.
+Aulas 6 a 12: planejadas em `PLANO.md`, não construídas.
 
 ## Pendente para o Julio
 
-- **Push.** Nada da Aula 4 está no ar até `git push origin main` (21 commits).
+- ~~Push~~ **feito em 11-10**: as aulas 4 e 5 estão no ar e conferidas em
+  produção (a home diz "5 de 12 aulas no ar").
 - ~~Placar~~ **decidido em 11-10: o placar vai para a Aula 5**, que já promete
   "ponto a cada passagem" — lá ele é a ideia NOVA da aula (`Number` + `Label` e
   a camada de GUI), e não a quarta ideia espremida numa aula cheia. A Aula 4
