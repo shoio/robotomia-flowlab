@@ -395,12 +395,15 @@ PORTAS = {
                   "dir": ["text", "alpha", "x", "y"]},
     "Random":    {"esq": ["min", "max", "new"],    "dir": ["out"]},
     "Position":  {"esq": ["x", "y", "maisx", "maisy"], "dir": ["x", "y"]},
-    "Once":      {"esq": [],                       "dir": ["out"]},
-    "Impulse":   {"esq": ["x", "y", "forward"],    "dir": ["out"]},
+    # ⚠️ `Once`, `Impulse` e `Label` ESTAVAM REPETIDOS AQUI, e em Python a
+    # segunda chave apaga a primeira sem avisar. As que venciam eram as
+    # escritas de cabeca: o `Label` ficava com `text/show/hide`, quando na tela
+    # ele tem `text/alpha/x/y` dos DOIS lados, e o `Impulse` perdia duas
+    # saidas. As medidas estao acima; estas foram apagadas, e a
+    # `prova_tabela_sem_duplicata` passa a reprovar o build se voltarem.
     "Number":    {"esq": ["in"],                   "dir": ["out"]},
-    "Label":     {"esq": ["text", "show", "hide"], "dir": ["out"]},
     "Mailbox":   {"esq": [],                       "dir": ["out"]},
-    "Message":   {"esq": ["send"],                 "dir": ["out"]},
+    "Message":   {"esq": ["send"],                 "dir": ["done"]},
     "Spawn":     {"esq": ["spawn"],                "dir": ["out"]},
     "Sound":     {"esq": ["play", "stop"],         "dir": ["done"]},
     "Camera":    {"esq": ["set x", "set y", "move x", "move y", "zoom",
@@ -895,6 +898,8 @@ DESLOC = {
     "Random":  {"esq": {"min": (-27, 41), "max": (-27, 79), "new": (-27, 117)},
                 "dir": {"out": (244, 77)}},
     "Once":    {"esq": {}, "dir": {"out": (244, 57)}},
+    "Message": {"esq": {"send": (-27, 55)}, "dir": {"done": (244, 55)}},
+    "Mailbox": {"esq": {}, "dir": {"out": (244, 57)}},
     "Position": {"esq": {"x": (-27, 37), "y": (-27, 73),
                          "maisx": (-27, 109), "maisy": (-27, 145)},
                  "dir": {"x": (244, 61), "y": (244, 119)}},
@@ -1381,18 +1386,24 @@ def campo_ao_lado(rotulo, valor, folga=230):
     return campo
 
 
-def escolhe_na_lista(rotulo, nome):
+def escolhe_na_lista(rotulo, nome, dy=0):
     """Abre um seletor do painel de um bloco e escolhe um item pelo nome.
 
        Serve ao `Object to Emit` do `Emitter` e a lista de tipos do
        `Collision`. Devolve so depois de CONFERIR que o seletor passou a
        mostrar o nome escolhido — clicar na lista e sair sem olhar ja me
-       deixou um `Emitter` apontado para o tipo errado."""
+       deixou um `Emitter` apontado para o tipo errado.
+
+       `dy` desce do rotulo ate o seletor. Ha duas geometrias de painel no
+       Flowlab: no `Emitter` o seletor fica na MESMA linha do rotulo (dy=0), e
+       no `Send To` do `Message` ele fica na linha de BAIXO — clicar no rotulo
+       ali nao abre lista nenhuma, e o erro que sobra ("nao achei na lista")
+       manda procurar o defeito na lista, que nunca chegou a abrir."""
     a, _ = nav.captura("/tmp/_bl_lista0.png")
     p = nav.acha_texto(rotulo, arquivo=a)
     if not p:
         raise RuntimeError(f"nao achei o seletor '{rotulo}' no painel")
-    rs.clique_img(p[0], p[1], escala=2.0, janela=nav.janela()); time.sleep(1.8)
+    rs.clique_img(p[0], p[1] + dy, escala=2.0, janela=nav.janela()); time.sleep(1.8)
     b, _ = nav.captura("/tmp/_bl_lista1.png")
     q = nav.acha_texto(nome.lower(), arquivo=b)
     if not q:
@@ -1402,6 +1413,7 @@ def escolhe_na_lista(rotulo, nome):
     if not rs.tem_texto(nome, arquivo=c):
         raise RuntimeError(f"escolhi '{nome}' em '{rotulo}' e o painel nao o mostra")
     print(f"   {rotulo} = {nome}", flush=True)
+    p = (p[0], p[1] + dy)
     # DEVOLVE O PONTO DO SELETOR, nao `True`: quando esta chamada e o gesto de
     # um clipe, e este ponto que vira a seta. Com `True` o alvo ficava em
     # (0,0) e a seta apontava para o canto da tela — o guarda dos alvos pegou.

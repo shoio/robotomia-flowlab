@@ -802,6 +802,24 @@ def _por_linha(itens):
     return saida
 
 
+def _corte_de_ocr(alvo, k):
+    """O prefixo de `k` letras parece CORTE DE OCR, e nao outro rotulo?
+
+       O ramo do prefixo existe para um caso so: o tesseract come o FIM de um
+       rotulo comprido — `affected by gravity` chega como `affected by gravi`.
+       Corte de OCR cai NO MEIO de uma palavra.
+
+       Prefixo que acaba exatamente onde acaba uma PALAVRA DO ALVO nao e corte:
+       e um rotulo mais curto, que por acaso comeca igual. Era assim que
+       `collision shape` casava com a palavra `Collision` da palheta — e o
+       `onde_estou` passou a me dizer que o painel de fisica estava aberto numa
+       tela em que ele nao estava. Diagnostico que mente custa mais caro que
+       diagnostico que falta: eu fui procurar o defeito num painel inexistente."""
+    if k >= len(alvo):
+        return True                      # o alvo inteiro sempre vale
+    return alvo[k] != " " and alvo[k - 1] != " "
+
+
 def _prefixo_cortado(junto, pedaco):
     """O trecho esta na linha E TERMINA onde a palavra termina?
 
@@ -881,7 +899,8 @@ def procura_forte(alvo, arquivo=None, regiao=None, psm="6", escada=ESCADA, exato
         if not exato:
             for junto, palavras in linhas:
                 pedaco = next((alvo_l[:k] for k in range(len(alvo_l), minimo - 1, -1)
-                               if _prefixo_cortado(junto, alvo_l[:k])), None)
+                               if _corte_de_ocr(alvo_l, k)
+                               and _prefixo_cortado(junto, alvo_l[:k])), None)
                 if pedaco:
                     return palavras_do_trecho(palavras, junto, pedaco)[0]
         # 2) palavra por palavra

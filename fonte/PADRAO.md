@@ -583,6 +583,40 @@ pássaro que não existe naquele jogo, e poderia recusar uma cor boa.
 commitar depois de uma noite de sondas, `git status` nas pastas `aulaN/` —
 arquivo de aula antiga modificado sem eu ter capturado aquela aula é sintoma.
 
+## 2u. As peças da Aula 6 (chave e porta), medidas
+
+Protótipo: `3155573`.
+
+**`Message`** (em `Components`): pinos `send` (entrada) e `done` (saída). O
+painel tem dois seletores — **`Message`**, que nasce em `Hello`, e **`Send To`**,
+que nasce em **`Myself`**.
+
+**`Mailbox`** (em `Triggers`): só a saída `out`. O painel tem um seletor só, o
+`Message`, que também nasce em `Hello`. ⭐ Como os dois já nascem combinados em
+`Hello`, a aula não precisa criar nome de recado nenhum.
+
+**`Send To` não tem opção de "todo mundo".** A lista inteira é `Choose objects`,
+`Myself`, `Last contacted object`, `Last raycast target`, `Last spawned object`,
+`All spawned objects`, `All attached objects`, `Last attached object`. Para a
+chave falar com a porta o caminho é `Choose objects`, que abre mais dois
+seletores: **`Select Type`** (escolhe-se `Porta`) e `Any Object`. Isso cobra o
+`Type` que o curso ensina desde a Aula 1 — bom para a aula.
+
+⚠️ **Geometria do painel:** o seletor do `Send To` fica na linha **de baixo** do
+rótulo, não ao lado. `escolhe_na_lista` ganhou `dy=` por isso; com `dy=0` o
+clique cai no rótulo, lista nenhuma abre, e o erro que sobra ("não achei na
+lista") manda procurar o defeito na lista.
+
+**✅ PROVADO:** `Once → Message(Hello, Choose objects → Select Type: Porta)` na
+chave, e `Mailbox(Hello) → Destroyer` na porta. No editor havia dois objetos; no
+jogo, depois do recado, só um — **a porta some**. O recado atravessa de um
+objeto para outro.
+
+⛔ E a medida errou de novo pelo mesmo motivo de sempre: eu rastreava a porta
+pela cor da grama, e o desenho não tinha sido aplicado (ficou o losango padrão).
+O rastreio deu `0` no editor E no jogo — **zero nos dois lados é sintoma de
+instrumento cego, não de prova**. Quem decidiu foi o olho.
+
 ## 3. As três armadilhas de FÍSICA que não aparecem no editor
 
 Todas custaram horas na Aula 3, e nenhuma dá erro em lugar nenhum:

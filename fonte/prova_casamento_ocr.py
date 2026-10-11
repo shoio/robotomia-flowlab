@@ -121,6 +121,44 @@ def main():
         erros.append("a segunda sabotagem nao reproduziu o defeito: o piso "
                      "sozinho deveria perder 'Flowlab Sprites'")
 
+    # ── 7. PREFIXO QUE ACABA NUMA PALAVRA DO ALVO NAO E CORTE DE OCR ──
+    #
+    # `collision shape` casava com a palavra `Collision` da palheta: a regra do
+    # prefixo aceita 60% do alvo terminando em fronteira de palavra, e
+    # `collision` e 9 de 15 letras. O `onde_estou` passou a dizer que o painel
+    # de fisica estava aberto numa tela em que ele nao estava, e eu fui
+    # procurar o defeito num painel inexistente.
+    #
+    # Corte de OCR cai NO MEIO de uma palavra (`affected by gravi`). Prefixo
+    # que acaba onde acaba uma palavra e outro rotulo, mais curto.
+    casos = [
+        ("collision shape",    "collision",          False),
+        ("collision shape",    "collision shape",    True),
+        ("affected by gravity", "affected by gravi", True),
+        ("flowlab sprites",    "flowlab sprites",    True),
+        ("game levels",        "new game",           False),
+        ("level 1",            "game levels",        False),
+    ]
+    for alvo, linha, espero in casos:
+        minimo = max(5, int(len(alvo) * 0.6))
+        achou = any(rs._corte_de_ocr(alvo, k)
+                    and rs._prefixo_cortado(linha, alvo[:k])
+                    for k in range(len(alvo), minimo - 1, -1))
+        print(f"linha {linha!r} casa com {alvo!r}? {achou}  (esperado {espero})")
+        if achou != espero:
+            erros.append(f"{alvo!r} contra a linha {linha!r}: li {achou}, "
+                         f"esperava {espero}")
+
+    # CONTROLE: sem a guarda nova, o primeiro caso volta a dar positivo. Sem
+    # isto a prova passaria mesmo que alguem apagasse `_corte_de_ocr`.
+    sem_guarda = any(rs._prefixo_cortado("collision", "collision shape"[:k])
+                     for k in range(15, 8, -1))
+    print(f"SABOTAGEM (sem `_corte_de_ocr`), 'collision shape' na linha "
+          f"'collision': {sem_guarda}  (esperado True — e o defeito)")
+    if not sem_guarda:
+        erros.append("a sabotagem do prefixo nao reproduziu o defeito: esta "
+                     "parte da prova nao esta medindo o que diz medir")
+
     if erros:
         for e in erros:
             print("  ERRO:", e)
