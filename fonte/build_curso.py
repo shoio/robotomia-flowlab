@@ -7,7 +7,7 @@
 import os, json, shutil
 from PIL import Image
 import gera_curso as G
-import conteudo_a1, conteudo_a2, conteudo_a3
+import conteudo_a1, conteudo_a2, conteudo_a3, conteudo_a4
 
 AQUI  = os.path.dirname(os.path.abspath(__file__))     # .../fonte
 SAIDA = os.path.dirname(AQUI)                          # a raiz do repositorio
@@ -17,7 +17,7 @@ PLANO = [
     (1,  "Pega-moedas", "Um boneco que corre e uma moeda que some. O primeiro jogo.", True),
     (2,  "Pulo e plataformas", "Três degraus, uma estrela no alto e lava embaixo. Caiu, recomeça.", True),
     (3,  "A lava que sobe", "A lava não fica parada: ela sobe sozinha. Suba a escada antes.", True),
-    (4,  "Nave e tiro", "Inimigos descendo, tiro que destroi, placar na tela.", False),
+    (4,  "Nave e tiro", "Uma nave que atira e inimigos que descem sozinhos.", True),
     (5,  "Um botao so", "O passaro entre os canos: acaso e dificuldade que cresce.", False),
     (6,  "Chave e porta", "Labirinto com chave: o jogo passa a ter memoria.", False),
     (7,  "Empurra-blocos", "Quebra-cabeca: empurrar caixas ate os alvos.", False),
@@ -32,6 +32,7 @@ PLANO = [
 def aula1(): return _de_conteudo(conteudo_a1)
 def aula2(): return _de_conteudo(conteudo_a2)
 def aula3(): return _de_conteudo(conteudo_a3)
+def aula4(): return _de_conteudo(conteudo_a4)
 
 
 def _de_conteudo(mod):
@@ -104,7 +105,7 @@ def monta():
         elif os.path.exists(alvo):
             os.remove(alvo)
     prontas = []
-    for construtor in (aula1, aula2, aula3):
+    for construtor in (aula1, aula2, aula3, aula4):
         a = construtor()
         pasta = os.path.join(SAIDA, a["slug"])
         os.makedirs(os.path.join(pasta, "fotos"), exist_ok=True)

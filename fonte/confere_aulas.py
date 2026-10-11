@@ -20,8 +20,9 @@ DELEGA = ["como na aula passada", "igual ao de cima", "use a receita",
 def confere(aulas=None):
     erros = []
     if aulas is None:
-        import conteudo_a1, conteudo_a2, conteudo_a3
-        aulas = [conteudo_a1.AULA, conteudo_a2.AULA, conteudo_a3.AULA]
+        import conteudo_a1, conteudo_a2, conteudo_a3, conteudo_a4
+        aulas = [conteudo_a1.AULA, conteudo_a2.AULA, conteudo_a3.AULA,
+                 conteudo_a4.AULA]
 
     for A in aulas:
         n, slug = A["n"], A["slug"]
@@ -75,7 +76,9 @@ def confere(aulas=None):
             # por causa de um <span class=ui> que estava no quadro, nao na ordem.
             so_corpo = p.get("corpo", "").lower()
             if re.search(r"\bclique\b", so_corpo) and not re.search(
-                    r"(em <span class=ui>|no <span class=ui>|na <span class=ui>|dentro|canto|coluna|fileira|linha|casa|bolinha|figura|caixinha|ponta|barrinha|quadradinho|metade)", so_corpo):
+                    r"(em <span class=ui>|no <span class=ui>|na <span class=ui>|no campo|na caixa|"
+                r"dentro|canto|coluna|fileira|linha|casa|bolinha|figura|caixinha|"
+                r"ponta|barrinha|quadradinho|metade|em cima d)", so_corpo):
                 erra(f"{onde}: manda clicar e nao diz onde")
 
         # 6b. DUAS FOTOS IGUAIS, byte a byte, sao uma promessa quebrada.

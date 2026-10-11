@@ -13,7 +13,7 @@
 """
 import os, sys, time
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-import rs, nav
+import rs, nav, comum
 from PIL import Image
 
 PALHETA = (0, 0, 0.115, 1.0)          # a coluna da esquerda, em fracao da tela
@@ -1225,6 +1225,92 @@ def campo_do_painel(rotulo, valor, abaixo=67, folga=10):
                            "de volta — o texto nao entrou no campo certo")
     print(f"   {rotulo} = {valor}", flush=True)
     return alvo
+
+
+def campo_ao_lado(rotulo, valor, folga=230):
+    """Escreve num campo que fica A DIREITA do rotulo, e le de volta.
+
+       `campo_do_painel` serve ao painel do `Camera`, onde o campo fica ABAIXO
+       do rotulo. No painel do `Emitter` e do `Timer` ele fica AO LADO:
+       `Emit Angle:` [270] [-] [+]."""
+    a, _ = nav.captura("/tmp/_bl_lado.png")
+    p = nav.acha_texto(rotulo, arquivo=a)
+    if not p:
+        raise RuntimeError(f"nao achei o campo '{rotulo}' no painel do bloco")
+    nav.clique_seguro(p[0] + folga, p[1]); time.sleep(0.6)
+    rs.tecla(0, cmd=True); time.sleep(0.3)
+    rs.digita_teclas(str(valor)); time.sleep(0.6)
+    rs.tecla(48); time.sleep(0.6)                 # Tab tira o cursor de dentro
+    b, _ = nav.captura("/tmp/_bl_lado2.png")
+    p2 = nav.acha_texto(rotulo, arquivo=b) or p
+    campo = (p2[0] + folga, p2[1])
+    perto = (max(0.0, (campo[0] - 120) / 2940), max(0.0, (campo[1] - 26) / 1604),
+             min(1.0, (campo[0] + 120) / 2940), min(1.0, (campo[1] + 30) / 1604))
+    if not rs.tem_texto(str(valor), arquivo=b, regiao=perto):
+        lido = [t.strip() for t, *_ in rs.ocr_forte(b, regiao=perto, psm="7")]
+        raise RuntimeError(f"escrevi '{valor}' em '{rotulo}' e li {lido} de volta")
+    print(f"   {rotulo} = {valor}", flush=True)
+    return campo
+
+
+def escolhe_na_lista(rotulo, nome):
+    """Abre um seletor do painel de um bloco e escolhe um item pelo nome.
+
+       Serve ao `Object to Emit` do `Emitter` e a lista de tipos do
+       `Collision`. Devolve so depois de CONFERIR que o seletor passou a
+       mostrar o nome escolhido — clicar na lista e sair sem olhar ja me
+       deixou um `Emitter` apontado para o tipo errado."""
+    a, _ = nav.captura("/tmp/_bl_lista0.png")
+    p = nav.acha_texto(rotulo, arquivo=a)
+    if not p:
+        raise RuntimeError(f"nao achei o seletor '{rotulo}' no painel")
+    rs.clique_img(p[0], p[1], escala=2.0, janela=nav.janela()); time.sleep(1.8)
+    b, _ = nav.captura("/tmp/_bl_lista1.png")
+    q = nav.acha_texto(nome.lower(), arquivo=b)
+    if not q:
+        raise RuntimeError(f"abri a lista de '{rotulo}' e nao achei '{nome}' nela")
+    rs.clique_img(q[0], q[1], escala=2.0, janela=nav.janela()); time.sleep(1.5)
+    c, _ = nav.captura("/tmp/_bl_lista2.png")
+    if not rs.tem_texto(nome, arquivo=c):
+        raise RuntimeError(f"escolhi '{nome}' em '{rotulo}' e o painel nao o mostra")
+    print(f"   {rotulo} = {nome}", flush=True)
+    return True
+
+
+def marca_do_bloco(rotulo, quero=True, folga=150):
+    """Marca/desmarca uma caixinha do painel de AJUSTES de um bloco.
+
+       (O `comum.marca_caixa` serve ao painel de FISICA, que tem outra
+       geometria.) A caixinha fica a esquerda do rotulo; a conferencia e a cor
+       dela, como la."""
+    for _ in range(3):
+        a, _ = nav.captura("/tmp/_bl_cx.png")
+        p = nav.acha_texto(rotulo, arquivo=a)
+        if not p:
+            raise RuntimeError(f"nao achei '{rotulo}' no painel do bloco")
+        c = comum_caixinha(a, (p[0], p[1]), folga)
+        if c is None:
+            raise RuntimeError(f"achei '{rotulo}' e nao a caixinha dele")
+        if c[2] == quero:
+            print(f"   {rotulo} = {'marcado' if quero else 'desmarcado'}", flush=True)
+            return (c[0], c[1])
+        rs.clique_img(c[0], c[1], escala=2.0, janela=nav.janela()); time.sleep(1.0)
+    raise RuntimeError(f"cliquei tres vezes em '{rotulo}' e ele nao ficou "
+                       f"{'marcado' if quero else 'desmarcado'}")
+
+
+def comum_caixinha(arquivo, ponto, folga=150):
+    """(x, y, marcada) da caixinha a ESQUERDA deste rotulo, achada pela cor."""
+    import numpy as _np
+    im = _np.asarray(Image.open(arquivo).convert("RGB"), dtype=int)
+    x0 = max(0, ponto[0] - folga)
+    faixa = im[max(0, ponto[1] - 22): ponto[1] + 22, x0: ponto[0]]
+    for cor, marcada in ((comum.CAIXA_MARCADA, True), (comum.CAIXA_DESMARCADA, False)):
+        m = (_np.abs(faixa - _np.array(cor)) <= 30).all(axis=2)
+        if m.sum() >= 150:
+            ys, xs = _np.nonzero(m)
+            return (x0 + int(xs.mean()), ponto[1] - 22 + int(ys.mean()), marcada)
+    return None
 
 
 # Os PACOTES de `Behavior Bundles` nao desenham um titulo que o OCR leia, e

@@ -1,0 +1,147 @@
+# -*- coding: utf-8 -*-
+"""Aula 4 — Nave e tiro."""
+
+AULA = {
+ "n": 4,
+ "slug": "aula4",
+ "titulo": "Nave e tiro",
+ "subtitulo": "Uma nave no espaço que atira, e inimigos que descem sozinhos. O mesmo bloco faz as duas coisas.",
+ "tempo": "50 minutos",
+ "etiqueta": "Aula 4 · nave e tiro",
+ "fim": "Acabou a Aula 4. Hoje você usou <b>o mesmo bloco duas vezes para coisas diferentes</b>: o <span class=ui>Emitter</span> faz o tiro sair da nave e faz os inimigos caírem do canhão. É assim que jogo de verdade é feito — poucas peças, usadas de jeitos diferentes. Mande o link do seu jogo para a sua família tentar.",
+ "avisos": [
+   ("Jogo novo", "Esta aula começa num jogo novo, do zero. Os das aulas 1, 2 e 3 ficam guardados na sua lista."),
+   ("O que é novo hoje", "O <span class=ui>Emitter</span>: um bloco que <b>cria coisas novas enquanto o jogo roda</b>. Até hoje tudo o que existia no seu jogo já estava lá antes de apertar Play."),
+   ("Os clipes", "Os passos com animação mostram o gesto inteiro: o mouse andando, o <b>botão certo acendendo</b> e o que muda na tela."),
+   ("Travou?", "Todo passo tem um quadro laranja embaixo com o conserto dos erros mais comuns."),
+ ],
+ "passos": [
+
+  dict(n=1, titulo="Abra o Flowlab e entre em MY GAMES", img="comum_fotos/c02_lista.jpg", clipe="abrir_my_games.gif",
+    corpo="No navegador, vá para <span class=ui>flowlab.io</span>.<br><br>Se aparecer <span class=ui>Log in</span> no canto de cima à direita, clique nele e entre com a sua conta — sem entrar, o jogo não fica salvo.<br><br>Depois, no alto à direita, clique em <span class=ui>My Games</span>. Os jogos das aulas anteriores estão aí na lista, guardados. Hoje a gente faz outro, do zero.",
+    ck="O título da página é <span class=ui>My Games</span> e os seus jogos anteriores aparecem na lista.",
+    sos=[("Aparece Log in","Clique nele e entre com o e-mail e a senha da sua conta."),
+         ("Minha lista está vazia","Você pode estar em outra conta. Clique na bolinha do canto de cima e confira.")]),
+
+  dict(n=2, titulo="Crie um jogo novo", img="comum_fotos/c03_escolher.jpg", clipe="novo_jogo.gif",
+    corpo="Clique no botão verde <span class=ui>+ New Game</span>, no canto direito.",
+    ck="Apareceram duas figuras: <span class=ui>Empty Project</span> e <span class=ui>Flowlab Tutorial</span>.",
+    sos=[("Não aconteceu nada","Clique de novo, uma vez só, bem no meio do botão verde. Às vezes ele demora alguns segundos para abrir a janelinha.")]),
+
+  dict(n=3, titulo="Escolha o PROJETO VAZIO", img="aula4/p01_vazio.jpg", clipe="empty_project.gif",
+    corpo="Clique na <b>figura</b> da esquerda, a do <b>+</b> grande.<br><br>Clique na figura, não no nome embaixo dela — o nome não responde.",
+    ck="Sobrou a folha branca vazia, com a fileira <span class=ui>Play · Library · Game Levels · Layer · Settings</span> embaixo.",
+    sos=[("Abriu o Flowlab Tutorial","Volte para <span class=ui>My Games</span>, apague esse jogo nos três pontinhos e comece de novo.")]),
+
+  dict(n=4, titulo="Pinte o céu de ESPAÇO", img="aula4/p02_ceu.jpg",
+    clipe=[("Abrir o painel", "abrir_niveis.gif"), ("Escrever a cor", "pintar_o_ceu.gif")],
+    corpo="Hoje o jogo se passa no espaço, então o fundo é quase preto.<br><br>Clique em <span class=ui>Game Levels</span>, na fileira de baixo. Ao lado do nome <span class=ui>Level 1</span> há um campo escrito <span class=ui>FFFFFF</span> — é a <b>cor do fundo</b> do seu jogo.<br><br>Clique nele, apague, escreva <b>0B1026</b> e aperte Enter. O fundo vira <b>azul quase preto</b>.<br><br>São seis letras e números que o computador lê como uma cor. O escuro aqui não é enfeite: é ele que faz o tiro aparecer de longe.",
+    ck="A folha do nível ficou <b>azul bem escura</b>, quase preta.",
+    sos=[("O campo não aceita o que eu escrevo","Apague as seis letras antigas primeiro, escreva as seis novas e aperte Enter. Sem o Enter ele volta para a cor de antes."),
+         ("Ficou de uma cor errada","Confira letra por letra: é <b>0B1026</b> — zero, B, um, zero, dois, seis.")]),
+
+  dict(n=5, titulo="Crie a nave", img="aula4/g01_b.jpg", clipe="criar_objeto.gif",
+    corpo="Clique uma vez dentro da folha escura, na <b>parte de baixo, no meio</b> — é de lá que a nave vai atirar para cima.<br><br>Abre a roda com <span class=ui>Create</span> e <span class=ui>Cancel</span>.",
+    ck="Apareceu a roda escura com <span class=ui>Create</span> e <span class=ui>Cancel</span>.",
+    sos=[("Apareceu Clone, Edit, Delete","Aquela casa já tem um objeto. Clique em <span class=ui>Cancel</span> e escolha uma casa vazia.")]),
+
+  dict(n=6, titulo="Escolha CREATE", img="aula4/g02_b.jpg", clipe="escolher_create.gif",
+    corpo="Na roda, clique em <span class=ui>Create</span>, em cima à direita.<br><br>Abre o painel do objeto novo, com <span class=ui>edit sprite</span> à esquerda e os campos <span class=ui>Type</span> e <span class=ui>Name</span>.",
+    ck="O painel do objeto está aberto e mostra <span class=ui>edit sprite</span>, <span class=ui>Type</span>, <span class=ui>Name</span> e <span class=ui>Behaviors</span>.",
+    sos=[("Fechou tudo","Você clicou em <span class=ui>Cancel</span>. Clique de novo na casa e escolha <span class=ui>Create</span>."),
+         ("A roda sumiu sozinha","Clique de novo na mesma casa — ela ainda está vazia.")]),
+
+  dict(n=7, titulo="Escreva NAVE nos dois campos", img="aula4/p03_nome.jpg",
+    corpo="No painel, clique no campo <span class=ui>Name</span>, apague o que estiver lá e escreva <b>Nave</b>.<br><br>Agora faça o mesmo no campo <span class=ui>Type</span>, do lado: apague e escreva <b>Nave</b> também.<br><br>Os dois parecem a mesma coisa e não são. O <span class=ui>Name</span> é o apelido daquela peça. O <span class=ui>Type</span> é a <b>família</b> dela — e é a família que aparece na lista quando um bloco precisar perguntar «bati em quem?». Hoje isso vai importar duas vezes.",
+    ck="Os campos <span class=ui>Type</span> e <span class=ui>Name</span> mostram os dois <b>Nave</b>.",
+    sos=[("Escrevi e voltou o nome antigo","Clique duas vezes no campo para marcar tudo antes de escrever."),
+         ("O painel fechou","Clique de novo na casa da nave e escolha <span class=ui>Edit</span>.")]),
+
+  dict(n=8, titulo="Escolha o desenho da nave", img="aula4/p04_nave.jpg", clipe="escolher_sprite.gif",
+    corpo="Clique no quadrado <span class=ui>edit sprite</span>, à esquerda do painel.<br><br>Abre o editor de desenho. Na coluna da direita clique em <span class=ui>Flowlab Sprites</span> e depois no botão azul <span class=ui>Objects</span>.<br><br>Escolha uma figura que sirva de nave e clique no <span class=ui>OK</span> azul, embaixo à esquerda.",
+    ck="A sua nave apareceu na folha escura, em baixo no meio.",
+    sos=[("Não acho Flowlab Sprites","Role a coluna da direita para cima. Ele fica logo abaixo de <span class=ui>My Other Games</span>."),
+         ("Cliquei e não mudou nada","Clique bem em cima da figura, não no espaço entre elas.")]),
+
+  dict(n=9, titulo="Tire a gravidade da nave", img="aula4/p05_fisica.jpg",
+    clipe=[("Abrir a física", "abrir_physics.gif"), ("Marcar movable", "marcar_movable.gif"), ("Desligar a gravidade", "sem_gravidade.gif")],
+    corpo="No painel da nave, clique em <span class=ui>Physics &gt;</span>, no canto de baixo à direita.<br><br>Mexa em <b>duas</b> caixinhas:<br><br><b>1.</b> <span class=ui>movable</span> — <b>marque</b>. Sem ela a nave fica pregada e nenhuma tecla a move.<br><b>2.</b> <span class=ui>affected by gravity</span> — <b>desmarque</b>. No espaço não há chão: com gravidade a nave cai para fora da tela assim que o jogo começa.<br><br>Feche no <span class=ui>OK</span> azul.",
+    ck="<span class=ui>movable</span> está <b>azul</b> e <span class=ui>affected by gravity</span> está <b>apagada</b>.",
+    sos=[("Não acho Physics","Ele é um texto azul claro, pequeno, no canto de baixo à direita do painel."),
+         ("A nave cai quando eu jogo","A gravidade continua marcada. Abra a física de novo e desmarque.")]),
+
+  dict(n=10, titulo="Dê movimento à nave", img="aula4/p06_movimento.jpg",
+    corpo="Feche a física no <span class=ui>OK</span> e clique em <span class=ui>Behaviors</span>.<br><br>Na coluna da esquerda, lá embaixo, clique em <span class=ui>Behavior Bundles</span> e <b>arraste</b> o <span class=ui>Top Down Movement</span> para o meio da mesa.<br><br>Esse pacote dá as <b>quatro setas</b> — e, sem gravidade, a nave anda e fica onde você soltar. Espere uns segundos antes de fechar: o Flowlab precisa de um tempinho para guardar.",
+    ck="Um bloco <span class=ui>Top Down Movement</span> está na mesa de blocos.",
+    sos=[("Arrastei e não caiu nada","Solte no meio da mesa, longe da beirada. Perto da borda a mesa rola sozinha."),
+         ("Não acho Behavior Bundles","É o último item da coluna da esquerda. Role até o fim.")]),
+
+  dict(n=11, titulo="Crie o TIRO", img="aula4/p07_tiro.jpg",
+    corpo="Feche as duas telas (o <span class=ui>OK</span> da mesa de blocos e o <span class=ui>OK</span> azul do painel).<br><br>Clique numa casa vazia <b>no canto de cima à esquerda</b> da folha e escolha <span class=ui>Create</span>.<br><br>Escreva <b>Tiro</b> nos dois campos, <span class=ui>Name</span> e <span class=ui>Type</span>. Em <span class=ui>edit sprite</span>, escolha uma figura pequena e comprida — ela vai ser o tiro.<br><br>Esta peça fica aí parada no canto e <b>não é</b> o tiro do jogo. Ela existe só para o computador saber <i>como é</i> um tiro: na hora de atirar, ele faz uma cópia dela.",
+    ck="Uma peça pequena apareceu no canto de cima à esquerda, e os campos dela dizem <b>Tiro</b>.",
+    sos=[("Coloquei no lugar errado","Clique nela, escolha <span class=ui>Delete</span> e faça de novo numa casa do canto."),
+         ("Ela aparece no jogo","Tudo bem: ela fica lá parada. Mais para frente dá para escondê-la.")]),
+
+  dict(n=12, titulo="Deixe o tiro poder se mexer", img="aula4/p08_tiro_fisica.jpg", clipe="tiro_movable.gif",
+    corpo="Ainda no painel do tiro, clique em <span class=ui>Physics &gt;</span> e mexa nas mesmas <b>duas</b> caixinhas da nave:<br><br><b>1.</b> <span class=ui>movable</span> — <b>marque</b>.<br><b>2.</b> <span class=ui>affected by gravity</span> — <b>desmarque</b>.<br><br>Esta é a caixinha mais importante do curso inteiro, e ela já apareceu três vezes: o boneco que não pulava, a lava que não subia e agora o tiro.<br><br>É sempre a mesma regra: <b>sem <span class=ui>movable</span>, empurrão nenhum funciona</b>. O computador trata a peça como se fosse parede. Com ela marcada, o tiro sai voando.",
+    ck="As duas caixinhas do tiro estão como as da nave: <span class=ui>movable</span> azul, <span class=ui>affected by gravity</span> apagada.",
+    sos=[("O tiro aparece e fica parado","É exatamente isto: falta <span class=ui>movable</span>. Abra a física do Tiro e marque."),
+         ("O tiro cai em vez de subir","A gravidade está marcada. Desmarque.")]),
+
+  dict(n=13, titulo="Ponha o EMISSOR na nave", img="aula4/p09_emitter.jpg",
+    corpo="Feche as duas telas e clique na <b>nave</b>, em baixo. Escolha <span class=ui>Edit</span> e depois <span class=ui>Behaviors</span>.<br><br>Na coluna da esquerda clique em <span class=ui>Components</span> e <b>arraste</b> o <span class=ui>Emit</span> para a mesa.<br><br>Repare numa coisa: na coluna ele se chama <span class=ui>Emit</span>, mas depois de solto, na mesa, o título dele é <span class=ui>Emitter</span>. É a mesma peça.",
+    ck="Um bloco <span class=ui>Emitter</span> está na mesa, com as entradas <span class=ui>angle</span> e <span class=ui>emit</span>.",
+    sos=[("Não acho o Emit","Ele está em <span class=ui>Components</span>, logo abaixo de <span class=ui>Sound</span>."),
+         ("Arrastei e não caiu","Solte no meio da mesa, longe da beirada.")]),
+
+  dict(n=14, titulo="Diga ao emissor o que atirar e para onde", img="aula4/p10_ajustes.jpg", clipe="ajustes_do_tiro.gif",
+    corpo="Clique devagar em cima do <span class=ui>Emitter</span>, segurando um instante, até abrir a janelinha de ajustes.<br><br>Mexa em três coisas:<br><br><b>1.</b> <span class=ui>Object to Emit</span> — clique e escolha <b>Tiro</b>.<br><b>2.</b> <span class=ui>Emit Angle</span> — escreva <b>270</b>. Zero é para a direita e os números giram no sentido do relógio, então <b>270 é para cima</b>.<br><b>3.</b> <span class=ui>Expire After</span> — escreva <b>90</b>. Esse número é em <b>trinta avos de segundo</b>: 90 dá três segundos. O padrão é 10, que são três décimos — o tiro sumiria antes de você ver.<br><br>Feche no <span class=ui>OK</span>.",
+    ck="Embaixo do bloco <span class=ui>Emitter</span>, na mesa, apareceu escrito <b>Tiro</b>.",
+    sos=[("A janelinha não abre","Clique devagar: aperte e segure um instante antes de soltar. Clique rápido só seleciona o bloco."),
+         ("O tiro sai para baixo","O ângulo ficou 90. Troque para <b>270</b>."),
+         ("O tiro some num piscar","O <span class=ui>Expire After</span> ficou pequeno. Escreva <b>90</b>.")]),
+
+  dict(n=15, titulo="Ligue a tecla ESPAÇO ao emissor", img="aula4/p11_fio_tiro.jpg", clipe="muda_a_tecla.gif",
+    corpo="Na coluna da esquerda, em <span class=ui>Triggers</span>, <b>arraste</b> o <span class=ui>Keyboard</span> para a mesa, à esquerda do <span class=ui>Emitter</span>.<br><br>Ele nasce <b>sem tecla nenhuma</b>: onde diz <span class=ui>Current key:</span> não há nada escrito. Clique devagar nele para abrir os ajustes, clique no botão <span class=ui>Change Key</span> e então <b>aperte a barra de espaço</b>. Agora lê <span class=ui>Current key: Spacebar</span>. Feche no <span class=ui>OK</span>.<br><br>Agora o fio: arraste da bolinha <span class=ui>down</span> do <span class=ui>Keyboard</span> até a bolinha <span class=ui>emit</span> do <span class=ui>Emitter</span>.<br><br>Lido em voz alta: <b>quando a barra de espaço descer, emita um tiro</b>.",
+    ck="Há um fio branco ligando <span class=ui>down</span> a <span class=ui>emit</span>, e o <span class=ui>Keyboard</span> mostra <b>Spacebar</b>.",
+    sos=[("O fio não fica","Comece o arrasto bem em cima da bolinha, não no texto ao lado dela."),
+         ("Apertei a tecla e não mudou","Clique no <span class=ui>Change Key</span> primeiro; só depois aperte a tecla.")]),
+
+  dict(n=16, titulo="Jogue e atire", img="aula4/p12_tiro.jpg", clipe="jogar.gif",
+    corpo="Feche as duas telas e clique em <span class=ui>Play</span>, na fileira de baixo.<br><br>Clique uma vez dentro do jogo para ele ouvir o teclado. Mova a nave com as <b>setas</b> e aperte a <b>barra de espaço</b>.<br><br>Um tiro sai da nave e sobe. Depois de três segundos ele some sozinho — foi o <span class=ui>Expire After</span> que mandou.",
+    ck="Apertando espaço, um tiro sai da nave e sobe pela tela.",
+    sos=[("Aperto espaço e não sai nada","Clique uma vez dentro do jogo antes de apertar. Sem o clique, as teclas vão para a página e não para o jogo."),
+         ("O tiro nasce e fica parado","Falta o <span class=ui>movable</span> do Tiro, do passo 12."),
+         ("O tiro desce","O ângulo do emissor ficou 90. Volte e escreva <b>270</b>.")]),
+
+  dict(n=17, titulo="Crie o INIMIGO", img="aula4/p13_inimigo.jpg",
+    corpo="Volte ao editor pelo botão <span class=ui>Editor</span>, embaixo do jogo.<br><br>Clique numa casa vazia <b>no canto de cima à direita</b> e escolha <span class=ui>Create</span>. Escreva <b>Inimigo</b> nos dois campos e escolha um desenho em <span class=ui>edit sprite</span>.<br><br>Em <span class=ui>Physics &gt;</span>, marque <span class=ui>movable</span> e <b>desmarque</b> <span class=ui>affected by gravity</span> — igual à nave e ao tiro.<br><br>Esta peça também fica parada no canto: ela é o <b>molde</b> do inimigo, não o inimigo do jogo.",
+    ck="Uma peça nova está no canto de cima à direita, com <b>Inimigo</b> nos dois campos.",
+    sos=[("Esqueci de escrever o Type","Clique nela, escolha <span class=ui>Edit</span> e escreva <b>Inimigo</b> também no <span class=ui>Type</span>. Sem isso o passo 20 não acha a família certa.")]),
+
+  dict(n=18, titulo="Crie o CANHÃO lá em cima", img="aula4/p14_canhao.jpg",
+    corpo="Clique numa casa vazia <b>no alto da folha, no meio</b>, e escolha <span class=ui>Create</span>.<br><br>Escreva <b>Canhao</b> nos dois campos e escolha qualquer desenho pequeno em <span class=ui>edit sprite</span>.<br><br>Não mexa na física dele: o canhão fica parado de propósito. Ele não atira em você — ele <b>solta</b> os inimigos.",
+    ck="Uma peça está no alto da folha, no meio, com <b>Canhao</b> nos dois campos.",
+    sos=[("Coloquei muito perto da nave","Clique nele, escolha <span class=ui>Delete</span> e ponha na primeira fileira de cima.")]),
+
+  dict(n=19, titulo="O canhão solta inimigos sozinho", img="aula4/p15_timer.jpg",
+    corpo="Com o canhão aberto, clique em <span class=ui>Behaviors</span>.<br><br>Em <span class=ui>Components</span>, arraste um <span class=ui>Emit</span> para a mesa. Clique devagar nele e ajuste: <span class=ui>Object to Emit</span> = <b>Inimigo</b>, <span class=ui>Emit Angle</span> = <b>90</b> (para baixo), <span class=ui>Expire After</span> = <b>150</b>.<br><br>Em <span class=ui>Triggers</span>, arraste um <span class=ui>Timer</span> para a esquerda dele. Clique devagar no <span class=ui>Timer</span> e <b>marque</b> <span class=ui>Repeat Forever</span>.<br><br>Ligue a bolinha <span class=ui>out</span> do <span class=ui>Timer</span> na bolinha <span class=ui>emit</span> do <span class=ui>Emitter</span>.<br><br>É o mesmo bloco do seu tiro, apontado para o outro lado — e quem aperta a tecla agora é o relógio.",
+    ck="Há um fio do <span class=ui>Timer</span> até o <span class=ui>Emitter</span>, e embaixo do emissor está escrito <b>Inimigo</b>.",
+    sos=[("Só desce um inimigo","Faltou marcar <span class=ui>Repeat Forever</span> no <span class=ui>Timer</span>."),
+         ("Vêm inimigos demais","Aumente o <span class=ui>Delay</span> do <span class=ui>Timer</span>: ele é em décimos de segundo, então 20 dá dois segundos."),
+         ("Os inimigos sobem","O ângulo do emissor do canhão ficou 270. Troque para <b>90</b>.")]),
+
+  dict(n=20, titulo="O tiro destrói o inimigo", img="aula4/p16_fio_destroi.jpg",
+    corpo="Feche as duas telas e clique no <b>Inimigo</b> do canto, aquele que ficou parado. Escolha <span class=ui>Edit</span> e depois <span class=ui>Behaviors</span>.<br><br>Em <span class=ui>Triggers</span>, arraste um <span class=ui>Collision</span> para a mesa. Clique devagar nele e escolha <b>Tiro</b> na lista — é aqui que o <span class=ui>Type</span> do passo 11 trabalha.<br><br>Em <span class=ui>Components</span>, arraste um <span class=ui>Destroyer</span> para a direita dele e ligue <span class=ui>hit</span> em <span class=ui>in</span>.<br><br>Você escreveu nos blocos o que já tinha escrito em português: <b>quando um Tiro bater em mim, me destrua</b>. E como o molde manda nas cópias, isso vale para todos os inimigos que o canhão soltar.",
+    ck="Há um fio de <span class=ui>hit</span> até <span class=ui>in</span>, e o <span class=ui>Collision</span> mostra <b>Tiro</b>.",
+    sos=[("A lista do Collision só mostra New Type","Falta o <span class=ui>Type</span> do Tiro. Volte ao passo 11 e escreva <b>Tiro</b> também no campo <span class=ui>Type</span>."),
+         ("O tiro atravessa o inimigo","O <span class=ui>Collision</span> ficou em <span class=ui>Any Type</span> ou numa família errada. Clique devagar nele e escolha <b>Tiro</b>.")]),
+
+  dict(n=21, titulo="Jogue e mande o link", img="aula4/p17_jogo.jpg",
+    corpo="Feche as duas telas e clique em <span class=ui>Play</span>.<br><br>Clique uma vez dentro do jogo, mova a nave com as setas e atire com a barra de espaço. Os inimigos descem sozinhos e somem quando o seu tiro acerta.<br><br>Para mandar para alguém: copie o endereço que está na barra do navegador e mande. Quem abrir já joga, sem instalar nada.",
+    ck="Os inimigos descem sozinhos, e o seu tiro faz cada um deles sumir.",
+    sos=[("Os inimigos não somem","Confira o passo 20: o <span class=ui>Collision</span> tem de estar em <b>Tiro</b>, e o fio tem de ir de <span class=ui>hit</span> até <span class=ui>in</span>."),
+         ("Nenhum inimigo aparece","Volte ao passo 19 e confira se o <span class=ui>Timer</span> está com <span class=ui>Repeat Forever</span> marcado."),
+         ("A nave não anda","Clique uma vez dentro do jogo antes de usar as setas.")]),
+ ],
+}

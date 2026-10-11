@@ -813,7 +813,17 @@ def linhas_da_grade():
 
 
 def _botao_menu():
-    """O `< Menu` azul no alto da coluna da direita."""
+    """O `< Menu` no alto da coluna da direita — pelo ROTULO, cor so de reserva.
+
+       Pela cor ele nao era achado: o azul dele e mais claro que o dos botoes
+       de sub-pacote, e `acha_cor` devolvia None. Com isso, estando DENTRO de
+       um pacote, `abre_grade_sprite` nunca conseguia voltar para a lista e
+       falhava com "nao achei X na biblioteca" — com o X na tela, uma volta
+       atras. O rotulo so ficou legivel depois que a escada de OCR ganhou os
+       degraus de limiar 200 (branco sobre azul)."""
+    p = nav.acha_texto("menu", regiao=(0.72, 0.0, 1.0, 0.2))
+    if p:
+        return p
     return nav.acha_cor((122, 170, 224), tol=45, regiao=(0.72, 0.02, 0.95, 0.10),
                         minimo=600)
 
@@ -896,8 +906,37 @@ def abre_grade_sprite(pacote, subpacote):
             raise RuntimeError(f"`{subpacote}` nao esta em `{pacote}` — ha "
                                f"{[n for n, _ in botoes]}")
         alvo = casa[0]
-    clique(*alvo); time.sleep(3.5)
+    clique(*alvo); time.sleep(1.5)
+    espera_grade_sprite()
     return True
+
+
+def espera_grade_sprite(limite=25, minimo=4000):
+    """Espera a GRADE de desenhos aparecer — e nao um tempo fixo.
+
+       Os pacotes de fora (Kenney, Gustavo, Sproutland…) sao baixados na hora:
+       medido, o Gustavo levou 7 segundos e a grade ficou com um rodinha de
+       carregamento no lugar. Com o `sleep(3.5)` de antes, a captura clicava
+       numa casa vazia e escolhia o desenho errado — ou nenhum.
+
+       O criterio e a propria grade: carregada, a area dos quatro primeiros
+       desenhos tem ~35 mil pixels que nao sao o fundo do painel; carregando,
+       tem ZERO. Medido nas duas fotos."""
+    import numpy as _np
+    from PIL import Image as _I
+    x0, y0, px, py = GRADE_SPRITE
+    fim = time.time() + limite
+    while time.time() < fim:
+        a, _ = nav.captura("/tmp/_sp_grade.png")
+        im = _np.asarray(_I.open(a).convert("RGB"), dtype=int)
+        rec = im[y0:y0 + 6 * py, x0:x0 + 4 * px]
+        fundo = (_np.abs(rec - _np.array([47, 52, 63])) <= 16).all(axis=2)
+        quantos = int((~fundo).sum())
+        if quantos >= minimo:
+            return quantos
+        time.sleep(1.0)
+    raise RuntimeError(f"esperei {limite}s e a grade de desenhos nao carregou "
+                       f"(so {quantos} pixels de desenho)")
 
 
 def clica_sprite(linha, coluna, exige_mudanca=True):
