@@ -24,10 +24,12 @@ Aulas 5 a 12: planejadas em `PLANO.md`, não construídas.
 ## Pendente para o Julio
 
 - **Push.** Nada da Aula 4 está no ar até `git push origin main` (21 commits).
-- **Placar.** A Aula 4 não tem pontuação: nunca foi ensinada no curso e pediria
-  `Number` + `Label` + a camada de UI — 3 a 4 passos e uma quarta ideia nova.
-  Pergunta aberta: esticar a aula para ~60 min ou deixar o placar para uma aula
-  própria?
+- ~~Placar~~ **decidido em 11-10: o placar vai para a Aula 5**, que já promete
+  "ponto a cada passagem" — lá ele é a ideia NOVA da aula (`Number` + `Label` e
+  a camada de GUI), e não a quarta ideia espremida numa aula cheia. A Aula 4
+  fica sem pontuação, de propósito. A Aula 8 (`recorde da partida`) passa a
+  construir em cima dele, não do zero.
+  ⚠️ `Label` não aparece em aula nenhuma até aqui — conferido, não lembrado.
 - **Jogos de rascunho.** As corridas desta noite deixaram vários jogos novos na
   conta. Só `fonte/aula4/jogo.txt` é o da aula; o `apaga_jogo.py` recusa apagar
   qualquer id que esteja num `aulaN/jogo.txt`. Não apaguei nenhum sem pedir.

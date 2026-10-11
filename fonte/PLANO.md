@@ -32,16 +32,22 @@ semana passada).
 Cada aula termina com **um jogo que da para jogar e mandar o link** no mesmo
 dia. 19 a 21 passos, 50 minutos.
 
+⚠️ **As linhas 1 a 4 descrevem o que foi CONSTRUIDO, nao o que foi planejado.**
+Elas ja foram corrigidas uma vez: prometiam placar nas aulas 1 e 4, e nenhuma
+das duas o entrega — `Label` nao aparece em aula nenhuma ate aqui. Quem for
+escrever a Aula 5 pode confiar nesta tabela; quem for mexer nas linhas 5 a 12
+esta lendo PROMESSA, nao inventario.
+
 | # | Aula | O jogo que sai pronto | O que e novo |
 |---|---|---|---|
-| 1 | **Seu primeiro jogo: pega-moedas** | boneco anda, encosta na moeda, ela some e o placar sobe | criar objeto, desenhar sprite, mover com as setas, `Collision`, `Destroyer`, `Number` + `Label` |
+| 1 | **Seu primeiro jogo: pega-moedas** | boneco anda, encosta na moeda e ela some | criar objeto, desenhar sprite, mover com as setas, `Collision`, `Destroyer` |
 | 2 | **Pulo e plataformas** | plataforma lateral com gravidade, pulo e queda que reinicia | fisica, `Keyboard`, `Jump`, camera que segue |
-| 3 | **A lava que persegue** | corrida contra um perigo que sobe, com reinicio | `Always`, `Timer`, `Motion`, fim de jogo |
-| 4 | **Nave e tiro** | naves inimigas descendo, tiro que destroi, placar | `Spawn`, `Mailbox` (objetos conversando), limpar o que sai da tela |
-| 5 | **Um botao so (estilo Flappy)** | passaro entre canos, ponto a cada passagem | aleatorio, padrao de spawn, dificuldade que cresce |
+| 3 | **A lava que sobe** | corrida contra um perigo que sobe, com reinicio e estrela no alto | `Always` + `Number` + `Velocity`, `Restart Game`, `Alert` |
+| 4 | **Nave e tiro** | nave que anda para os dois lados, tiro, canhao que solta inimigos, tiro que destroi | `Keyboard` + `Number` + `Velocity.x`, `Emitter` (duas vezes, para coisas diferentes), `Timer` em `Repeat Forever` |
+| 5 | **Um botao so (estilo Flappy)** | passaro entre canos, com **placar na tela** que sobe a cada passagem | **`Number` + `Label` e a camada de GUI** (o placar, adiado da Aula 4), aleatorio, dificuldade que cresce |
 | 6 | **Chave e porta** | labirinto com chave, porta trancada e final | `Property` como memoria, mensagem entre objetos |
 | 7 | **Empurra-blocos** | quebra-cabeca: empurrar caixas ate os alvos | movimento em grade, condicao de vitoria contando |
-| 8 | **Contra o relogio** | percurso cronometrado, com recorde da partida | `Timer` mostrado na tela, formatar numero |
+| 8 | **Contra o relogio** | percurso cronometrado, com recorde da partida | `Timer` mostrado na tela e formatar numero — em cima do placar da Aula 5, nao do zero |
 | 9 | **Inimigo que persegue** | inimigo com IA simples, vida e barra de vida | proximidade, `Health`, barra de GUI |
 | 10 | **Menu, fases e fim de jogo** | jogo com tela de titulo, 3 fases e tela de vitoria | `Game Flow`, varios niveis, botao clicavel |
 | 11 | **Som, animacao e brilho** | o mesmo jogo, mas com vida: animacao, som, particulas | editor de animacao, `SoundEffect`, `Emitter` |
