@@ -6,7 +6,7 @@
    Cada regra nasceu de um defeito real do curso de Roblox ou desta noite de
    Flowlab — nenhuma e preferencia de estilo.
 """
-import os, re, sys, glob, json
+import os, re, sys, glob, json, unicodedata
 
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
@@ -15,6 +15,15 @@ os.chdir(os.path.dirname(os.path.abspath(__file__)))
 # parada na frente da tela.
 DELEGA = ["como na aula passada", "igual ao de cima", "use a receita",
           "voce ja sabe", "do mesmo jeito de antes", "como antes"]
+
+
+def _sem_acento(t):
+    """A regra olha o SENTIDO, nao a grafia. A lista nasceu sem acento e por
+       isso deixou passar `voce ja sabe` escrito do jeito certo, que e o jeito
+       que as aulas escrevem. Filtro que nao conhece a forma do alvo nao mede
+       nada."""
+    return "".join(c for c in unicodedata.normalize("NFD", t)
+                   if unicodedata.category(c) != "Mn")
 
 
 def confere(aulas=None):
@@ -70,7 +79,7 @@ def confere(aulas=None):
                     erra(f"{onde}: socorro incompleto {s!r}")
 
             # 5. nenhum passo delega
-            corpo = (p.get("corpo", "") + " " + p.get("ck", "")).lower()
+            corpo = _sem_acento((p.get("corpo", "") + " " + p.get("ck", "")).lower())
             for frase in DELEGA:
                 if frase in corpo:
                     erra(f"{onde}: delega com '{frase}' — repita o procedimento")

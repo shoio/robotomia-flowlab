@@ -17,7 +17,7 @@ PLANO = [
     (1,  "Pega-moedas", "Um boneco que corre e uma moeda que some. O primeiro jogo.", True),
     (2,  "Pulo e plataformas", "Três degraus, uma estrela no alto e lava embaixo. Caiu, recomeça.", True),
     (3,  "A lava que sobe", "A lava não fica parada: ela sobe sozinha. Suba a escada antes.", True),
-    (4,  "Nave e tiro", "Uma nave que atira e inimigos que descem sozinhos.", False),
+    (4,  "Nave e tiro", "Uma nave que atira e inimigos que descem sozinhos.", True),
     (5,  "Um botao so", "O passaro entre os canos: acaso e dificuldade que cresce.", False),
     (6,  "Chave e porta", "Labirinto com chave: o jogo passa a ter memoria.", False),
     (7,  "Empurra-blocos", "Quebra-cabeca: empurrar caixas ate os alvos.", False),

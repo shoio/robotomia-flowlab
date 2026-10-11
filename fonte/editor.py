@@ -397,15 +397,24 @@ def fecha_comportamentos():
 
 
 def fecha_roda():
-    """Dispensa a roda `Create / Cancel`, se ela estiver aberta.
+    """Dispensa a roda que um clique no vazio abre, se ela estiver aberta.
 
        Ela nasce de um clique que chegou ao NIVEL — e, quando a mesa de blocos
        esta aberta, ela fica POR CIMA dela, bem no meio, justamente onde eu
        solto bloco. O arrasto cai na roda e o bloco nao nasce, sem nada dizer
-       por que: a mensagem que sobrava era "a mesa nao mudou ali"."""
+       por que: a mensagem que sobrava era "a mesa nao mudou ali".
+
+       SAO DUAS RODAS DIFERENTES, e por meses esta funcao so conhecia uma. No
+       NIVEL ela diz `Create / Cancel`; na MESA DE BLOCOS ela diz
+       `Add / Cancel / Import`. Exigir a palavra `create` fazia a guarda passar
+       direto pela roda da mesa — justamente a que o paragrafo de cima
+       descreve. Fotografei a roda aberta em cima do ponto de soltura, com
+       `Add` e `Import` escritos nela."""
     import comum
     a, _ = nav.captura("/tmp/_ed_roda.png")
-    if not (rs.tem_texto("cancel", arquivo=a) and rs.tem_texto("create", arquivo=a)):
+    if not rs.tem_texto("cancel", arquivo=a):
+        return False
+    if not any(rs.tem_texto(t, arquivo=a) for t in ("create", "import")):
         return False
     p = nav.acha_texto("cancel", arquivo=a)
     if not p:

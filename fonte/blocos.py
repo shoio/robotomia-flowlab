@@ -214,7 +214,7 @@ def _recarrega_e_reabre():
     return True
 
 
-def solta(nome, x, y, tentativas=3, titulo=None, exige_titulo=True):
+def solta(nome, x, y, tentativas=3, titulo=None, exige_titulo=True, regiao=None):
     """Arrasta um bloco da palheta para (x, y) e CONFERE que ele nasceu ali.
 
        A conferencia e por PIXEL, nao por leitura do titulo. Ler o titulo
@@ -224,7 +224,13 @@ def solta(nome, x, y, tentativas=3, titulo=None, exige_titulo=True):
        'Help / Note'. Nos dois casos eu dava por falhado um bloco que tinha
        nascido certo, desfazia e tentava de novo: tres pacotes empilhados.
 
-       O invariante e simples: ONDE EU SOLTEI, a mesa tem de ter mudado."""
+       O invariante e simples: ONDE EU SOLTEI, a mesa tem de ter mudado.
+
+       `regiao` estreita a leitura do titulo. Ele e obrigatorio quando a mesa
+       ja tem OUTRO bloco do mesmo nome: `acha_bloco` devolve o PRIMEIRO que
+       achar, e sem recorte o segundo `Keyboard` de uma mesa devolve a
+       coordenada do primeiro — os fios iriam todos para o bloco errado, sem
+       erro nenhum na tela."""
     import numpy as _np
     for k in range(tentativas):
         import editor as _ed
@@ -244,7 +250,10 @@ def solta(nome, x, y, tentativas=3, titulo=None, exige_titulo=True):
         # O recarregamento fica como recuperacao da ULTIMA tentativa, que custa
         # 12 segundos e so se paga quando tudo o mais falhou.
         if k == tentativas - 1 and CONTEXTO["url"]:
-            _recarrega_e_reabre()
+            print(f"   [solta {nome}] ultima tentativa: recarregando a pagina",
+                  flush=True)
+            print(f"   [solta {nome}] recarregou? {_recarrega_e_reabre()}",
+                  flush=True)
         _ed.fecha_roda()          # a roda Create/Cancel tapa o meio da mesa
         antes, _ = nav.captura("/tmp/_bl_antes_solta.png")
         p = item_palheta(nome)
@@ -258,6 +267,8 @@ def solta(nome, x, y, tentativas=3, titulo=None, exige_titulo=True):
         # Collision da Aula 3 nunca nascia: nao era o ponto, era o TEMPO. Um
         # numero fixo aqui e aposta; escalar e medida.
         espera = (0.6, 1.2, 2.0)[min(k, 2)]
+        print(f"   [solta {nome} #{k}] palheta={p} -> ({x},{y}) pressao={espera}",
+              flush=True)
         arrasta_devagar(p[0], p[1], x, y, passos=90, segura=espera)
         time.sleep(1.2)
         fecha_ajustes()          # o arrasto lento costuma abrir os ajustes
@@ -268,9 +279,11 @@ def solta(nome, x, y, tentativas=3, titulo=None, exige_titulo=True):
         y0, y1 = max(0, y - 160), min(A.shape[0], y + 220)
         x0, x1 = max(0, x - 220), min(A.shape[1], x + 320)
         mudou = int((_np.abs(A[y0:y1, x0:x1] - B[y0:y1, x0:x1]) > 30).sum())
+        print(f"   [solta {nome} #{k}] mudou {mudou} px (precisa > 3000)",
+              flush=True)
         if mudou > 3000:
             try:
-                return acha_bloco(titulo or nome)
+                return acha_bloco(titulo or nome, regiao=regiao or TELA)
             except RuntimeError:
                 # A MUDANCA DE PIXEL NAO BASTA quando o bloco vai levar FIO.
                 #
@@ -296,7 +309,17 @@ def solta(nome, x, y, tentativas=3, titulo=None, exige_titulo=True):
         # empilhava copias
         rs.tecla(6, cmd=True)
         time.sleep(1.0)
-    raise RuntimeError(f"soltei '{nome}' em ({x},{y}) e a mesa nao mudou ali")
+    # GUARDA AS DUAS FOTOS DA ULTIMA TENTATIVA. Sem isto, a proxima captura
+    # sobrescreve `/tmp/_bl_*_solta.png` e a falha vira ghost: eu sabia que o
+    # bloco nao nasceu e nao tinha como ver o que havia na tela na hora.
+    import shutil as _sh
+    guardadas = []
+    for orig, dest in (("/tmp/_bl_antes_solta.png", f"/tmp/falhou_{nome.replace(' ', '_')}_antes.png"),
+                       ("/tmp/_bl_dep_solta.png",   f"/tmp/falhou_{nome.replace(' ', '_')}_depois.png")):
+        if os.path.exists(orig):
+            _sh.copy(orig, dest); guardadas.append(dest)
+    raise RuntimeError(f"soltei '{nome}' em ({x},{y}) e a mesa nao mudou ali"
+                       + (f" — fotos: {', '.join(guardadas)}" if guardadas else ""))
 
 
 def liga(origem, pino_saida, destino, pino_entrada):
@@ -452,7 +475,32 @@ def pino_por_nome(bloco, rotulo, lado):
 def arrasta_devagar(x0, y0, x1, y1, passos=45, segura=0.45):
     """Arrasto lento, com pausa antes e depois e um tremor no fim.
        O editor do Flowlab e canvas: arrasto rapido demais entre bolinhas
-       acende o pino de destino e nao cria fio nenhum."""
+       acende o pino de destino e nao cria fio nenhum.
+
+       NA BANCADA, QUEM ARRASTA E O MOTOR — e a escolha e feita AQUI DENTRO, a
+       cada chamada, nao por remendo no import.
+
+       O `bancada.instala()` trocava esta funcao por uma lambda que fala com o
+       motor. So que `bancada.liga_se_pedido()` mora dentro do `comum.py`, e na
+       ordem de import das capturas (`import rs, nav, editor, blocos, comum`)
+       quem carrega primeiro e o `blocos`: ele importa `comum` no meio do seu
+       proprio carregamento, o `instala()` poe a lambda num modulo PELA METADE,
+       e logo depois o `def` daqui de baixo sobrescreve a lambda. O remendo
+       sumia sem deixar rastro.
+
+       O estrago era mudo e caro: `rs._evento_mouse` CONTINUAVA remendado (so o
+       MOVER sobrevive, o apertar e o soltar sao engolidos), mas os eventos de
+       ARRASTO daqui iam crus para a tela de verdade, na origem — fora da
+       pagina. A mesa nao mudava, zero pixels, sem erro nenhum. A foto tirada
+       com o botao apertado mostrou o item da palheta so ACESO, com balaozinho
+       de ajuda e nenhum bloco fantasma: o apertar nunca chegou ao navegador.
+       Passei a noite medindo altura de soltura, posicao na palheta, foco de
+       janela e "um arrasto por carregamento" — e as sondas davam verde porque
+       elas importam `comum` primeiro, que e a ordem em que a lambda vence."""
+    if getattr(rs, "_BANCADA_INSTALADA", False):
+        import bancada
+        return bancada._chama("arrastar", x0=x0, y0=y0, x1=x1, y1=y1,
+                              passos=passos, segura=segura)
     import Quartz
     J = nav.janela(nav.titulo())
     tx0, ty0 = J["x"] + x0 / 2.0, J["y"] + y0 / 2.0
@@ -1086,8 +1134,17 @@ def le_valor(bloco, tentativas=3):
          em tamanho nativo. A linha inteira nao serve: '-1' volta vazio e
          '-1.7' volta '1' — o recorte curto derruba a segmentacao."""
     for k in range(tentativas):
-        b = acha_bloco(bloco.nome)
+        # PROCURA NA FAIXA DO PROPRIO BLOCO. Reprocurar so pelo NOME devolve o
+        # primeiro `Number` da mesa — e a Aula 4 tem dois, um por sentido. O
+        # bloco de baixo mostrava `3` na tela, certinho, e a leitura trazia o
+        # `-3` do de cima: a guarda reprovava um valor correto e parava a
+        # captura. Reprocurar continua valendo (zoom e rolagem movem tudo), mas
+        # perto de onde o bloco estava.
         a, _ = nav.captura("/tmp/_bl_val.png")
+        alt = Image.open(a).size[1]
+        faixa = (TELA[0], max(0.0, (bloco.y - 140) / alt),
+                 TELA[2], min(1.0, (bloco.y + 200) / alt))
+        b = acha_bloco(bloco.nome, regiao=faixa)
         grupos, _caixa = _glifos_azuis(a, b)
         if not grupos:
             time.sleep(0.8); continue
@@ -1274,7 +1331,12 @@ def escolhe_na_lista(rotulo, nome):
     if not rs.tem_texto(nome, arquivo=c):
         raise RuntimeError(f"escolhi '{nome}' em '{rotulo}' e o painel nao o mostra")
     print(f"   {rotulo} = {nome}", flush=True)
-    return True
+    # DEVOLVE O PONTO DO SELETOR, nao `True`: quando esta chamada e o gesto de
+    # um clipe, e este ponto que vira a seta. Com `True` o alvo ficava em
+    # (0,0) e a seta apontava para o canto da tela — o guarda dos alvos pegou.
+    # O seletor, e nao o item da lista: ele aparece nos DOIS quadros, e o item
+    # so existe num estado que nenhum quadro mostra.
+    return p
 
 
 def marca_do_bloco(rotulo, quero=True, folga=150):
@@ -1320,10 +1382,11 @@ def comum_caixinha(arquivo, ponto, folga=150):
 # na mesa e `RestartGame` e le perfeitamente. Regra pela forma da palavra erra
 # o alvo; a lista diz exatamente quem.
 SEM_TITULO_LEGIVEL = {"Run & Jump", "Top Down Movement", "Platformer",
-                      "Follow Player", "Health Bar"}
+                      "Follow Player", "Health Bar", "Ship Controls",
+                      "Dangerous"}
 
 
-def bloco_ou_solta(nome, x, y, titulo=None, exige_titulo=None):
+def bloco_ou_solta(nome, x, y, titulo=None, exige_titulo=None, regiao=None):
     """O bloco, se ele JA estiver na mesa; senao solta um novo ali.
 
        Uma etapa de captura costuma ser repetida depois de um erro no meio
@@ -1331,14 +1394,15 @@ def bloco_ou_solta(nome, x, y, titulo=None, exige_titulo=None):
        segundo nao aparece na foto que a crianca vai comparar."""
     alvo = titulo or nome
     try:
-        return acha_bloco(alvo)
+        return acha_bloco(alvo, regiao=regiao or TELA)
     except RuntimeError:
         # Os pacotes de `Behavior Bundles` nao tem titulo que o OCR leia, e
         # nunca levam fio: para eles a mudanca de pixel e a unica prova
         # possivel. Para todo o resto, o titulo lido e obrigatorio.
         if exige_titulo is None:
             exige_titulo = nome not in SEM_TITULO_LEGIVEL
-        return solta(nome, x, y, titulo=titulo, exige_titulo=exige_titulo)
+        return solta(nome, x, y, titulo=titulo, exige_titulo=exige_titulo,
+                     regiao=regiao)
 
 
 def escolhe_tipo_da_colisao(bloco, tipo):
@@ -1369,8 +1433,13 @@ def escolhe_tipo_da_colisao(bloco, tipo):
     fecha_ajustes()
     for tentativa in range(4):
         time.sleep(1.0)
-        b = acha_bloco(bloco.nome)
         a3, _ = nav.captura("/tmp/_bl_col2.png")
+        # NA FAIXA DO PROPRIO BLOCO, pelo mesmo motivo do `le_valor`: reprocurar
+        # so pelo nome devolve o primeiro bloco daquele tipo na mesa.
+        alt = Image.open(a3).size[1]
+        b = acha_bloco(bloco.nome,
+                       regiao=(TELA[0], max(0.0, (bloco.y - 140) / alt),
+                               TELA[2], min(1.0, (bloco.y + 200) / alt)))
         lido = " ".join(t for t, *_ in rs.ocr_forte(
             a3, regiao=b.regiao(folga_esq=60, folga_dir=320,
                                 folga_cima=60, folga_baixo=220), psm="6")).lower()
@@ -1389,14 +1458,22 @@ def prepara_menos(bloco, positivo):
        um botao que nao existe em nenhum dos dois — foi o que aconteceu com o
        clipe do passo mais importante da Aula 3.
 
-       Devolve o ponto do botao `−`."""
+       Devolve o ponto do botao `−`.
+
+       O DESLOCAMENTO E MEDIDO NA FOTO, nao estimado: com `p` no CENTRO do
+       rotulo `Current value:`, o `−` fica em +186 e o `+` em +249, a 63 px um
+       do outro. O numero antigo, +220, caia bem no VAO entre os dois, mais
+       perto do `+` — e e o `+` que ele acertava: tres cliques num `Number`
+       zerado devolviam `3` em vez de `-3`, e o bloco ficava mandando a nave
+       para o lado errado. Na Aula 3 o mesmo +220 pegou o `−` por pouco, e por
+       isso o defeito atravessou uma aula inteira sem aparecer."""
     p = abre_ajustes(bloco)
     if not p:
         raise RuntimeError(f"o bloco {bloco.nome} nao tem campo 'Current value'")
     nav.clique_seguro(p[0] + 30, p[1] + 68); time.sleep(0.6)
     rs.tecla(0, cmd=True); time.sleep(0.25)
     rs.digita_teclas(str(positivo)); time.sleep(0.5)
-    return (p[0] + 220, p[1] + 70)
+    return (p[0] + 186, p[1] + 70)
 
 
 def clica_menos(ponto, cliques=1):

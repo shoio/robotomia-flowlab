@@ -174,6 +174,62 @@ def confere_fisica(**esperado):
     return True
 
 
+# ──────────────────────────── a tecla do `Keyboard` ────────────────────────────
+
+def ponto_change_key(arquivo=None):
+    """O ponto do botao `Change Key`, achado pelo rotulo `Current key:`.
+
+       Procurar o botao pelo PROPRIO nome nao funciona: a coluna da palheta
+       cobre a primeira letra dele e o OCR le `ange Key`. O rotulo de cima
+       nasce inteiro, entao o botao e o primeiro pedaco de `Change Key` ABAIXO
+       dele."""
+    a = arquivo or nav.captura("/tmp/_ac_key.png")[0]
+    itens = rs.ocr_forte(a, psm="6")
+    base = None
+    for t, x, y, w, h in itens:
+        if t.strip().lower().startswith("current"):
+            base = y
+    if base is None:
+        raise RuntimeError("o painel do `Keyboard` nao mostra `Current key:` "
+                           "— os ajustes nao abriram")
+    alvos = [(x, y, w, h) for t, x, y, w, h in itens
+             if t.strip().lower() in ("key", "ange", "change") and y > base + 20]
+    if not alvos:
+        raise RuntimeError("achei `Current key:` mas nao o botao `Change Key`")
+    x, y, w, h = min(alvos, key=lambda it: it[1])
+    return (x + w // 2, y + h // 2)
+
+
+def poe_tecla(bloco, codigo, nome, clipe=None, gid=None):
+    """Escolhe a tecla de um `Keyboard` e LE DE VOLTA o que o painel mostra.
+
+       O bloco nasce SEM tecla (`Current key:` vem vazio), e um `Keyboard` sem
+       tecla nao dispara nunca — sem acusar nada no editor.
+
+       Com `clipe`, o gesto gravado e SO o clique no `Change Key` mais a tecla:
+       o painel fica aberto nos dois quadros e a crianca ve o campo mudar.
+    """
+    blocos.abre_ajustes(bloco); time.sleep(1.3)
+    p = ponto_change_key()
+
+    def troca():
+        rs.clique_img(p[0], p[1], escala=2.0, janela=nav.janela()); time.sleep(1.4)
+        rs.tecla(codigo); time.sleep(1.2)
+        return p
+
+    if clipe:
+        A.gesto(clipe, gid, p, troca, espera=1.4)
+    else:
+        troca()
+    b, _ = nav.captura("/tmp/_ac_key2.png")
+    if not rs.tem_texto(nome, arquivo=b):
+        raise RuntimeError(f"apertei a tecla no `Change Key` e o painel nao "
+                           f"mostra `{nome}`")
+    print(f"   tecla = {nome}", flush=True)
+    blocos.fecha_ajustes(); time.sleep(1.2)
+    return p
+
+
 # ──────────────────────────── mesa de blocos ────────────────────────────
 
 def abre_mesa(c, r):
