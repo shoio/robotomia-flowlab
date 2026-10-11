@@ -1427,7 +1427,9 @@ def campo_abaixo(rotulo, valor, dy=55):
     if not rs.tem_texto(str(valor), arquivo=b):
         raise RuntimeError(f"escrevi '{valor}' em '{rotulo}' e o painel nao o mostra")
     print(f"   {rotulo} = {valor}", flush=True)
-    return True
+    # O PONTO DO CAMPO, nao `True`: quando esta chamada e o gesto de um clipe,
+    # e ele que vira a seta. Com `True` o alvo ficava em (0,0).
+    return (p[0] + 10, p[1] + dy)
 
 
 def marca_do_bloco(rotulo, quero=True, folga=150):
@@ -1513,7 +1515,16 @@ def escolhe_tipo_da_colisao(bloco, tipo):
         raise RuntimeError("nao achei a lista de tipos no bloco Collision")
     nav.clique_seguro(q[0], q[1]); time.sleep(1.5)
     a2, _ = nav.captura("/tmp/_bl_col1.png")
-    r = nav.acha_texto(tipo.lower(), arquivo=a2, regiao=(0.3, 0.1, 0.6, 0.7))
+    # A LISTA PENDURA NO CABECALHO que acabei de clicar, e e por ele que eu a
+    # procuro. O recorte fixo (0.3 .. 0.6) valia so para um `Collision` solto
+    # no meio da mesa: com ele mais a esquerda, a lista abre mais a esquerda
+    # tambem, e o `Fogo` da Aula 5 caiu em x=800 com a busca comecando em 882.
+    # O erro que sobrava — "o tipo nao aparece na lista" — mandava procurar o
+    # defeito no campo `Type` do objeto, que estava certo o tempo todo.
+    larg, alt = Image.open(a2).size
+    faixa = (max(0.0, (q[0] - 250) / larg), max(0.0, (q[1] - 20) / alt),
+             min(1.0, (q[0] + 450) / larg), min(1.0, (q[1] + 520) / alt))
+    r = nav.acha_texto(tipo.lower(), arquivo=a2, regiao=faixa)
     if not r:
         raise RuntimeError(f"o tipo {tipo!r} nao aparece na lista do Collision — "
                            "o objeto tem esse nome no campo `Type`?")

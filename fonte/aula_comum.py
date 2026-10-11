@@ -111,14 +111,22 @@ def clona(c, r, nome, colunas):
     if not p:
         raise RuntimeError(f"nao achei Clone para {nome}")
     clique(*p); time.sleep(2)
+    primeira = None
     for cc in colunas:
+        if primeira is None:
+            primeira = cc
         cx, cy = celula(cc, r)
         clique(cx, cy); time.sleep(1.0)
     q = nav.acha_texto("done cloning")
     if not q:
         raise RuntimeError("clonei e nao achei o `Done Cloning` para fechar")
     clique(*q); time.sleep(2); nav.espera_parar(limite=15)
-    return True
+    # DEVOLVE A PRIMEIRA CASA CLONADA, nao `True`: quando esta chamada e o
+    # gesto de um clipe, e este ponto que vira a seta — e `True` deixava o alvo
+    # em (0,0), com a seta no canto da tela. A primeira casa clonada e o melhor
+    # alvo possivel: ela esta VAZIA no quadro de antes e tem bloco no de
+    # depois, que e exatamente o que a crianca precisa ver.
+    return celula(primeira, r) if primeira is not None else True
 
 
 # ──────────────────────────────── fisica ────────────────────────────────
@@ -172,6 +180,25 @@ def confere_fisica(**esperado):
     print("   fisica conferida depois de fechar: " +
           ", ".join(f"{k}={v}" for k, v in esperado.items()), flush=True)
     return True
+
+
+def _na_fila(b, regiao, quem):
+    """O bloco esta MESMO na fileira que eu pedi?
+
+       `bloco_ou_solta` reaproveita um bloco que ja exista no recorte — e foi
+       assim que, numa sonda, o segundo `Keyboard` nunca nasceu: ele devolveu o
+       PRIMEIRO, e o gesto seguinte trocou a tecla do bloco errado, sem erro
+       nenhum na tela. A altura e a prova barata de que a fileira e a certa."""
+    from PIL import Image as _Im
+    # A altura da TELA de verdade, nao um numero decorado: o recorte e dado em
+    # fracao, e `acha_bloco` acabou de fotografar.
+    h = _Im.open("/tmp/_bl_acha.png").size[1]
+    y0, y1 = regiao[1] * h, regiao[3] * h
+    if not (y0 <= b.y <= y1):
+        raise RuntimeError(f"o {quem} saiu na altura {b.y}, fora da fileira "
+                           f"{int(y0)}..{int(y1)} — `bloco_ou_solta` deve ter "
+                           "reaproveitado o bloco de outra fileira")
+    return b
 
 
 # ──────────────────────────── a tecla do `Keyboard` ────────────────────────────

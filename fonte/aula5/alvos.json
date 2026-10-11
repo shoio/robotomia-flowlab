@@ -1,0 +1,122 @@
+{
+ "abrir_niveis": {
+  "antes": "g08a_a.jpg",
+  "depois": "g08a_b.jpg",
+  "alvo": [
+   1470,
+   1584
+  ],
+  "botao": "esq",
+  "clicado": true
+ },
+ "pintar_o_ceu": {
+  "antes": "g08_a.jpg",
+  "depois": "g08_b.jpg",
+  "alvo": [
+   1296,
+   1298
+  ],
+  "botao": "esq",
+  "clicado": false
+ },
+ "criar_objeto": {
+  "antes": "g01_a.jpg",
+  "depois": "g01_b.jpg",
+  "alvo": [
+   1182,
+   770
+  ],
+  "botao": "esq",
+  "clicado": true
+ },
+ "escolher_create": {
+  "antes": "g02_a.jpg",
+  "depois": "g02_b.jpg",
+  "alvo": [
+   1062,
+   768
+  ],
+  "botao": "esq",
+  "clicado": true
+ },
+ "escolher_sprite": {
+  "antes": "g13_a.jpg",
+  "depois": "g13_b.jpg",
+  "alvo": [
+   2307,
+   184
+  ],
+  "botao": "esq",
+  "clicado": true
+ },
+ "abrir_physics": {
+  "antes": "g03_a.jpg",
+  "depois": "g03_b.jpg",
+  "alvo": [
+   1821,
+   1141
+  ],
+  "botao": "esq",
+  "clicado": true
+ },
+ "marcar_movable": {
+  "antes": "g04_a.jpg",
+  "depois": "g04_b.jpg",
+  "alvo": [
+   1370,
+   417
+  ],
+  "botao": "esq",
+  "clicado": true
+ },
+ "clonar_o_chao": {
+  "antes": "g05_a.jpg",
+  "depois": "g05_b.jpg",
+  "alvo": [
+   1054,
+   1154
+  ],
+  "botao": "esq",
+  "clicado": true
+ },
+ "muda_a_tecla": {
+  "antes": "g09_a.jpg",
+  "depois": "g09_b.jpg",
+  "alvo": [
+   1248,
+   354
+  ],
+  "botao": "esq",
+  "clicado": false
+ },
+ "jogar": {
+  "antes": "g10_a.jpg",
+  "depois": "g10_b.jpg",
+  "alvo": [
+   1051,
+   1586
+  ],
+  "botao": "esq",
+  "clicado": true
+ },
+ "faixa_do_sorteio": {
+  "antes": "g06_a.jpg",
+  "depois": "g06_b.jpg",
+  "alvo": [
+   1844,
+   626
+  ],
+  "botao": "esq",
+  "clicado": false
+ },
+ "ajustes_do_fogo": {
+  "antes": "g07_a.jpg",
+  "depois": "g07_b.jpg",
+  "alvo": [
+   2209,
+   158
+  ],
+  "botao": "esq",
+  "clicado": false
+ }
+}

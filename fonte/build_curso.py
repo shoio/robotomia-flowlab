@@ -7,7 +7,7 @@
 import os, json, shutil
 from PIL import Image
 import gera_curso as G
-import conteudo_a1, conteudo_a2, conteudo_a3, conteudo_a4
+import conteudo_a1, conteudo_a2, conteudo_a3, conteudo_a4, conteudo_a5
 
 AQUI  = os.path.dirname(os.path.abspath(__file__))     # .../fonte
 SAIDA = os.path.dirname(AQUI)                          # a raiz do repositorio
@@ -18,7 +18,7 @@ PLANO = [
     (2,  "Pulo e plataformas", "Três degraus, uma estrela no alto e lava embaixo. Caiu, recomeça.", True),
     (3,  "A lava que sobe", "A lava não fica parada: ela sobe sozinha. Suba a escada antes.", True),
     (4,  "Nave e tiro", "Uma nave que atira e inimigos que descem sozinhos.", True),
-    (5,  "Um botao so", "O passaro entre os canos, com placar na tela: acaso e dificuldade que cresce.", False),
+    (5,  "Um botao so", "Um passarinho que so sabe subir, bolas de fogo em alturas sorteadas e um placar na tela.", True),
     (6,  "Chave e porta", "Labirinto com chave: o jogo passa a ter memoria.", False),
     (7,  "Empurra-blocos", "Quebra-cabeca: empurrar caixas ate os alvos.", False),
     (8,  "Contra o relogio", "Percurso cronometrado, com recorde da partida.", False),
@@ -33,6 +33,7 @@ def aula1(): return _de_conteudo(conteudo_a1)
 def aula2(): return _de_conteudo(conteudo_a2)
 def aula3(): return _de_conteudo(conteudo_a3)
 def aula4(): return _de_conteudo(conteudo_a4)
+def aula5(): return _de_conteudo(conteudo_a5)
 
 
 def _de_conteudo(mod):
@@ -109,7 +110,7 @@ def monta():
     # e em quem e montado. Eu liguei a Aula 4 na lista do build antes de a
     # captura dela existir, e o build inteiro travou no guarda — com as tres
     # aulas que estavam no ar reféns de uma quarta que ainda nao tinha foto.
-    construtores = {1: aula1, 2: aula2, 3: aula3, 4: aula4}
+    construtores = {1: aula1, 2: aula2, 3: aula3, 4: aula4, 5: aula5}
     for n, _tit, _sub, pronta in PLANO:
         if not pronta or n not in construtores:
             continue

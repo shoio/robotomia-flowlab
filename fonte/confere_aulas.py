@@ -31,11 +31,12 @@ def confere(aulas=None):
     if aulas is None:
         # so as aulas que o PLANO marca como PRONTAS: aula escrita e ainda nao
         # capturada reprovaria por "foto sumida" e travaria o build das outras.
-        import conteudo_a1, conteudo_a2, conteudo_a3, conteudo_a4
+        import conteudo_a1, conteudo_a2, conteudo_a3, conteudo_a4, conteudo_a5
         import build_curso as _b
         prontas = {n for n, _t, _s, p_ in _b.PLANO if p_}
         aulas = [m.AULA for m in (conteudo_a1, conteudo_a2, conteudo_a3,
-                                  conteudo_a4) if m.AULA["n"] in prontas]
+                                  conteudo_a4, conteudo_a5)
+                 if m.AULA["n"] in prontas]
 
     for A in aulas:
         n, slug = A["n"], A["slug"]

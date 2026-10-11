@@ -118,33 +118,14 @@ Y_ESQ, Y_DIR, Y_TIRO = 520, 960, 1400
 VEL_NAVE = 3            # medido: 3 => ~60 px de tela por segundo (a tela em ~6 s)
 
 
-def _na_fileira(b, regiao, quem):
-    """O bloco esta MESMO na fileira que eu pedi?
-
-       `bloco_ou_solta` reaproveita um bloco que ja exista no recorte — e foi
-       assim que, numa sonda, o segundo `Keyboard` nunca nasceu: ele devolveu o
-       PRIMEIRO, e o gesto seguinte trocou a tecla do bloco errado, sem erro
-       nenhum na tela. A altura e a prova barata de que a fileira e a certa."""
-    from PIL import Image as _Im
-    # A altura da TELA de verdade, nao um numero decorado: o recorte e dado em
-    # fracao, e `acha_bloco` acabou de fotografar.
-    h = _Im.open("/tmp/_bl_acha.png").size[1]
-    y0, y1 = regiao[1] * h, regiao[3] * h
-    if not (y0 <= b.y <= y1):
-        raise RuntimeError(f"o {quem} saiu na altura {b.y}, fora da fileira "
-                           f"{int(y0)}..{int(y1)} — `bloco_ou_solta` deve ter "
-                           "reaproveitado o bloco de outra fileira")
-    return b
-
-
 def _trio(y, regiao, codigo, nome_tecla, negativo, clipe=None, gid=None):
     """Keyboard -> Number -> Velocity.x, o trio da Aula 3 com duas trocas."""
     blocos.abre_categoria("Triggers")
-    k = _na_fileira(blocos.bloco_ou_solta("Keyboard", 900, y, regiao=regiao),
+    k = AC._na_fila(blocos.bloco_ou_solta("Keyboard", 900, y, regiao=regiao),
                     regiao, f"Keyboard {nome_tecla}")
     AC.poe_tecla(k, codigo, nome_tecla, clipe=clipe, gid=gid)
     blocos.abre_categoria("Logic & Math")
-    nu = _na_fileira(blocos.bloco_ou_solta("Number", 1700, y, regiao=regiao),
+    nu = AC._na_fila(blocos.bloco_ou_solta("Number", 1700, y, regiao=regiao),
                      regiao, f"Number {nome_tecla}")
     # PELO BOTAO `−`, que e o caminho que a aula ensina (e o unico que funciona:
     # o campo engole o hifen digitado em primeiro lugar). O bloco nasce valendo
@@ -161,7 +142,7 @@ def _trio(y, regiao, codigo, nome_tecla, negativo, clipe=None, gid=None):
         raise RuntimeError(f"o Number da fileira {nome_tecla} mostra {lido!r} "
                            f"e eu esperava {esperado!r}")
     blocos.abre_categoria("Properties")
-    ve = _na_fileira(blocos.bloco_ou_solta("Velocity", 2500, y, regiao=regiao),
+    ve = AC._na_fila(blocos.bloco_ou_solta("Velocity", 2500, y, regiao=regiao),
                      regiao, f"Velocity {nome_tecla}")
     blocos.liga_fixo(k, "down", nu, "get")
     # NO `x`, NAO NO `y`: o `y` e o da lava da Aula 3, e manda a nave para
@@ -288,7 +269,7 @@ def atira():
     blocos.abre_categoria("Triggers")
     # A TERCEIRA fileira, com recorte proprio: a mesa ja tem dois `Keyboard`
     # (as setas do movimento) e `acha_bloco` devolveria o primeiro deles.
-    k = _na_fileira(blocos.bloco_ou_solta("Keyboard", 900, Y_TIRO,
+    k = AC._na_fila(blocos.bloco_ou_solta("Keyboard", 900, Y_TIRO,
                                           regiao=FILA_TIRO),
                     FILA_TIRO, "Keyboard do tiro")
     # O BLOCO NASCE SEM TECLA: `Current key:` vem vazio, e um `Keyboard` sem
