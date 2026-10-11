@@ -1,0 +1,146 @@
+# -*- coding: utf-8 -*-
+"""Aula 6 — Chave e porta."""
+
+AULA = {
+ "n": 6,
+ "slug": "aula6",
+ "titulo": "Chave e porta",
+ "subtitulo": "Uma porta fecha o caminho e uma chave a abre — não porque você mandou, mas porque a chave mandou um recado para ela.",
+ "tempo": "50 minutos",
+ "etiqueta": "Aula 6 · chave e porta",
+ "fim": "Acabou a Aula 6. Até hoje cada peça do seu jogo só sabia de si mesma. Agora elas <b>conversam</b>: a chave manda um recado e a porta, do outro lado da tela, escuta. É assim que jogo grande funciona — o botão que acende a luz, a alavanca que abre a ponte, o chefe que chama os ajudantes. Mande o link e veja alguém procurar a chave.",
+ "avisos": [
+   ("Jogo novo", "Esta aula começa num jogo novo, do zero. Os das aulas 1 a 5 ficam guardados na sua lista."),
+   ("O que é novo hoje", "Dois blocos que andam em par: o <span class=ui>Message</span>, que <b>manda um recado</b>, e o <span class=ui>Mailbox</span>, a <b>caixa de correio</b> que o recebe. Um fica numa peça e o outro em outra."),
+   ("Você já sabe quase tudo", "O boneco corre e pula com o <b>mesmo pacote da Aula 2</b>. O <span class=ui>Collision</span> e o <span class=ui>Destroyer</span> também já são seus, desde a Aula 1."),
+   ("Os clipes", "Os passos com animação mostram o gesto inteiro: o mouse andando, o <b>botão certo acendendo</b> e o que muda na tela."),
+   ("Travou?", "Todo passo tem um quadro laranja embaixo com o conserto dos erros mais comuns."),
+ ],
+ "passos": [
+
+  dict(n=1, titulo="Abra o Flowlab e entre em MY GAMES", img="comum_fotos/c02_lista.jpg", clipe="abrir_my_games.gif",
+    corpo="Abra o navegador em <b>flowlab.io</b> e entre com a sua conta.<br><br>No alto da página, clique em <span class=ui>My Games</span>. Aparecem os jogos que você já fez.",
+    ck="Você está na lista <span class=ui>My Games</span> e vê os seus jogos anteriores.",
+    sos=[("Não lembro a senha","Chame o professor. Não crie conta nova: os seus jogos estão na antiga."),
+         ("A lista está vazia","Confira se entrou com a mesma conta das outras aulas.")]),
+
+  dict(n=2, titulo="Crie um jogo novo", img="comum_fotos/c03_escolher.jpg", clipe="novo_jogo.gif",
+    corpo="Clique no botão verde <span class=ui>New Game</span>, no canto de cima à direita da lista.<br><br>Abre uma tela com os tipos de projeto.",
+    ck="Apareceu a tela com os tipos de projeto para escolher.",
+    sos=[("Não acho o New Game","Ele é o único botão verde da página, no alto à direita.")]),
+
+  dict(n=3, titulo="Escolha o PROJETO VAZIO", img="aula6/p01_vazio.jpg", clipe="empty_project.gif",
+    corpo="Na tela dos tipos, clique em <span class=ui>Empty Project</span> — o projeto vazio.<br><br>Abre o editor com a folha branca quadriculada.",
+    ck="O editor abriu com a folha branca quadriculada no meio.",
+    sos=[("Escolhi outro e veio um jogo pronto","Volte em <span class=ui>My Games</span>, apague esse e comece de novo pelo <span class=ui>Empty Project</span>.")]),
+
+  dict(n=4, titulo="Pinte o céu", img="aula6/p02_ceu.jpg",
+    clipe=[("Abrir os níveis", "abrir_niveis.gif"), ("Pintar o céu", "pintar_o_ceu.gif")],
+    corpo="Clique em <span class=ui>Game Levels</span>, na fileira de baixo. Ao lado do nome <span class=ui>Level 1</span> há um campo escrito <span class=ui>FFFFFF</span> — é a <b>cor do fundo</b>.<br><br>Clique nele, apague, escreva <b>A8DADC</b> e aperte Enter.<br><br>Esse azul claro é escolhido de propósito: a porta de hoje é <b>escura</b>, e precisa aparecer contra o fundo.",
+    ck="A folha do nível ficou <b>azul claro</b>.",
+    sos=[("Digitei e não mudou","Aperte Enter depois de escrever. Sem ele o campo não vale.")]),
+
+  dict(n=5, titulo="Crie o jogador", img="aula6/g01_b.jpg", clipe="criar_objeto.gif",
+    corpo="Clique uma vez dentro da folha azul, na <b>parte de baixo, à esquerda</b> — é de lá que ele vai começar a andar.<br><br>Abre a roda com <span class=ui>Create</span> e <span class=ui>Cancel</span>.",
+    ck="Apareceu a roda escura com <span class=ui>Create</span> e <span class=ui>Cancel</span>.",
+    sos=[("Cliquei fora da folha","Clique dentro do retângulo azul. Fora dele não nasce objeto.")]),
+
+  dict(n=6, titulo="Escolha CREATE", img="aula6/g02_b.jpg", clipe="escolher_create.gif",
+    corpo="Na roda que abriu, clique em <span class=ui>Create</span>, na metade de cima.<br><br>Abre o painel do objeto novo.",
+    ck="O painel do objeto abriu, com os campos vazios esperando um nome.",
+    sos=[("Cliquei em Cancel sem querer","Clique na casa de novo e escolha <span class=ui>Create</span>.")]),
+
+  dict(n=7, titulo="Escreva JOGADOR nos dois campos", img="aula6/p03_nome.jpg",
+    corpo="No campo <span class=ui>Name</span>, escreva <b>Jogador</b> e aperte Tab. No campo <span class=ui>Type</span>, escreva <b>Jogador</b> também.<br><br>O <span class=ui>Type</span> hoje trabalha <b>duas vezes</b>: no passo 16, quando a chave perguntar <i>quem encostou em mim</i>, e no passo 21, com a estrela. Sem ele a lista mostra <span class=ui>New Type 1</span> e não dá para saber qual é qual.",
+    ck="Os dois campos, <span class=ui>Name</span> e <span class=ui>Type</span>, dizem <b>Jogador</b>.",
+    sos=[("Escrevi só no Name","Clique no campo <span class=ui>Type</span> e escreva lá também."),
+         ("Escrevi com acento","Escreva sem acento. Acento em nome de peça dá problema mais para a frente.")]),
+
+  dict(n=8, titulo="Escolha o desenho do jogador", img="aula6/p04_jogador.jpg", clipe="escolher_sprite.gif",
+    corpo="Clique no quadrado <span class=ui>edit sprite</span>, à esquerda do painel.<br><br><b>1.</b> Clique em <span class=ui>Browse</span>, embaixo da paleta de cores.<br><b>2.</b> Se aparecer o botão azul <span class=ui>&lt; Menu</span> no alto, clique nele.<br><b>3.</b> Clique em <span class=ui>Flowlab Sprites</span> e depois na faixa azul <span class=ui>Characters</span>.<br><b>4.</b> Clique no <b>primeiro boneco</b>, no canto de cima à esquerda.<br><br>Para fechar, clique em <span class=ui>OK</span>, no canto de baixo à esquerda.",
+    ck="O boneco apareceu na folha, embaixo à esquerda.",
+    sos=[("Não acho o Browse","Ele fica embaixo da paleta de cores, na coluna da direita."),
+         ("Cliquei e não mudou nada","Clique bem em cima da figura, não no espaço entre elas.")]),
+
+  dict(n=9, titulo="A física do jogador", img="aula6/p05_fisica.jpg",
+    clipe=[("Abrir a física", "abrir_physics.gif"), ("Marcar movable", "marcar_movable.gif")],
+    corpo="No painel, clique em <span class=ui>Physics &gt;</span>, no canto de baixo à direita.<br><br><b>1.</b> <span class=ui>movable</span> — <b>marque</b>. Sem ela nenhuma força move o boneco.<br><b>2.</b> <span class=ui>affected by gravity</span> — <b>deixe marcada</b>. O jogo de hoje é de plataforma, como o da Aula 2: o boneco anda no chão e pula.<br><br>Feche no <span class=ui>OK</span> azul.",
+    ck="<span class=ui>movable</span> está <b>azul</b> e <span class=ui>affected by gravity</span> <b>também</b>.",
+    sos=[("Não acho Physics","É um texto azul claro, pequeno, no canto de baixo à direita do painel."),
+         ("Desmarquei a gravidade","Abra a física de novo e marque. Sem ela o boneco fica parado no ar.")]),
+
+  dict(n=10, titulo="Faça o boneco correr e pular", img="aula6/p06_correr.jpg",
+    corpo="Com o jogador aberto, clique em <span class=ui>Behaviors</span>. Abre a mesa de blocos, vazia.<br><br>Na coluna da esquerda, lá embaixo, clique em <span class=ui>Behavior Bundles</span> e <b>arraste</b> o <span class=ui>Run &amp; Jump</span> para o meio da mesa.<br><br>É o mesmo pacote da Aula 2: um arrasto só e o boneco ganha as setas e o pulo. Espere uns segundos antes de fechar — o Flowlab precisa de um tempinho para guardar.",
+    ck="Um bloco <span class=ui>Run &amp; Jump</span> está na mesa de blocos.",
+    sos=[("Arrastei e não caiu nada","Solte no meio da mesa, longe da beirada. Perto da borda a mesa rola sozinha."),
+         ("Não acho Behavior Bundles","É o último item da coluna da esquerda. Role até o fim.")]),
+
+  dict(n=11, titulo="Faça o chão", img="aula6/p07_chao.jpg", clipe="clonar_o_chao.gif",
+    corpo="Feche as duas telas. Clique na <b>casa do canto de baixo à esquerda</b> da folha e escolha <span class=ui>Create</span>. Em <span class=ui>Name</span> e em <span class=ui>Type</span> escreva <b>Chao</b>. Em <span class=ui>edit sprite</span>, pelo <span class=ui>Browse</span>, pegue o <b>primeiro bloco</b> de <span class=ui>Flowlab Sprites</span> &rsaquo; <span class=ui>Blocks</span> — o de terra com grama. Feche no <span class=ui>OK</span>.<br><br>Agora repita a peça pela fileira toda: clique nela, escolha <span class=ui>Clone</span> e clique nas casas <b>à direita</b>, uma de cada vez, até a ponta. Para terminar, clique em <span class=ui>done cloning</span>.",
+    ck="Uma fileira de blocos de grama cobre o fundo da folha, de ponta a ponta, sem buraco.",
+    sos=[("Ficou um buraco","Clique na casa vazia, escolha <span class=ui>Clone</span> e preencha."),
+         ("O chão precisa de física?","Não. Ele fica parado, e é isso que a gente quer.")]),
+
+  dict(n=12, titulo="Jogue e ande", img="aula6/p08_andando.jpg", clipe="jogar.gif",
+    corpo="Feche as duas telas e clique em <span class=ui>Play</span>, na fileira de baixo.<br><br>Clique uma vez dentro do jogo para ele ouvir o teclado. Ande com as <b>setas</b> e pule com a <b>seta de cima</b>.<br><br>Ainda não há nada para fazer. É agora que o jogo ganha um problema.",
+    ck="O boneco anda para os dois lados e pula.",
+    sos=[("Ele não anda","Clique uma vez dentro do jogo primeiro. E confira o passo 10: o pacote tem de estar na mesa."),
+         ("Ele atravessa o chão","Confira se o chão foi criado como peça, e não desenhado no fundo.")]),
+
+  dict(n=13, titulo="Crie a CHAVE", img="aula6/p09_chave.jpg",
+    corpo="Volte ao editor pelo botão <span class=ui>Editor</span>, embaixo do jogo.<br><br>Clique numa casa do chão <b>um pouco à direita do boneco</b> e escolha <span class=ui>Create</span>. Escreva <b>Chave</b> nos dois campos.<br><br>Em <span class=ui>edit sprite</span>, pelo <span class=ui>Browse</span>, vá em <span class=ui>Flowlab Sprites</span> &rsaquo; <span class=ui>Objects</span> e procure a <b>chave dourada</b> — ela está no meio da grade, deitada.",
+    ck="Uma chave dourada está no chão, à direita do boneco.",
+    sos=[("Não acho a chave na grade","Role a grade de <span class=ui>Objects</span>. Ela é dourada e fica deitada, perto dos corações."),
+         ("Peguei o cadeado sem querer","Tudo bem, pode usar: o que importa é você saber qual peça é a chave.")]),
+
+  dict(n=14, titulo="Levante a PORTA", img="aula6/p10_porta.jpg", clipe="levantar_a_porta.gif",
+    corpo="Clique numa casa do chão <b>mais à direita ainda</b>, depois da chave, e escolha <span class=ui>Create</span>. Escreva <b>Porta</b> nos dois campos.<br><br>Em <span class=ui>edit sprite</span>, pelo <span class=ui>Browse</span>, em <span class=ui>Flowlab Sprites</span> &rsaquo; <span class=ui>Blocks</span>, pegue o <b>vão escuro com batente</b> — ele parece uma porta aberta.<br><br>Agora faça a porta <b>subir</b>: clique nela, escolha <span class=ui>Clone</span> e clique nas <b>duas casas acima</b> dela, uma de cada vez. Clique em <span class=ui>done cloning</span>.<br><br>Ela ficou com três pedaços, alta demais para pular por cima. É esse o ponto: hoje o caminho está <b>fechado</b>.",
+    ck="Uma parede escura de <b>três casas de altura</b> fecha o caminho, depois da chave.",
+    sos=[("Consigo pular por cima","Faltou um pedaço. Clone mais uma casa para cima."),
+         ("Clonei para o lado sem querer","Clique na casa errada, escolha <span class=ui>Delete</span>, e clone de novo para cima.")]),
+
+  dict(n=15, titulo="Jogue e bata na porta", img="aula6/p13_porta_fechada.jpg",
+    corpo="Feche as duas telas e clique em <span class=ui>Play</span>.<br><br>Clique uma vez dentro do jogo, ande para a direita e tente passar. <b>Não dá.</b> Pule: também não dá.<br><br>Guarde esta tela na cabeça — é o problema que os próximos passos resolvem. E repare que a chave, por enquanto, <b>não faz nada</b>: você passa por cima dela e nada acontece.",
+    ck="O boneco encosta na porta e para. Pular não resolve.",
+    sos=[("Passo direto pela porta","A porta precisa ser sólida. Abra a física dela e confira se <span class=ui>is solid</span> está marcado."),
+         ("A porta cai quando o jogo começa","Abra a física da porta e desmarque <span class=ui>movable</span>: ela fica parada de propósito.")]),
+
+  dict(n=16, titulo="A chave manda um recado", img="aula6/p11_chave_fala.jpg", clipe="para_quem_vai.gif",
+    corpo="Volte ao editor, clique na <b>chave</b> e depois em <span class=ui>Behaviors</span>.<br><br>Arraste <b>três blocos</b>, bem espalhados:<br><br><b>1.</b> Em <span class=ui>Triggers</span>, o <span class=ui>Collision</span> — à esquerda.<br><b>2.</b> Em <span class=ui>Components</span>, o <span class=ui>Message</span> — no meio. É o bloco do <b>envelope</b>.<br><b>3.</b> Em <span class=ui>Components</span>, o <span class=ui>Destroyer</span> — à direita.<br><br>Dois fios: da bolinha <span class=ui>hit</span> até a bolinha <span class=ui>send</span>, e da bolinha <span class=ui>done</span> até a bolinha <span class=ui>in</span>.<br><br>Diga <b>com quem</b> a batida conta: clique devagar no <span class=ui>Collision</span> e, na lista <span class=ui>Any Type</span>, escolha <b>Jogador</b>.<br><br>E agora o mais importante: <b>para quem vai o recado</b>. Clique devagar no <span class=ui>Message</span>. Onde diz <span class=ui>Send To</span> está escrito <b>Myself</b> — ou seja, a chave falando sozinha. Clique ali e escolha <span class=ui>Choose objects</span>. Aparecem mais dois campos: em <span class=ui>Select Type</span>, escolha <b>Porta</b>.<br><br>Lendo em voz alta: <i>quando o Jogador encostar em mim, mande um recado para a Porta; quando o recado sair, eu sumo</i>.",
+    ck="O <span class=ui>Collision</span> mostra <b>Jogador</b> embaixo, e o <span class=ui>Message</span> está enviando para o tipo <b>Porta</b>.",
+    sos=[("Não acho o Send To","Ele fica na janelinha de ajustes do <span class=ui>Message</span>, embaixo do primeiro campo. O seletor está na <b>linha de baixo</b> do rótulo."),
+         ("A lista não mostra Porta","Falta o <span class=ui>Type</span> da porta. Volte ao passo 14 e escreva <b>Porta</b> também no campo <span class=ui>Type</span>."),
+         ("A chave some mas a porta fica","O recado está indo para <b>Myself</b>. Volte no <span class=ui>Send To</span> e escolha <span class=ui>Choose objects</span>."),
+         ("O fio não gruda","Solte os blocos mais LONGE uns dos outros e arraste devagar, de bolinha a bolinha.")]),
+
+  dict(n=17, titulo="A porta escuta", img="aula6/p12_porta_escuta.jpg",
+    corpo="Feche as duas telas, clique na <b>porta</b> e depois em <span class=ui>Behaviors</span>.<br><br>Dois blocos:<br><br><b>1.</b> Em <span class=ui>Triggers</span>, o <span class=ui>Mailbox</span> — o bloco da <b>caixa de correio</b>. Ele não espera tecla nem batida: ele espera <b>recado</b>.<br><b>2.</b> Em <span class=ui>Components</span>, o <span class=ui>Destroyer</span>.<br><br>Um fio: da bolinha <span class=ui>out</span> do <span class=ui>Mailbox</span> até a bolinha <span class=ui>in</span> do <span class=ui>Destroyer</span>.<br><br>Repare que você <b>não escolheu o nome do recado</b> em nenhum dos dois. Os dois já nascem combinados em <span class=ui>Hello</span> — é como se fosse o único assunto que eles sabem conversar. Mais para frente dá para ter vários.<br><br>E você só fez isso <b>uma vez</b>, no molde. Os três pedaços da porta são cópias dele, e os três escutam.",
+    ck="Dois blocos na mesa da porta, ligados por um fio branco: <span class=ui>Mailbox</span> → <span class=ui>Destroyer</span>.",
+    sos=[("Não acho o Mailbox","Ele está em <span class=ui>Triggers</span>, junto com o <span class=ui>Collision</span> e o <span class=ui>Keyboard</span>."),
+         ("Só um pedaço da porta some","Você pôs os blocos num pedaço clonado, não no molde. Clique no pedaço de baixo, o original, e faça neles.")]),
+
+  dict(n=18, titulo="Jogue: a chave abre a porta", img="aula6/p14_porta_aberta.jpg",
+    corpo="Feche as duas telas e clique em <span class=ui>Play</span>.<br><br>Clique uma vez dentro do jogo e ande para a direita. Ao encostar na chave, ela <b>some</b> — e a parede inteira some junto.<br><br>Pare um segundo para ver o que aconteceu: a chave não tocou na porta. Ela <b>falou</b> com a porta, de longe. Esse é o passo da aula.",
+    ck="Encostando na chave, a chave e os três pedaços da porta somem de uma vez.",
+    sos=[("A chave some e a porta não","O <span class=ui>Send To</span> ficou em <b>Myself</b>. Volte ao passo 16."),
+         ("Nada some","Confira o <span class=ui>Collision</span> da chave: ele tem de estar em <b>Jogador</b>."),
+         ("Some um pedaço só da porta","Os blocos foram parar num clone. Ponha no molde — a peça de baixo, a que você criou.")]),
+
+  dict(n=19, titulo="Ponha a ESTRELA do outro lado", img="aula6/p15_estrela.jpg",
+    corpo="Volte ao editor. Clique numa casa do chão <b>bem à direita</b>, depois de onde estava a porta, e escolha <span class=ui>Create</span>.<br><br>Escreva <b>Estrela</b> nos dois campos. Em <span class=ui>edit sprite</span>, pelo <span class=ui>Browse</span>, pegue a <b>estrela dourada</b> em <span class=ui>Flowlab Sprites</span> &rsaquo; <span class=ui>Objects</span>.",
+    ck="A estrela está no chão, depois da porta.",
+    sos=[("Pus antes da porta","Clique nela, escolha <span class=ui>Delete</span> e ponha depois. Senão dá para pegar sem a chave.")]),
+
+  dict(n=20, titulo="Encostou na estrela, ela some", img="aula6/p16_estrela_ganha.jpg",
+    corpo="Com a estrela aberta, clique em <span class=ui>Behaviors</span>.<br><br><b>1.</b> Em <span class=ui>Triggers</span>, arraste um <span class=ui>Collision</span>.<br><b>2.</b> Em <span class=ui>Components</span>, arraste um <span class=ui>Destroyer</span>.<br><b>3.</b> Ligue a bolinha <span class=ui>hit</span> na bolinha <span class=ui>in</span>.<br><br>Clique devagar no <span class=ui>Collision</span> e escolha <b>Jogador</b> na lista.<br><br>É a mesma dupla da moeda da Aula 1, e ela diz <i>peguei</i> sem precisar de palavra nenhuma.",
+    ck="Há um fio de <span class=ui>hit</span> até <span class=ui>in</span>, e o <span class=ui>Collision</span> mostra <b>Jogador</b>.",
+    sos=[("A estrela some sozinha quando o jogo começa","O <span class=ui>Collision</span> ficou em <span class=ui>Any Type</span> e está contando o chão. Escolha <b>Jogador</b>."),
+         ("Encosto nela e não some","Confira o fio: ele tem de ir de <span class=ui>hit</span> até <span class=ui>in</span>.")]),
+
+  dict(n=21, titulo="Jogue e mande o link", img="aula6/p17_jogo.jpg",
+    corpo="Feche as duas telas e clique em <span class=ui>Play</span>.<br><br>Ande para a direita, pegue a chave, passe pela porta que abriu e encoste na estrela. Ela some: você ganhou.<br><br>Para mandar para alguém: copie o endereço que está na barra do navegador e mande. Quem abrir já joga, sem instalar nada — e vai ter de descobrir sozinho que precisa da chave.",
+    ck="O jogo roda do começo ao fim: chave, porta que abre e estrela que some.",
+    sos=[("Está fácil demais","Ponha a chave num lugar alto, em cima de um bloco, para a pessoa ter de pular até ela."),
+         ("Quero duas portas","Dá: crie outra porta com o mesmo <span class=ui>Type</span> <b>Porta</b>, e o mesmo recado abre as duas.")]),
+ ],
+}

@@ -1520,6 +1520,19 @@ def escolhe_tipo_da_colisao(bloco, tipo):
 
        O nome que aparece aqui e o TIPO do objeto (o campo `Type` do painel),
        nao o nome dele — por isso a aula manda escrever `Jogador` nos dois."""
+    # JA ESTA ESCOLHIDO? Entao nao ha o que fazer.
+    #
+    # Repetir uma etapa e rotina aqui, e na segunda vez o seletor ja nao diz
+    # `Any Type`: diz o tipo escolhido. O erro que sobrava — "nao achei a
+    # lista de tipos" — parecia defeito do painel, quando o painel estava
+    # certo e o trabalho, feito.
+    ja, _ = nav.captura("/tmp/_bl_col_ja.png")
+    if rs.procura_forte(tipo.lower(), ja,
+                        regiao=bloco.regiao(folga_esq=60, folga_dir=320,
+                                            folga_cima=60, folga_baixo=220),
+                        psm="6"):
+        print(f"   colisao ja estava em {tipo!r}", flush=True)
+        return True
     p = abre_ajustes(bloco)
     a, _ = nav.captura("/tmp/_bl_col0.png")
     q = nav.acha_texto("any type", arquivo=a)

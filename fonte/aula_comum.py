@@ -102,6 +102,31 @@ def cria_objeto(c, r, nome, tipo=None, clones=None):
     return (x, y)
 
 
+def clona_casas(c, r, nome, casas):
+    """Repete o objeto da casa (c, r) numa lista de casas QUAISQUER.
+
+       O `clona` so anda na horizontal, que e o que chao e plataforma pedem.
+       Uma PORTA e vertical: ela sobe do chao e fecha a passagem."""
+    x, y = celula(c, r)
+    clique(x, y); time.sleep(1.5)
+    a, _ = nav.captura("/tmp/_ac_clone2.png")
+    p = nav.acha_texto("clone", arquivo=a)
+    if not p:
+        raise RuntimeError(f"nao achei Clone para {nome}")
+    clique(*p); time.sleep(2)
+    primeira = None
+    for cc, rr in casas:
+        if primeira is None:
+            primeira = (cc, rr)
+        cx, cy = celula(cc, rr)
+        clique(cx, cy); time.sleep(1.0)
+    q = nav.acha_texto("done cloning")
+    if not q:
+        raise RuntimeError("clonei e nao achei o `Done Cloning` para fechar")
+    clique(*q); time.sleep(2); nav.espera_parar(limite=15)
+    return celula(*primeira) if primeira else True
+
+
 def clona(c, r, nome, colunas):
     """Repete o objeto da casa (c, r) nas `colunas` da mesma fileira."""
     x, y = celula(c, r)
