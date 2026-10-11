@@ -83,13 +83,22 @@ def main():
         passos.append(f"{titulo}    : ok")
 
     falhas = []
+    # O TERCEIRO GUARDA e o da ENGENHARIA REVERSA: o `confere_aulas` olha a
+    # FORMA da aula e o `confere_alvos` as setas dos clipes; nenhum dos dois
+    # sabe dizer se o texto manda arrastar um bloco que a captura nunca pos,
+    # ou se a captura ajustou um numero que nenhum passo menciona — que e um
+    # PASSO OMITIDO: a crianca monta um jogo diferente do que esta nas figuras.
+    # Isso eu achava lendo os 21 passos a mao, um a um.
     for titulo, cmd in (("confere_aulas", [sys.executable, "confere_aulas.py"]),
-                        ("confere_alvos", [sys.executable, "confere_alvos.py"])):
+                        ("confere_alvos", [sys.executable, "confere_alvos.py"]),
+                        ("texto x captura",
+                         [sys.executable, "confere_texto_x_captura.py", str(n)])):
         cod, saida, _ = roda(titulo, cmd)
         marca = "ok" if cod == 0 else "REPROVOU"
         passos.append(f"{titulo}: {marca}")
         if cod != 0:
-            falhas += [l for l in saida.splitlines() if l.strip().startswith("!!")]
+            falhas += [l for l in saida.splitlines()
+                       if l.strip().startswith("!!") or l.strip().startswith("⛔")]
 
     cod, saida, _ = roda("contato", [sys.executable, "folha_de_contato.py", slug])
     folha = saida.strip().split("->")[-1].strip() if cod == 0 else "(nao saiu)"

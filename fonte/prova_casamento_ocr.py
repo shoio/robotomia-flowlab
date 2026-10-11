@@ -149,6 +149,26 @@ def main():
             erros.append(f"{alvo!r} contra a linha {linha!r}: li {achou}, "
                          f"esperava {espero}")
 
+    # ── 8. ALVO DE VARIAS PALAVRAS NAO CASA POR UMA DELAS ──────────────
+    #
+    # `input > 2` casava com o bloco que mostrava `input > 0`, pela palavra
+    # `input`. Isso transformou a leitura de volta da Aula 7 num carimbo: a
+    # condicao do filtro NUNCA foi ajustada, a porta abria na primeira caixa,
+    # e a conferencia deu verde. O ramo palavra-por-palavra existe para OCR
+    # que come o FIM de um rotulo; com alvo de varias palavras quem cuida
+    # disso e o ramo da linha inteira.
+    FILTRO = os.path.join(D, "filtro_input_zero.png")
+    if os.path.exists(FILTRO):
+        for alvo, espero in (("input > 0", True), ("input > 2", False)):
+            achou = bool(rs.tem_texto(alvo, arquivo=FILTRO))
+            print(f"bloco que mostra 'input > 0' casa com {alvo!r}? {achou}"
+                  f"  (esperado {espero})")
+            if achou != espero:
+                erros.append(f"{alvo!r} contra o bloco 'input > 0': li {achou}, "
+                             f"esperava {espero}")
+    else:
+        erros.append(f"falta a foto {FILTRO} — esta parte da prova nao roda")
+
     # CONTROLE: sem a guarda nova, o primeiro caso volta a dar positivo. Sem
     # isto a prova passaria mesmo que alguem apagasse `_corte_de_ocr`.
     sem_guarda = any(rs._prefixo_cortado("collision", "collision shape"[:k])

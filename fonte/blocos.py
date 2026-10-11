@@ -404,6 +404,7 @@ PORTAS = {
     "Number":    {"esq": ["in"],                   "dir": ["out"]},
     "Mailbox":   {"esq": [],                       "dir": ["out"]},
     "Message":   {"esq": ["send"],                 "dir": ["done"]},
+    "Filter":    {"esq": ["set", "in"],            "dir": ["pass", "fail"]},
     "Spawn":     {"esq": ["spawn"],                "dir": ["out"]},
     "Sound":     {"esq": ["play", "stop"],         "dir": ["done"]},
     "Camera":    {"esq": ["set x", "set y", "move x", "move y", "zoom",
@@ -899,6 +900,8 @@ DESLOC = {
                 "dir": {"out": (244, 77)}},
     "Once":    {"esq": {}, "dir": {"out": (244, 57)}},
     "Message": {"esq": {"send": (-27, 55)}, "dir": {"done": (244, 55)}},
+    "Filter":  {"esq": {"set": (-27, 45), "in": (-27, 87)},
+                "dir": {"pass": (244, 45), "fail": (244, 87)}},
     "Mailbox": {"esq": {}, "dir": {"out": (244, 57)}},
     "Position": {"esq": {"x": (-27, 37), "y": (-27, 73),
                          "maisx": (-27, 109), "maisy": (-27, 145)},
@@ -1402,18 +1405,77 @@ def escolhe_na_lista(rotulo, nome, dy=0):
     a, _ = nav.captura("/tmp/_bl_lista0.png")
     p = nav.acha_texto(rotulo, arquivo=a)
     if not p:
+        # JA ESCOLHIDO? O seletor deixa de mostrar o ROTULO assim que recebe um
+        # valor: `Select Type` vira `Porta`. Repetir uma etapa e rotina aqui, e
+        # na segunda vez o erro que sobrava — "nao achei o seletor" — manda
+        # procurar o defeito no painel, que estava certo e preenchido.
+        #
+        # A busca e ancorada no botao `Delete`, que e do PROPRIO painel: sem
+        # isso eu estaria procurando a palavra na tela inteira, que e o que me
+        # fez aprovar uma escolha que nunca aconteceu.
+        d = nav.acha_texto("delete", arquivo=a)
+        if d:
+            larg, alt = Image.open(a).size
+            caixa = (max(0.0, (d[0] - 700) / larg), max(0.0, (d[1] - 700) / alt),
+                     min(1.0, (d[0] + 300) / larg), min(1.0, (d[1] + 60) / alt))
+            if rs.tem_texto(nome, arquivo=a, regiao=caixa):
+                print(f"   {rotulo} ja estava em {nome}", flush=True)
+                return True
         raise RuntimeError(f"nao achei o seletor '{rotulo}' no painel")
-    rs.clique_img(p[0], p[1] + dy, escala=2.0, janela=nav.janela()); time.sleep(1.8)
+    p = (p[0], p[1] + dy)
+    rs.clique_img(p[0], p[1], escala=2.0, janela=nav.janela()); time.sleep(1.8)
     b, _ = nav.captura("/tmp/_bl_lista1.png")
-    q = nav.acha_texto(nome.lower(), arquivo=b)
+    # A LISTA PENDURA NO SELETOR, e so nela eu procuro o item.
+    #
+    # Procurando na tela inteira, esta chamada clicava na primeira ocorrencia
+    # da palavra — e numa mesa de blocos ela mora tambem no RÓTULO de um
+    # bloco vizinho. Na Aula 7 o `Select Type` do `Message` ficou no texto de
+    # fabrica porque o clique foi parar no rotulo `Alvo` do `Collision` ao
+    # lado. Nada acusou: tres etapas adiante o placar simplesmente nao subia.
+    larg, alt = Image.open(b).size
+    lista = (max(0.0, (p[0] - 300) / larg), max(0.0, (p[1] - 30) / alt),
+             min(1.0, (p[0] + 450) / larg), min(1.0, (p[1] + 560) / alt))
+    q = nav.acha_texto(nome.lower(), arquivo=b, regiao=lista)
     if not q:
-        raise RuntimeError(f"abri a lista de '{rotulo}' e nao achei '{nome}' nela")
+        # a lista ROLA quando ha muitos itens
+        for _ in range(3):
+            rs.roda_img(p[0], p[1] + 200, cliques=3)
+            time.sleep(1.0)
+            b, _ = nav.captura("/tmp/_bl_lista1.png")
+            q = nav.acha_texto(nome.lower(), arquivo=b, regiao=lista)
+            if q:
+                break
+    if not q:
+        raise RuntimeError(f"abri a lista de '{rotulo}' e nao achei '{nome}' "
+                           "nela, nem rolando")
     rs.clique_img(q[0], q[1], escala=2.0, janela=nav.janela()); time.sleep(1.5)
     c, _ = nav.captura("/tmp/_bl_lista2.png")
-    if not rs.tem_texto(nome, arquivo=c):
-        raise RuntimeError(f"escolhi '{nome}' em '{rotulo}' e o painel nao o mostra")
+    # CONFERE DENTRO DO PAINEL, nao na tela inteira.
+    #
+    # Com a tela toda, esta leitura de volta aprovava o que nao aconteceu: na
+    # Aula 7 o `Select Type` do `Message` ficou no texto de fabrica, e o
+    # `tem_texto("alvo")` achou a palavra `Alvo` no rotulo do bloco `Collision`
+    # ali do lado. O jogo saiu com a caixa mandando recado para NINGUEM, e a
+    # unica coisa que denunciou foi o placar que nao subia, tres etapas
+    # adiante — longe da causa.
+    larg, alt = Image.open(c).size
+    # A FAIXA E GENEROSA MAS AINDA E O PAINEL. Escolher `Choose objects` faz o
+    # painel CRESCER (aparecem `Select Type` e `Any Object`), e tudo desce;
+    # com a faixa curta a conferencia reprovava uma escolha que estava feita e
+    # visivel na tela. Largo o bastante para o painel inteiro, estreito o
+    # bastante para nao alcancar o rotulo de um bloco vizinho — que foi o que
+    # aprovou o que nao aconteceu.
+    painel = (max(0.0, (p[0] - 520) / larg), max(0.0, (p[1] - 160) / alt),
+              min(1.0, (p[0] + 520) / larg), min(1.0, (p[1] + 300) / alt))
+    achou = rs.tem_texto(nome, arquivo=c, regiao=painel)
+    if not achou:
+        time.sleep(1.2)          # o painel pode estar terminando de crescer
+        c, _ = nav.captura("/tmp/_bl_lista2.png")
+        achou = rs.tem_texto(nome, arquivo=c, regiao=painel)
+    if not achou:
+        raise RuntimeError(f"escolhi '{nome}' em '{rotulo}' e o painel nao o "
+                           "mostra (conferido dentro do painel)")
     print(f"   {rotulo} = {nome}", flush=True)
-    p = (p[0], p[1] + dy)
     # DEVOLVE O PONTO DO SELETOR, nao `True`: quando esta chamada e o gesto de
     # um clipe, e este ponto que vira a seta. Com `True` o alvo ficava em
     # (0,0) e a seta apontava para o canto da tela — o guarda dos alvos pegou.
@@ -1551,8 +1613,20 @@ def escolhe_tipo_da_colisao(bloco, tipo):
              min(1.0, (q[0] + 450) / larg), min(1.0, (q[1] + 520) / alt))
     r = nav.acha_texto(tipo.lower(), arquivo=a2, regiao=faixa)
     if not r:
-        raise RuntimeError(f"o tipo {tipo!r} nao aparece na lista do Collision — "
-                           "o objeto tem esse nome no campo `Type`?")
+        # A LISTA ROLA. Com quatro ou cinco tipos no jogo ela passa a ter barra
+        # e mostra so parte — e o erro que sobrava ("o tipo nao aparece") manda
+        # conferir o campo `Type` do objeto, que estava certo o tempo todo (eu
+        # fui olhar: o painel do Alvo dizia `Type: Alvo`).
+        for _ in range(3):
+            rs.roda_img(q[0], q[1] + 200, cliques=3)
+            time.sleep(1.0)
+            a2, _ = nav.captura("/tmp/_bl_col1.png")
+            r = nav.acha_texto(tipo.lower(), arquivo=a2, regiao=faixa)
+            if r:
+                break
+    if not r:
+        raise RuntimeError(f"o tipo {tipo!r} nao aparece na lista do Collision, "
+                           "nem rolando — o objeto tem esse nome no campo `Type`?")
     nav.clique_seguro(*r); time.sleep(1.2)
     # FECHA PRIMEIRO. O rotulo embaixo do bloco (onde estava 'Any') so troca
     # depois do OK: conferir com o painel ainda aberto reprovava uma escolha

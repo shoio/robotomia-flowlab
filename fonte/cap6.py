@@ -176,7 +176,30 @@ def prova_anda():
     antes = onde()
     rs.segura_tecla(rs.DIR, 1.2); time.sleep(0.5)
     depois = onde()
-    A.cap("p08_andando")
+    # E O PULO, que o quadro verde tambem promete ("anda para os dois lados E
+    # pula"). Sem isto a foto mostrava o boneco PARADO no chao: verdadeira,
+    # mas sem carregar metade do que a pagina diz. A foto sai no quadro em que
+    # ele esta mais alto.
+    import numpy as _np
+    def altura():
+        a, _ = nav.captura("/tmp/_c6_alt.png")
+        im = _np.asarray(Image.open(a).convert("RGB"), dtype=int)
+        ys, _xs = _np.nonzero(comum.mascara_cor(im, cor_j, tol))
+        return int(ys.mean()) if len(ys) else None
+    chao = altura()
+    mais_alto = chao
+    for _ in range(4):
+        rs.segura_tecla(rs.CIMA, 0.12)
+        h = altura()
+        if h is not None and (mais_alto is None or h < mais_alto):
+            mais_alto = h
+            A.cap("p08_andando")
+        time.sleep(0.25)
+    if chao is not None and mais_alto is not None:
+        print(f"   pulo: do chao em y={chao} ate y={mais_alto}", flush=True)
+        if chao - mais_alto < 40:
+            raise RuntimeError(f"apertei a seta de cima e o boneco nao pulou "
+                               f"({chao} -> {mais_alto})")
     print(f"   x do jogador: {antes} -> {depois}", flush=True)
     if antes is None or depois is None:
         raise RuntimeError("perdi o jogador de vista")

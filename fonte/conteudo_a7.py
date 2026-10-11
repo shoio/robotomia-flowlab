@@ -1,0 +1,146 @@
+# -*- coding: utf-8 -*-
+"""Aula 7 — Empurra-blocos."""
+
+AULA = {
+ "n": 7,
+ "slug": "aula7",
+ "titulo": "Empurra-blocos",
+ "subtitulo": "Três caixas, um alvo e uma porta fechada. Entregue as três e a porta abre sozinha — porque o número passou a decidir.",
+ "tempo": "50 minutos",
+ "etiqueta": "Aula 7 · empurra-blocos",
+ "fim": "Acabou a Aula 7. Na Aula 5 o número <b>apareceu</b> na tela; hoje ele <b>decide</b>. O <span class=ui>Filter</span> é a primeira vez que o seu jogo pergunta <i>já chegou?</i> antes de fazer alguma coisa — e é disso que são feitas todas as fases, todos os chefes e todos os finais de todos os jogos. Mande o link e veja alguém empurrar caixa.",
+ "avisos": [
+   ("Jogo novo", "Esta aula começa num jogo novo, do zero. Os das aulas 1 a 6 ficam guardados na sua lista."),
+   ("O que é novo hoje", "O <span class=ui>Filter</span>: um bloco que olha um número e <b>só deixa passar se a conta bater</b>. É o primeiro <i>se</i> do seu jogo."),
+   ("Você já sabe quase tudo", "O placar é o <b>mesmo trio da Aula 5</b> (<span class=ui>Number</span> → <span class=ui>Label</span>), e os recados são o <b>mesmo par da Aula 6</b> (<span class=ui>Message</span> → <span class=ui>Mailbox</span>). Hoje eles aparecem <b>duas vezes</b>: a caixa avisa o alvo, e o alvo avisa a porta."),
+   ("Empurrar não tem bloco", "A caixa anda porque é <b>pesada e solta</b>, não porque algum bloco mandou. Uma caixinha da física faz o trabalho todo."),
+   ("Travou?", "Todo passo tem um quadro laranja embaixo com o conserto dos erros mais comuns."),
+ ],
+ "passos": [
+
+  dict(n=1, titulo="Abra o Flowlab e entre em MY GAMES", img="comum_fotos/c02_lista.jpg", clipe="abrir_my_games.gif",
+    corpo="Abra o navegador em <b>flowlab.io</b> e entre com a sua conta.<br><br>No alto da página, clique em <span class=ui>My Games</span>. Aparecem os jogos que você já fez.",
+    ck="Você está na lista <span class=ui>My Games</span> e vê os seus jogos anteriores.",
+    sos=[("Não lembro a senha","Chame o professor. Não crie conta nova: os seus jogos estão na antiga."),
+         ("A lista está vazia","Confira se entrou com a mesma conta das outras aulas.")]),
+
+  dict(n=2, titulo="Crie um jogo novo", img="comum_fotos/c03_escolher.jpg", clipe="novo_jogo.gif",
+    corpo="Clique no botão verde <span class=ui>New Game</span>, no canto de cima à direita da lista.<br><br>Abre uma tela com os tipos de projeto.",
+    ck="Apareceu a tela com os tipos de projeto para escolher.",
+    sos=[("Não acho o New Game","Ele é o único botão verde da página, no alto à direita.")]),
+
+  dict(n=3, titulo="Escolha o PROJETO VAZIO", img="aula7/p01_vazio.jpg", clipe="empty_project.gif",
+    corpo="Na tela dos tipos, clique em <span class=ui>Empty Project</span> — o projeto vazio.<br><br>Abre o editor com a folha branca quadriculada.",
+    ck="O editor abriu com a folha branca quadriculada no meio.",
+    sos=[("Escolhi outro e veio um jogo pronto","Volte em <span class=ui>My Games</span>, apague esse e comece pelo <span class=ui>Empty Project</span>.")]),
+
+  dict(n=4, titulo="Pinte o céu", img="aula7/p02_ceu.jpg",
+    clipe=[("Abrir os níveis", "abrir_niveis.gif"), ("Pintar o céu", "pintar_o_ceu.gif")],
+    corpo="Clique em <span class=ui>Game Levels</span>, na fileira de baixo. Ao lado do nome <span class=ui>Level 1</span> há um campo escrito <span class=ui>FFFFFF</span>.<br><br>Clique nele, apague, escreva <b>A8DADC</b> e aperte Enter.",
+    ck="A folha do nível ficou <b>azul claro</b>.",
+    sos=[("Digitei e não mudou","Aperte Enter depois de escrever. Sem ele o campo não vale.")]),
+
+  dict(n=5, titulo="Crie o jogador", img="aula7/g01_b.jpg", clipe="criar_objeto.gif",
+    corpo="Clique uma vez dentro da folha azul, na <b>parte de baixo, bem à esquerda</b> — ele vai precisar de espaço para empurrar as caixas até lá longe.<br><br>Abre a roda com <span class=ui>Create</span> e <span class=ui>Cancel</span>.",
+    ck="Apareceu a roda escura com <span class=ui>Create</span> e <span class=ui>Cancel</span>.",
+    sos=[("Cliquei fora da folha","Clique dentro do retângulo azul. Fora dele não nasce objeto.")]),
+
+  dict(n=6, titulo="Escolha CREATE", img="aula7/g02_b.jpg", clipe="escolher_create.gif",
+    corpo="Na roda que abriu, clique em <span class=ui>Create</span>, na metade de cima.<br><br>Abre o painel do objeto novo.",
+    ck="O painel do objeto abriu, com os campos vazios esperando um nome.",
+    sos=[("Cliquei em Cancel sem querer","Clique na casa de novo e escolha <span class=ui>Create</span>.")]),
+
+  dict(n=7, titulo="Escreva JOGADOR nos dois campos", img="aula7/p03_nome.jpg",
+    corpo="No campo <span class=ui>Name</span>, escreva <b>Jogador</b> e aperte Tab. No campo <span class=ui>Type</span>, escreva <b>Jogador</b> também.<br><br>Hoje o <span class=ui>Type</span> vai trabalhar muito: a caixa vai perguntar <i>eu encostei num Alvo?</i>, o alvo vai perguntar <i>encostou uma Caixa em mim?</i> e o recado vai procurar a <i>Porta</i>. Três perguntas, três tipos.",
+    ck="Os dois campos, <span class=ui>Name</span> e <span class=ui>Type</span>, dizem <b>Jogador</b>.",
+    sos=[("Escrevi só no Name","Clique no campo <span class=ui>Type</span> e escreva lá também."),
+         ("Escrevi com acento","Escreva sem acento. Acento em nome de peça dá problema mais para a frente.")]),
+
+  dict(n=8, titulo="Escolha o desenho do jogador", img="aula7/p04_jogador.jpg", clipe="escolher_sprite.gif",
+    corpo="Clique no quadrado <span class=ui>edit sprite</span>, à esquerda do painel.<br><br><b>1.</b> Clique em <span class=ui>Browse</span>, embaixo da paleta de cores.<br><b>2.</b> Se aparecer o botão azul <span class=ui>&lt; Menu</span> no alto, clique nele.<br><b>3.</b> Clique em <span class=ui>Flowlab Sprites</span> e depois na faixa azul <span class=ui>Characters</span>.<br><b>4.</b> Clique no <b>primeiro boneco</b>, no canto de cima à esquerda.<br><br>Feche no <span class=ui>OK</span>, no canto de baixo à esquerda.",
+    ck="O boneco apareceu na folha, embaixo à esquerda.",
+    sos=[("Não acho o Browse","Ele fica embaixo da paleta de cores, na coluna da direita."),
+         ("Cliquei e não mudou nada","Clique bem em cima da figura, não no espaço entre elas.")]),
+
+  dict(n=9, titulo="A física do jogador", img="aula7/p05_fisica.jpg",
+    clipe=[("Abrir a física", "abrir_physics.gif"), ("Marcar movable", "marcar_movable.gif")],
+    corpo="No painel, clique em <span class=ui>Physics &gt;</span>, no canto de baixo à direita.<br><br><b>1.</b> <span class=ui>movable</span> — <b>marque</b>.<br><b>2.</b> <span class=ui>affected by gravity</span> — <b>deixe marcada</b>.<br><br>Feche no <span class=ui>OK</span> azul.",
+    ck="<span class=ui>movable</span> está <b>azul</b> e <span class=ui>affected by gravity</span> <b>também</b>.",
+    sos=[("Não acho Physics","É um texto azul claro, pequeno, no canto de baixo à direita do painel.")]),
+
+  dict(n=10, titulo="Faça o boneco correr e pular", img="aula7/p06_correr.jpg",
+    corpo="Com o jogador aberto, clique em <span class=ui>Behaviors</span>.<br><br>Na coluna da esquerda, lá embaixo, clique em <span class=ui>Behavior Bundles</span> e <b>arraste</b> o <span class=ui>Run &amp; Jump</span> para o meio da mesa.<br><br>É o mesmo pacote das aulas 2 e 6. Espere uns segundos antes de fechar.",
+    ck="Um bloco <span class=ui>Run &amp; Jump</span> está na mesa de blocos.",
+    sos=[("Arrastei e não caiu nada","Solte no meio da mesa, longe da beirada."),
+         ("Não acho Behavior Bundles","É o último item da coluna da esquerda. Role até o fim.")]),
+
+  dict(n=11, titulo="Faça o chão", img="aula7/p07_chao.jpg", clipe="clonar_o_chao.gif",
+    corpo="Feche as duas telas. Clique na <b>casa do canto de baixo à esquerda</b> e escolha <span class=ui>Create</span>. Em <span class=ui>Name</span> e em <span class=ui>Type</span> escreva <b>Chao</b>. Em <span class=ui>edit sprite</span>, pelo <span class=ui>Browse</span>, pegue o <b>primeiro bloco</b> de <span class=ui>Flowlab Sprites</span> &rsaquo; <span class=ui>Blocks</span>. Feche no <span class=ui>OK</span>.<br><br>Agora repita pela fileira toda: clique nela, escolha <span class=ui>Clone</span>, clique nas casas <b>à direita</b> até a ponta, e termine em <span class=ui>done cloning</span>.",
+    ck="Uma fileira de blocos de grama cobre o fundo da folha, de ponta a ponta, sem buraco.",
+    sos=[("Ficou um buraco","Clique na casa vazia, escolha <span class=ui>Clone</span> e preencha."),
+         ("A caixa cai no buraco","Exatamente por isso o chão não pode ter falha.")]),
+
+  dict(n=12, titulo="Crie a CAIXA que se empurra", img="aula7/p08_caixa.jpg",
+    corpo="Clique numa casa do chão <b>à direita do boneco</b>, com um espaço entre os dois, e escolha <span class=ui>Create</span>. Escreva <b>Caixa</b> nos dois campos.<br><br>Em <span class=ui>edit sprite</span>, pelo <span class=ui>Browse</span>, em <span class=ui>Flowlab Sprites</span> &rsaquo; <span class=ui>Blocks</span>, pegue uma <b>caixa de madeira</b>.<br><br>Agora a parte que faz a mágica: em <span class=ui>Physics &gt;</span>, marque <span class=ui>movable</span> e deixe <span class=ui>affected by gravity</span> marcada.<br><br>Só isso. <b>Não existe bloco de empurrar</b> nesta aula: a caixa anda porque é pesada e solta, e o boneco esbarra nela. O computador cuida do resto.",
+    ck="Uma caixa de madeira está no chão, com <span class=ui>movable</span> <b>azul</b>.",
+    sos=[("A caixa não sai do lugar","Faltou <span class=ui>movable</span>. Abra a física dela e marque."),
+         ("A caixa sai voando","Está leve demais. Abra a física e aumente o <span class=ui>Density</span>, que é o peso.")]),
+
+  dict(n=13, titulo="Faça TRÊS caixas", img="aula7/p09_tres_caixas.jpg", clipe="clonar_as_caixas.gif",
+    corpo="Clique na caixa, escolha <span class=ui>Clone</span> e clique em <b>mais duas casas do chão</b>, espalhadas à direita dela. Termine em <span class=ui>done cloning</span>.<br><br>Ficaram três. Elas são cópias do mesmo molde — então tudo o que você ensinar à primeira, as três vão saber.",
+    ck="Três caixas de madeira estão no chão, separadas umas das outras.",
+    sos=[("Ficaram grudadas","Tudo bem, mas é mais difícil de empurrar. Clique numa, <span class=ui>Delete</span>, e clone num lugar mais afastado.")]),
+
+  dict(n=14, titulo="Marque o ALVO", img="aula7/p10_alvo.jpg",
+    corpo="Clique numa casa do chão <b>bem à direita</b>, longe das caixas, e escolha <span class=ui>Create</span>. Escreva <b>Alvo</b> nos dois campos, e escolha um desenho que <b>marque o lugar</b> — um tijolo de cor diferente serve bem.<br><br>Não mexa na física dele. O alvo fica parado e sólido, como o chão: a caixa vai <b>bater</b> nele, e bater já é o bastante.",
+    ck="O alvo está no chão, à direita, com <b>Alvo</b> nos dois campos.",
+    sos=[("Pus muito perto das caixas","Clique nele, escolha <span class=ui>Delete</span> e ponha mais longe. O jogo fica melhor com empurrão de verdade.")]),
+
+  dict(n=15, titulo="A caixa avisa o alvo e some", img="aula7/p11_caixa_entrega.jpg", clipe="recado_para_o_alvo.gif",
+    corpo="Feche as duas telas, clique numa <b>caixa</b> e depois em <span class=ui>Behaviors</span>.<br><br>É a <b>mesma corrente da chave da Aula 6</b>, com outro destinatário:<br><br><b>1.</b> Em <span class=ui>Triggers</span>, arraste um <span class=ui>Collision</span>.<br><b>2.</b> Em <span class=ui>Components</span>, arraste um <span class=ui>Message</span>.<br><b>3.</b> Em <span class=ui>Components</span>, arraste um <span class=ui>Destroyer</span>.<br><br>Dois fios: de <span class=ui>hit</span> até <span class=ui>send</span>, e de <span class=ui>done</span> até <span class=ui>in</span>.<br><br>Clique devagar no <span class=ui>Collision</span> e, na lista <span class=ui>Any Type</span>, escolha <b>Alvo</b>. Sem isso a caixa se destruiria ao encostar no <b>chão</b>, e as três sumiriam no primeiro instante do jogo.<br><br>E diga para quem vai o recado: clique devagar no <span class=ui>Message</span>, no <span class=ui>Send To</span> escolha <span class=ui>Choose objects</span> e, em <span class=ui>Select Type</span>, escolha <b>Alvo</b>.<br><br>Lendo em voz alta: <i>quando eu bater no Alvo, avise o Alvo; quando o aviso sair, eu sumo</i>.",
+    ck="O <span class=ui>Collision</span> mostra <b>Alvo</b>, e o <span class=ui>Message</span> está enviando para o tipo <b>Alvo</b>.",
+    sos=[("As caixas somem sozinhas","O <span class=ui>Collision</span> ficou em <span class=ui>Any Type</span> e está contando o chão. Escolha <b>Alvo</b>."),
+         ("A caixa some mas o número não sobe","O recado está indo para <b>Myself</b>. Volte no <span class=ui>Send To</span> e escolha <span class=ui>Choose objects</span>."),
+         ("Só uma caixa some","Você pôs os blocos num clone. Ponha na caixa que você criou primeiro — o molde.")]),
+
+  dict(n=16, titulo="O alvo CONTA as caixas", img="aula7/p12_alvo_conta.jpg",
+    corpo="Feche as duas telas, clique no <b>alvo</b> e depois em <span class=ui>Behaviors</span>.<br><br>É o <b>mesmo trio da Aula 5</b>, o do placar — só que agora quem dispara não é o relógio, é o <b>recado</b> que a caixa mandou:<br><br><b>1.</b> Em <span class=ui>Triggers</span>, o <span class=ui>Mailbox</span> — a caixa de correio da Aula 6.<br><b>2.</b> Em <span class=ui>Logic &amp; Math</span>, o <span class=ui>Number</span>. Deixe em <b>0</b>.<br><b>3.</b> Em <span class=ui>GUI</span>, o <span class=ui>Label</span>.<br><br>Os fios: de <span class=ui>out</span> do <span class=ui>Mailbox</span> até a bolinha <b><span class=ui>+</span></b> do <span class=ui>Number</span> — a <b>terceira</b>, a de baixo — e de <span class=ui>out</span> do <span class=ui>Number</span> até <span class=ui>text</span> do <span class=ui>Label</span>.<br><br>Repare no que você montou: a caixa <b>avisa</b>, o alvo <b>conta</b>. Nenhum dos dois sabe o que o outro faz por dentro — e é exatamente assim que programa grande se organiza.",
+    ck="Três blocos novos na mesa do alvo e dois fios, com o do <span class=ui>Mailbox</span> chegando na bolinha <span class=ui>+</span>.",
+    sos=[("O número não sobe","O fio foi para <span class=ui>set</span> ou <span class=ui>get</span>. Ele tem de chegar na bolinha <span class=ui>+</span>."),
+         ("O número só sobe se eu encostar no alvo","O <span class=ui>Mailbox</span> espera recado, não batida. Confira o passo 15: o <span class=ui>Send To</span> da caixa tem de apontar para <b>Alvo</b>."),
+         ("O placar está pequeno","Clique devagar no <span class=ui>Label</span> e puxe a régua <span class=ui>size</span> para a direita.")]),
+
+  dict(n=17, titulo="Jogue e entregue uma caixa", img="aula7/p13_placar_um.jpg", clipe="jogar.gif",
+    corpo="Feche as duas telas e clique em <span class=ui>Play</span>.<br><br>Clique uma vez dentro do jogo e ande para a direita, empurrando a primeira caixa. Quando ela chega no alvo, ela <b>some</b> e o número no canto <b>sobe</b>.<br><br>Repare numa coisa: a primeira caixa vai empurrando a segunda, que empurra a terceira — elas andam em <b>trem</b>. Por isso o número às vezes pula de dois em dois, e está certo: ele conta <b>caixa que chegou</b>, não empurrão que você deu.<br><br>E você não escreveu <i>um</i> nem <i>dois</i> em lugar nenhum: o bloco <span class=ui>+</span> faz a conta.",
+    ck="Quando a primeira caixa chega no alvo, ela some e o número no canto da tela <b>sobe</b>.",
+    sos=[("A caixa não anda","Confira o <span class=ui>movable</span> dela, no passo 12."),
+         ("A caixa some antes de chegar","O <span class=ui>Collision</span> dela está em <span class=ui>Any Type</span>. Volte ao passo 15."),
+         ("O número não aparece","Confira o fio do <span class=ui>Number</span> até o <span class=ui>text</span> do <span class=ui>Label</span>."),
+         ("Quero entregar uma de cada vez","Volte ao editor e afaste mais as caixas umas das outras. Assim elas não se empurram em trem.")]),
+
+  dict(n=18, titulo="Levante a PORTA na saída", img="aula7/p14_porta.jpg", clipe="levantar_a_porta.gif",
+    corpo="Volte ao editor. Clique numa casa do chão <b>depois do alvo</b>, perto da ponta direita, e escolha <span class=ui>Create</span>. Escreva <b>Porta</b> nos dois campos, e em <span class=ui>edit sprite</span> pegue o <b>vão escuro com batente</b> em <span class=ui>Flowlab Sprites</span> &rsaquo; <span class=ui>Blocks</span> — o mesmo da Aula 6.<br><br>Clique nela, escolha <span class=ui>Clone</span> e clique nas <b>duas casas acima</b>. Termine em <span class=ui>done cloning</span>.<br><br>Agora a saída está fechada, e nenhum dos blocos que você montou até aqui abre essa porta.",
+    ck="Uma parede escura de <b>três casas</b> fecha a saída, depois do alvo.",
+    sos=[("Consigo pular por cima","Faltou um pedaço. Clone mais uma casa para cima.")]),
+
+  dict(n=19, titulo="O número passa a DECIDIR", img="aula7/p15_condicao.jpg", clipe="condicao_do_filtro.gif",
+    corpo="Clique no <b>alvo</b> e depois em <span class=ui>Behaviors</span>. Os três blocos do placar já estão lá; vamos pendurar mais dois embaixo.<br><br><b>1.</b> Em <span class=ui>Logic &amp; Math</span>, arraste o <span class=ui>Filter</span> — o bloco do <b>funil</b>. Embaixo dele está escrito <span class=ui>input &gt; 0</span>: é a <b>pergunta</b> que ele faz.<br><b>2.</b> Em <span class=ui>Components</span>, arraste um <span class=ui>Message</span>.<br><br>Mude a pergunta: clique devagar no <span class=ui>Filter</span> e, no campo do número, clique <b>duas vezes</b> no <span class=ui>+</span>. Agora o bloco mostra <span class=ui>input &gt; 2</span> — e <i>maior que 2</i> é o mesmo que <b>três ou mais</b>.<br><br>Os fios: de <span class=ui>out</span> do <span class=ui>Number</span> até <span class=ui>in</span> do <span class=ui>Filter</span>, e de <span class=ui>pass</span> do <span class=ui>Filter</span> até <span class=ui>send</span> do <span class=ui>Message</span>.<br><br>E para quem vai o recado: clique devagar no <span class=ui>Message</span>, no <span class=ui>Send To</span> escolha <span class=ui>Choose objects</span> e, em <span class=ui>Select Type</span>, escolha <b>Porta</b>.<br><br>Lendo em voz alta: <i>toda vez que o número mudar, pergunte se ele já passou de 2; se passou, avise a Porta</i>.",
+    ck="Embaixo do funil está escrito <span class=ui>input &gt; 2</span>, e há fios de <span class=ui>Number</span> até <span class=ui>Filter</span> e de <span class=ui>pass</span> até <span class=ui>send</span>.",
+    sos=[("O bloco continua dizendo input &gt; 0","Clique devagar nele para abrir os ajustes, e clique no <span class=ui>+</span> do número duas vezes."),
+         ("Liguei no fail sem querer","O <span class=ui>fail</span> é a bolinha de baixo e dispara quando a conta <b>não</b> bate. Você quer o <span class=ui>pass</span>, a de cima."),
+         ("A porta abre na primeira caixa","A condição ficou em <span class=ui>input &gt; 0</span>. Qualquer número acima de zero passa.")]),
+
+  dict(n=20, titulo="A porta escuta", img="aula7/p16_porta_escuta.jpg",
+    corpo="Feche as duas telas, clique na <b>porta</b> e depois em <span class=ui>Behaviors</span>.<br><br><b>1.</b> Em <span class=ui>Triggers</span>, arraste o <span class=ui>Mailbox</span>.<br><b>2.</b> Em <span class=ui>Components</span>, arraste o <span class=ui>Destroyer</span>.<br><b>3.</b> Ligue <span class=ui>out</span> em <span class=ui>in</span>.<br><br>É igualzinho à porta da Aula 6 — e, como lá, você faz uma vez só: os três pedaços são cópias do molde e os três escutam.",
+    ck="Dois blocos na mesa da porta, ligados por um fio: <span class=ui>Mailbox</span> → <span class=ui>Destroyer</span>.",
+    sos=[("Não acho o Mailbox","Ele está em <span class=ui>Triggers</span>, junto com o <span class=ui>Collision</span>."),
+         ("Só um pedaço some","Os blocos foram parar num clone. Ponha no molde — a peça de baixo, a que você criou.")]),
+
+  dict(n=21, titulo="Jogue e mande o link", img="aula7/p18_jogo.jpg",
+    corpo="Feche as duas telas e clique em <span class=ui>Play</span>.<br><br>Empurre as três caixas até o alvo. Na primeira o número vira 1, na segunda 2 — e nada acontece. Na <b>terceira</b> o número vira 3, o funil deixa o recado passar, e a porta <b>cai sozinha</b>.<br><br>Para mandar para alguém: copie o endereço da barra do navegador e mande. Quem abrir vai ter de descobrir sozinho que são três.",
+    ck="Com as três caixas entregues, a porta some e dá para sair.",
+    sos=[("A porta abre cedo demais","A condição do funil está baixa. Volte ao passo 19 e deixe <span class=ui>input &gt; 2</span>."),
+         ("A porta nunca abre","Confira se as três caixas realmente somem no alvo, e se o fio sai do <span class=ui>pass</span>."),
+         ("Quero mais difícil","Ponha mais caixas e mude a condição para <span class=ui>input &gt; 4</span>. Ou espalhe as caixas mais longe umas das outras.")]),
+ ],
+}

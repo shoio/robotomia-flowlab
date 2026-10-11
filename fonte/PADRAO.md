@@ -631,6 +631,84 @@ Este fato estava escrito só num comentário dentro do `cap3.py`, e por isso eu
 cheguei a escrever a Aula 6 inteira com `Alert` antes de topar com ele. Fato que
 vale para o curso todo mora aqui, não dentro de uma captura.
 
+## 2w. ⛔ `is solid` DESLIGADO é colisão DESLIGADA
+
+Eu queria um alvo que a caixa pudesse **atravessar** e ainda assim ser sentida,
+e desmarquei `is solid`. No Flowlab isso não é "passa por dentro mas sente": é
+**colisão desligada**. Um `Collision` naquele objeto não dispara nunca.
+
+⭐ **E quem me disse foi o próprio editor**, num aviso amarelo desenhado na mesa
+de blocos, ao lado do `Collision`:
+
+> *"This object has disabled collisions, so Collision will not trigger"*
+
+Eu só o vi porque fui olhar a foto do fio que não nascia. **O Flowlab escreve
+avisos na mesa** — quando um bloco não funciona e não há erro, olhe a mesa
+inteira antes de medir qualquer coisa.
+
+⭐ O conserto melhorou a Aula 7: o alvo fica sólido, e quem sente a batida é a
+CAIXA (que tem colisão ligada). Ela manda um recado para o alvo — a mesma dupla
+`Message`/`Mailbox` da Aula 6, agora aparecendo duas vezes na mesma aula.
+
+## 2x. ⚠️ A lista de tipos do `Collision` ROLA
+
+Com quatro ou cinco tipos no jogo a lista ganha barra e mostra só parte dela. O
+erro que sobrava — "o tipo não aparece na lista" — manda conferir o campo `Type`
+do objeto, e eu fui olhar: o painel do Alvo dizia `Type: Alvo`, certinho.
+`escolhe_tipo_da_colisao` agora rola a lista antes de desistir.
+
+## 2y. ⚠️ A palavra `type` aparece DUAS VEZES no painel do objeto
+
+No rótulo e dentro do próprio conteúdo do campo (`New Type 3`). Clicar 54 px
+abaixo do CONTEÚDO cai na linha do `Parent`, o texto vai para o vazio e o Tab
+leva o foco para o `Reset`. Resultado: um objeto com `Name: Caixa` e
+`Type: New Type 3`, e o erro saindo como *"li 'mo' de volta"* — lixo de OCR de
+um campo que nem era o certo. Funcionou nos dois objetos anteriores da mesma
+captura por sorte da ordem em que o OCR devolveu as palavras.
+
+⭐ `nomeia_tipo` não tem mais ponto único: tem uma LISTA de candidatos, do mais
+alto para o mais baixo, e tenta cada um até a leitura de volta bater.
+
+## 2z. ⛔ RETOMAR UMA ETAPA trabalhava no jogo que estivesse ABERTO
+
+Pedi `roda_aula.py 5 prova_fogo` e a medida saiu do jogo da **Aula 7**: a foto
+mostrava caixas, alvo e porta. A etapa retomada não navegava para lugar nenhum —
+ela usava o que estivesse no navegador, que é o jogo da última captura que
+rodou.
+
+Essa, por sorte, só MEDIA. As etapas seguintes da Aula 5 mexem na mesa de
+blocos: elas teriam escrito blocos dentro do jogo **publicado** de outra aula,
+sem nada na tela dizendo que o jogo era o errado.
+
+⭐ `aula_comum.main` agora abre o `jogo.txt` da própria aula antes de qualquer
+etapa retomada, **e confere o endereço depois de abrir**.
+
+## 2aa. ⛔ Leitura de volta sem recorte aprova o que NÃO aconteceu
+
+Dois casos na mesma aula, e os dois ficaram verdes:
+
+1. `escolhe_na_lista` procurava o item e conferia o resultado na **tela
+   inteira**. Numa mesa de blocos a palavra `Alvo` mora também no RÓTULO do
+   `Collision` ao lado: o clique foi para o rótulo, o `Select Type` ficou no
+   texto de fábrica, e a conferência achou a mesma palavra no lugar errado. O
+   jogo saiu com a caixa mandando recado **para ninguém**;
+2. o casador aceitava `input > 2` casando com a palavra **`input`**, que está
+   igual no bloco que mostra `input > 0`. A condição do `Filter` NUNCA foi
+   ajustada — a porta abria na primeira caixa — e a aula perdia inteira o seu
+   ponto.
+
+⭐ Toda leitura de volta tem de ser **ancorada no painel** que ela confere, e o
+ramo palavra-por-palavra do casador só vale para alvo de UMA palavra. Os dois
+casos estão trancados em `prova_casamento_ocr`, com sabotagem.
+
+## 2ab. ⚠️ Ponto estimado de rótulo: `acha_texto` devolve o CENTRO
+
+Estimei o botão `+` do `Filter` em (+152, +82) a partir do rótulo — e
+`acha_texto` devolve o **centro da frase**, não a ponta. Os cliques caíam fora
+do botão. Quando o alvo é pequeno (um `+`, um `−`), ache-o por LEITURA, como o
+`cap7` faz agora, em vez de somar deslocamento a um ponto cuja origem você não
+conferiu. Ver também §2o, o `−` que ficava no vão.
+
 ## 3. As três armadilhas de FÍSICA que não aparecem no editor
 
 Todas custaram horas na Aula 3, e nenhuma dá erro em lugar nenhum:

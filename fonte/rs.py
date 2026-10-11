@@ -903,13 +903,26 @@ def procura_forte(alvo, arquivo=None, regiao=None, psm="6", escada=ESCADA, exato
                                and _prefixo_cortado(junto, alvo_l[:k])), None)
                 if pedaco:
                     return palavras_do_trecho(palavras, junto, pedaco)[0]
-        # 2) palavra por palavra
+        # 2) palavra por palavra — SO PARA ALVO DE UMA PALAVRA.
+        #
+        # Com alvo de varias palavras este ramo aceitava UMA delas, e isso
+        # transformava toda leitura de volta num carimbo: `input > 2` casava
+        # com a palavra `input`, que esta igual no bloco com `input > 0`. A
+        # Aula 7 saiu com a condicao do filtro NUNCA ajustada — a porta abria
+        # na primeira caixa — e a conferencia tinha dado verde.
+        #
+        # O ramo existe para OCR que come o fim de um rotulo; quando o alvo tem
+        # espaco, quem cuida disso e o ramo da LINHA inteira, logo acima, que
+        # ja exige corte no meio de palavra.
+        uma_palavra = " " not in alvo_l
         for t, x, y, w, h in itens:
             lido = t.strip().lower().strip("[]|.,:")
             if exato:
                 bate = lido == alvo_l
-            else:
+            elif uma_palavra:
                 bate = (alvo_l in lido) or (lido in alvo_l and len(lido) >= minimo)
+            else:
+                bate = alvo_l in lido
             if bate:
                 return (t, x, y, w, h)
     return None

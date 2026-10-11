@@ -1,6 +1,6 @@
 # Estado do curso de Flowlab — 11-10-2026 (noite)
 
-**Seis aulas no ar**, em https://shoio.github.io/robotomia-flowlab/ — conferido
+**Sete aulas no ar**, em https://shoio.github.io/robotomia-flowlab/ — conferido
 em produção, não só commitado.
 
 O que custou a madrugada está no `PADRAO.md`, §2n a §2t. O maior é o §2n: o
@@ -16,9 +16,10 @@ verdade**, em silêncio, com o defeito latente também em `cap1`, `cap2` e `cap3
 | 3 | a lava que sobe | céu de noite, lava que sobe sozinha, estrela no alto | lava sobe 170 px · reinício · estrela pega |
 | 4 | nave e tiro | céu de espaço, nave que anda para os dois lados, tiro no espaço, canhão que solta inimigos, tiro que destrói | esquerda move 86 px e direita traz 123 de volta · espaço faz nascer tiro · inimigo desce 687 px sozinho |
 | 5 | um botão só | passarinho com gravidade, chão, bolas de fogo em alturas sorteadas, fim de jogo e **placar na tela** | espaço levanta 331 px e a gravidade traz de volta · fogo separado por 653 px num mesmo quadro · placar sobe sozinho |
-| 6 | chave e porta | plataforma, porta de três pedaços fechando o caminho, chave que **manda recado** e estrela do outro lado | seta leva o jogador 398 px · a metade de cima vai de 8128 a 0 px de não-céu quando a chave fala · estrela de 704 a 0 |
+| 6 | chave e porta | plataforma, porta de três pedaços fechando o caminho, chave que **manda recado** e estrela do outro lado | seta leva o jogador 398 px · pulo de 154 px · a metade de cima vai de 8128 a 0 px de não-céu quando a chave fala · estrela de 704 a 0 |
+| 7 | empurra-blocos | três caixas empurráveis, um alvo que **conta**, e um `Filter` que abre a porta quando o número passa de 2 | placar sobe até 3 e a porta cai sozinha (13004 → 1170 px de não-céu) |
 
-Aulas 7 a 12: planejadas em `PLANO.md`, não construídas.
+Aulas 8 a 12: planejadas em `PLANO.md`, não construídas.
 
 ## Pendente para o Julio
 

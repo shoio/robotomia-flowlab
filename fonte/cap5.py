@@ -341,16 +341,25 @@ def prova_fogo():
     # Num quadro, se as alturas sao sorteadas, o fogo de cima e o de baixo
     # estao LONGE um do outro. Se viessem todos na mesma altura, a distancia
     # seria a altura de um desenho.
-    espalha = []
+    # A FOTO DO PASSO 18 E O QUADRO DE MAIOR ESPALHAMENTO.
+    #
+    # Tirada num indice fixo (`i == 9`), ela saiu com UMA bola de fogo so,
+    # recem-solta e meio escondida atras do soltador — numa pagina cujo quadro
+    # verde promete "varias bolas de fogo ao mesmo tempo, em alturas
+    # diferentes". Guarda nenhum ve isso: a foto existe, abre e nao e copia.
+    # Quem decide a hora e a propria medida.
+    espalha, melhor = [], -1
     for i in range(14):
         a, _ = nav.captura("/tmp/_c5_f.png")
         im = np.asarray(Image.open(a).convert("RGB"), dtype=int)
         m = comum.mascara_cor(im, cor_fogo, tol)
         ys, _xs = np.nonzero(m)
         if len(ys):
-            espalha.append(int(ys.max() - ys.min()))
-        if i == 9:
-            A.cap("p14_fogos")
+            d = int(ys.max() - ys.min())
+            espalha.append(d)
+            if d > melhor:
+                melhor = d
+                A.cap("p14_fogos")
         time.sleep(0.45)
     print(f"   distancia entre o fogo mais alto e o mais baixo, por quadro: "
           f"{espalha}", flush=True)

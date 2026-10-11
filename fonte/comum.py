@@ -638,35 +638,55 @@ def nomeia_tipo(nome):
 
        E o nome do TIPO que aparece na lista do bloco `Collision` — o nome do
        objeto nao aparece la. Sem isto a lista mostra 'New Type 1', 'New Type
-       2'… e nao ha como a crianca saber qual e qual."""
+       2'… e nao ha como a crianca saber qual e qual.
+
+       ⚠️ A PALAVRA `type` APARECE DUAS VEZES no painel: no rotulo e dentro do
+       proprio conteudo do campo (`New Type 3`). Clicar 54 px abaixo do
+       CONTEUDO cai na linha do `Parent`, o texto vai para o vazio e o Tab leva
+       o foco para o `Reset`. Isso me deixou um objeto com `Name: Caixa` e
+       `Type: New Type 3`, e o erro saiu como "li 'mo' de volta" — lixo de OCR
+       de um campo que nem era o certo. Funcionou nos dois objetos anteriores
+       por sorte da ordem em que o OCR devolveu as palavras.
+
+       Por isso aqui nao ha ponto unico: ha uma LISTA de candidatos, do mais
+       alto para o mais baixo (o rotulo fica acima do conteudo), e cada um e
+       tentado ate a LEITURA DE VOLTA bater."""
     a, _ = nav.captura("/tmp/_c1_tipo.png")
-    p = None
-    for regiao in ((0.3, 0.05, 0.75, 0.9), (0.0, 0.05, 1.0, 0.95), None):
-        p = nav.acha_texto("type", arquivo=a, regiao=regiao)
-        if p:
-            break
-    if not p:
+    candidatos = sorted(
+        {(y, x) for t, x, y, w, h in rs.ocr_forte(a, psm="6")
+         if t.strip().lower().strip(":") == "type"})
+    if not candidatos:
+        # o caminho antigo, para o caso de o OCR nao separar a palavra
+        for regiao in ((0.3, 0.05, 0.75, 0.9), (0.0, 0.05, 1.0, 0.95), None):
+            p = nav.acha_texto("type", arquivo=a, regiao=regiao)
+            if p:
+                candidatos = [(p[1], p[0])]
+                break
+    if not candidatos:
         raise RuntimeError("nao achei o campo Type")
-    campo = (p[0] + 40, p[1] + 54)
-    clique(campo[0], campo[1], duplo=True); time.sleep(0.6)
-    rs.tecla(0, cmd=True); time.sleep(0.25)
-    rs.digita_teclas(nome); time.sleep(0.4)
-    rs.tecla(48); time.sleep(0.8)          # Tab: o Enter FECHA o painel
-    # LE DE VOLTA. O TIPO e o que a lista do `Collision` mostra: se ele nao
-    # entrar, a lava nao tem como saber em quem bater — e isso so aparece no
-    # JOGO, depois da aula montada. Escrita sem leitura de volta foi o que
-    # custou duas recapturas inteiras da Aula 2.
-    b, _ = nav.captura("/tmp/_c1_tipo2.png")
-    faixa = (max(0.0, (campo[0] - 60) / 2940), max(0.0, (campo[1] - 26) / 1604),
-             min(1.0, (campo[0] + 330) / 2940), min(1.0, (campo[1] + 30) / 1604))
-    # `tem_texto` percorre a escada inteira atras DO NOME; o `ocr_forte` para
-    # na primeira leitura com conteudo, que pode ser lixo das bordas do campo.
-    if not rs.tem_texto(nome, arquivo=b, regiao=faixa):
+
+    lido = ""
+    for y, x in candidatos:
+        campo = (x + 40, y + 54)
+        clique(campo[0], campo[1], duplo=True); time.sleep(0.6)
+        rs.tecla(0, cmd=True); time.sleep(0.25)
+        rs.digita_teclas(nome); time.sleep(0.4)
+        rs.tecla(48); time.sleep(0.8)          # Tab: o Enter FECHA o painel
+        # LE DE VOLTA. O TIPO e o que a lista do `Collision` mostra: se ele nao
+        # entrar, a colisao nao tem como saber em quem bater — e isso so
+        # aparece no JOGO, depois da aula montada. Escrita sem leitura de volta
+        # foi o que custou duas recapturas inteiras da Aula 2.
+        b, _ = nav.captura("/tmp/_c1_tipo2.png")
+        faixa = (max(0.0, (campo[0] - 60) / 2940), max(0.0, (campo[1] - 26) / 1604),
+                 min(1.0, (campo[0] + 330) / 2940), min(1.0, (campo[1] + 30) / 1604))
+        # `tem_texto` percorre a escada inteira atras DO NOME; o `ocr_forte`
+        # para na primeira leitura com conteudo, que pode ser lixo das bordas.
+        if rs.tem_texto(nome, arquivo=b, regiao=faixa):
+            print(f"   tipo = {nome}", flush=True)
+            return True
         lido = " ".join(t.strip() for t, *_ in rs.ocr_forte(b, regiao=faixa, psm="7"))
-        raise RuntimeError(f"escrevi o tipo '{nome}' e li '{lido}' de volta — "
-                           "o nome nao entrou no campo Type")
-    print(f"   tipo = {nome}", flush=True)
-    return True
+    raise RuntimeError(f"escrevi o tipo '{nome}' e li '{lido}' de volta — "
+                       "o nome nao entrou no campo Type")
 
 
 LINK_FISICA = (108, 170, 233)      # o azul claro do texto "Physics >"

@@ -285,7 +285,14 @@ def poe_tecla(bloco, codigo, nome, clipe=None, gid=None):
 # ──────────────────────────── mesa de blocos ────────────────────────────
 
 def abre_mesa(c, r):
-    """Abre a mesa de blocos do objeto da casa (c, r) e amarra o contexto."""
+    """Abre a mesa de blocos do objeto da casa (c, r) e amarra o contexto.
+
+       COMECA DO NIVEL, sempre. Trocar de objeto no meio de uma captura e
+       rotina, e sem este passo o clique na casa cai em cima do que estiver
+       aberto por cima dela: o erro que sobra e "o menu radial nao abriu", que
+       manda procurar o defeito na casa — quando o problema e que a tela nao
+       era o nivel."""
+    editor.volta_ao_nivel(); comum.calibra_grade(16, 12)
     x, y = celula(c, r)
     editor.objeto_ou_abre(x, y)
     editor.abre_comportamentos()
@@ -307,6 +314,30 @@ def main(modulo):
     alvo = sys.argv[1] if len(sys.argv) > 1 else None
     nomes = [f.__name__ for f in ETAPAS]
     fns = ETAPAS if not alvo else ETAPAS[nomes.index(alvo):]
+    if alvo:
+        # ⛔ RETOMAR UMA ETAPA ABRE O JOGO DESTA AULA, SEMPRE.
+        #
+        # Sem isto a etapa trabalha no que estiver aberto no navegador — e o
+        # que esta aberto e o jogo da ULTIMA captura que rodou. Pedi
+        # `roda_aula.py 5 prova_fogo` e a medida saiu do jogo da AULA 7: a foto
+        # mostrava caixas, alvo e porta. Essa, por sorte, so media. As etapas
+        # seguintes mexem na mesa de blocos, e teriam editado o jogo PUBLICADO
+        # de outra aula, sem nada na tela dizendo que o jogo era o errado.
+        caminho = os.path.join(pasta(), "jogo.txt")
+        if os.path.exists(caminho):
+            url = open(caminho).read().strip()
+            print(f"   abrindo o jogo desta aula: {url}", flush=True)
+            nav.vai(url, espera=12)
+            time.sleep(3)
+            nav.fecha_dialogo()
+            editor.volta_ao_nivel()
+            comum.calibra_grade(16, 12)
+            if nav.endereco().strip().rstrip("/") != url.rstrip("/"):
+                raise RuntimeError(f"pedi para abrir {url} e o navegador esta "
+                                   f"em {nav.endereco()}")
+        else:
+            raise RuntimeError(f"nao achei {caminho}: nao sei em que jogo esta "
+                               "etapa deve trabalhar")
     for f in fns:
         print(f"== {f.__name__} ==", flush=True)
         try:
