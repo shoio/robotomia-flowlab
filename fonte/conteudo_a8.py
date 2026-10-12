@@ -1,0 +1,147 @@
+# -*- coding: utf-8 -*-
+"""Aula 8 — Contra o relógio."""
+
+AULA = {
+ "n": 8,
+ "slug": "aula8",
+ "titulo": "Contra o relógio",
+ "subtitulo": "Um percurso com buracos, um cronômetro correndo na tela e um recorde que não some quando o jogo recomeça.",
+ "tempo": "50 minutos",
+ "etiqueta": "Aula 8 · contra o relógio",
+ "fim": "Acabou a Aula 8. Hoje você fez um número que <b>não é de ninguém</b>: a variável global. O tempo fica no corredor, o recorde fica na bandeira, e os dois leem o mesmo número — que sobrevive ao recomeço. É assim que todo jogo guarda placar, vidas, moedas e fase. E o <span class=ui>Filter</span>, que na Aula 7 comparava com um número escrito, hoje compara com <b>outro número do jogo</b>.",
+ "avisos": [
+   ("Jogo novo", "Esta aula começa num jogo novo, do zero. Os das aulas 1 a 7 ficam guardados na sua lista."),
+   ("O que é novo hoje", "A <span class=ui>Global Variable</span>: um número com <b>nome</b>, que qualquer objeto do jogo lê e escreve — e que <b>não zera</b> quando o jogo recomeça."),
+   ("Você já sabe quase tudo", "O cronômetro é o <b>mesmo trio da Aula 5</b> (<span class=ui>Timer</span> → número → <span class=ui>Label</span>), o andar e o pular são o <b>mesmo pacote da Aula 7</b> (<span class=ui>Run &amp; Jump</span>), e o funil é o <b>mesmo da Aula 7</b> (<span class=ui>Filter</span>)."),
+   ("Recorde é do menor", "Num jogo de tempo, o recorde é o número <b>menor</b>. Por isso o funil de hoje pergunta <span class=ui>less than</span> — <i>menor que</i> — e por isso o recorde começa num número alto."),
+   ("Travou?", "Todo passo tem um quadro laranja embaixo com o conserto dos erros mais comuns."),
+ ],
+ "passos": [
+
+  dict(n=1, titulo="Abra o Flowlab e entre em MY GAMES", img="comum_fotos/c02_lista.jpg", clipe="abrir_my_games.gif",
+    corpo="Abra o navegador em <b>flowlab.io</b> e entre com a sua conta.<br><br>No alto da página, clique em <span class=ui>My Games</span>. Aparecem os jogos que você já fez.",
+    ck="Você está na lista <span class=ui>My Games</span> e vê os seus jogos anteriores.",
+    sos=[("Não lembro a senha","Chame o professor. Não crie conta nova: os seus jogos estão na antiga."),
+         ("A lista está vazia","Confira se entrou com a mesma conta das outras aulas.")]),
+
+  dict(n=2, titulo="Crie um jogo novo", img="comum_fotos/c03_escolher.jpg", clipe="novo_jogo.gif",
+    corpo="Clique no botão verde <span class=ui>New Game</span>, no canto de cima à direita da lista.<br><br>Abre uma tela com os tipos de projeto.",
+    ck="Apareceu a tela com os tipos de projeto para escolher.",
+    sos=[("Não acho o New Game","Ele é o único botão verde da página, no alto à direita.")]),
+
+  dict(n=3, titulo="Escolha o PROJETO VAZIO", img="aula8/p01_vazio.jpg", clipe="empty_project.gif",
+    corpo="Na tela dos tipos, clique em <span class=ui>Empty Project</span> — o projeto vazio.<br><br>Abre o editor com a folha branca quadriculada.",
+    ck="O editor abriu com a folha branca quadriculada no meio.",
+    sos=[("Escolhi outro e veio um jogo pronto","Volte em <span class=ui>My Games</span>, apague esse e comece pelo <span class=ui>Empty Project</span>.")]),
+
+  dict(n=4, titulo="Pinte o céu", img="aula8/p02_ceu.jpg",
+    clipe=[("Abrir os níveis", "abrir_niveis.gif"), ("Pintar o céu", "pintar_o_ceu.gif")],
+    corpo="Clique em <span class=ui>Game Levels</span>, na fileira de baixo. Ao lado do nome <span class=ui>Level 1</span> há um campo escrito <span class=ui>FFFFFF</span>.<br><br>Clique nele, apague, escreva <b>FFE5B4</b> e aperte Enter.<br><br>Este tom claro não é enfeite: o número do cronômetro nasce <b>salmão</b>, e em céu escuro ninguém o lê.",
+    ck="A folha do nível ficou <b>cor de areia</b>.",
+    sos=[("Digitei e não mudou","Aperte Enter depois de escrever. Sem ele o campo não vale.")]),
+
+  dict(n=5, titulo="Crie o corredor", img="aula8/g01_b.jpg", clipe="criar_objeto.gif",
+    corpo="Clique uma vez dentro da folha clara, na <b>parte de baixo, bem à esquerda</b> — é a largada.<br><br>Abre a roda com <span class=ui>Create</span> e <span class=ui>Cancel</span>.",
+    ck="Apareceu a roda escura com <span class=ui>Create</span> e <span class=ui>Cancel</span>.",
+    sos=[("Cliquei fora da folha","Clique dentro do retângulo colorido. Fora dele não nasce objeto.")]),
+
+  dict(n=6, titulo="Escolha CREATE", img="aula8/g02_b.jpg", clipe="escolher_create.gif",
+    corpo="Na roda que abriu, clique em <span class=ui>Create</span>, na metade de cima.<br><br>Abre o painel do objeto novo.",
+    ck="O painel do objeto abriu, com os campos vazios esperando um nome.",
+    sos=[("Cliquei em Cancel sem querer","Clique na casa de novo e escolha <span class=ui>Create</span>.")]),
+
+  dict(n=7, titulo="Escreva CORREDOR nos dois campos", img="aula8/p03_nome.jpg",
+    corpo="No campo <span class=ui>Name</span>, escreva <b>Corredor</b> e aperte Tab. No campo <span class=ui>Type</span>, escreva <b>Corredor</b> também.<br><br>O <span class=ui>Type</span> é o nome que a <b>bandeira</b> vai procurar quando perguntar <i>quem encostou em mim?</i>.",
+    ck="Os dois campos, <span class=ui>Name</span> e <span class=ui>Type</span>, dizem <b>Corredor</b>.",
+    sos=[("Escrevi só no Name","Clique no campo <span class=ui>Type</span> e escreva lá também."),
+         ("Escrevi com acento","Escreva sem acento. Acento em nome de peça dá problema mais para a frente.")]),
+
+  dict(n=8, titulo="Escolha o desenho do corredor", img="aula8/p04_corredor.jpg", clipe="escolher_sprite.gif",
+    corpo="Clique no quadrado <span class=ui>edit sprite</span>, à esquerda do painel.<br><br><b>1.</b> Clique em <span class=ui>Browse</span>, embaixo da paleta de cores.<br><b>2.</b> Se aparecer o botão azul <span class=ui>&lt; Menu</span> no alto, clique nele.<br><b>3.</b> Clique em <span class=ui>Flowlab Sprites</span> e depois na faixa azul <span class=ui>Characters</span>.<br><b>4.</b> Clique no <b>primeiro boneco</b>, no canto de cima à esquerda.<br><br>Feche no <span class=ui>OK</span>, no canto de baixo à esquerda.",
+    ck="O boneco apareceu na folha, embaixo à esquerda.",
+    sos=[("Não acho o Browse","Ele fica embaixo da paleta de cores, na coluna da direita."),
+         ("Cliquei e não mudou nada","Clique bem em cima da figura, não no espaço entre elas.")]),
+
+  dict(n=9, titulo="A física do corredor", img="aula8/p05_fisica.jpg",
+    clipe=[("Abrir a física", "abrir_physics.gif"), ("Marcar movable", "marcar_movable.gif")],
+    corpo="No painel, clique em <span class=ui>Physics &gt;</span>, no canto de baixo à direita.<br><br><b>1.</b> <span class=ui>movable</span> — <b>marque</b>.<br><b>2.</b> <span class=ui>affected by gravity</span> — <b>deixe marcada</b>.<br><br>Feche no <span class=ui>OK</span> azul.",
+    ck="<span class=ui>movable</span> está <b>azul</b> e <span class=ui>affected by gravity</span> <b>também</b>.",
+    sos=[("Não acho Physics","É um texto azul claro, pequeno, no canto de baixo à direita do painel.")]),
+
+  dict(n=10, titulo="Faça o corredor correr e pular", img="aula8/p06_correr.jpg",
+    corpo="Com o corredor aberto, clique em <span class=ui>Behaviors</span>.<br><br>Na coluna da esquerda, lá embaixo, clique em <span class=ui>Behavior Bundles</span> e <b>arraste</b> o <span class=ui>Run &amp; Jump</span> para o meio da mesa.<br><br>É o mesmo pacote das aulas 2, 6 e 7. Espere uns segundos antes de fechar.",
+    ck="Um bloco <span class=ui>Run &amp; Jump</span> está na mesa de blocos.",
+    sos=[("Arrastei e não caiu nada","Solte no meio da mesa, longe da beirada."),
+         ("Não acho Behavior Bundles","É o último item da coluna da esquerda. Role até o fim.")]),
+
+  dict(n=11, titulo="Faça o chão COM BURACOS", img="aula8/p07_chao.jpg", clipe="clonar_o_chao.gif",
+    corpo="Feche as duas telas. Clique na <b>casa do canto de baixo à esquerda</b> e escolha <span class=ui>Create</span>. Em <span class=ui>Name</span> e em <span class=ui>Type</span> escreva <b>Chao</b>. Em <span class=ui>edit sprite</span>, pelo <span class=ui>Browse</span>, pegue o <b>primeiro bloco</b> de <span class=ui>Flowlab Sprites</span> &rsaquo; <span class=ui>Blocks</span>. Feche no <span class=ui>OK</span>.<br><br>Agora clone a fileira até a ponta direita — mas <b>pule duas casas</b> no caminho, deixando dois buracos.<br><br>E, embaixo de cada buraco, clone <b>uma casa na fileira de baixo</b>. Esse fundo é o que faz o buraco custar <b>tempo</b> em vez de acabar o jogo: quem cai, cai no fundo e sai pulando.<br><br>Clique no chão, escolha <span class=ui>Clone</span>, clique em todas as casas que você quer, e termine em <span class=ui>done cloning</span>.",
+    ck="O chão vai de ponta a ponta com <b>dois buracos</b>, e cada buraco tem <b>uma casa de fundo</b> embaixo.",
+    sos=[("Esqueci o fundo e o boneco sumiu","Sem fundo ele cai para fora do nível e some. Clone a casa de baixo."),
+         ("Não consigo sair do buraco","Corra e pule ao mesmo tempo: parado, o pulo sobe no lugar."),
+         ("Cliquei numa casa errada","Clique nela e escolha <span class=ui>Delete</span>.")]),
+
+  dict(n=12, titulo="Levante a BANDEIRA no fim", img="aula8/p08_bandeira.jpg", clipe="levantar_a_bandeira.gif",
+    corpo="Clique na casa do chão <b>da ponta direita</b> e escolha <span class=ui>Create</span>. Escreva <b>Bandeira</b> nos dois campos.<br><br>Em <span class=ui>edit sprite</span>, pelo <span class=ui>Browse</span>, em <span class=ui>Flowlab Sprites</span> &rsaquo; <span class=ui>Blocks</span>, pegue um bloco <b>de cor diferente</b> do chão — ele marca a chegada.<br><br>Agora clique nela, escolha <span class=ui>Clone</span> e clique nas <b>duas casas acima</b>. Termine em <span class=ui>done cloning</span>.<br><br>Três andares, e não um: com a bandeira baixinha dá para <b>pular por cima</b> dela — e quem pula por cima cai para fora do jogo sem nunca encostar na chegada.<br><br>Não mexa na física dela. A bandeira fica parada, e a única coisa que ela vai fazer é <b>perceber</b> quando você encostar.",
+    ck="Uma torre de <b>três</b> blocos de cor diferente fecha a ponta direita do percurso.",
+    sos=[("A bandeira caiu","Você marcou <span class=ui>movable</span> nela. Desmarque: a bandeira não se mexe."),
+         ("Consigo pular por cima","Faltou um andar. Clone mais uma casa para cima.")]),
+
+  dict(n=13, titulo="Jogue o percurso, ainda sem relógio", img="aula8/p09_corrida.jpg", clipe="jogar.gif",
+    corpo="Feche as duas telas e clique em <span class=ui>Play</span>.<br><br>Clique uma vez dentro do jogo e corra até a bandeira, pulando os buracos. Volte ao editor quando chegar.<br><br>Guarde na cabeça quanto tempo achou que levou. No próximo passo o jogo passa a contar por você — e quase sempre o número é maior do que a gente imagina.",
+    ck="Você corre, pula os buracos e chega na bandeira.",
+    sos=[("O boneco não anda","Confira o <span class=ui>Run &amp; Jump</span> no passo 10."),
+         ("Caí no buraco","Corra e pule ao mesmo tempo para sair. O buraco custa segundos — é essa a graça.")]),
+
+  dict(n=14, titulo="O CRONÔMETRO: um número com nome", img="aula8/p10_tempo.jpg", clipe="criar_variavel_global.gif",
+    corpo="Clique no <b>corredor</b> e depois em <span class=ui>Behaviors</span>.<br><br><b>1.</b> Em <span class=ui>Logic &amp; Math</span>, arraste o <span class=ui>Global Variable</span> — a bolinha do mundo.<br><b>2.</b> Clique devagar nele. No campo <span class=ui>Global Name</span>, clique e escolha <span class=ui>+ Add New Name</span>. Em <span class=ui>Name</span> escreva <b>Tempo</b>, deixe o <span class=ui>Type</span> em <span class=ui>Number</span>, deixe o <span class=ui>Default Value</span> em <b>0</b> e clique no <span class=ui>OK</span> azul.<br><b>3.</b> Em <span class=ui>Triggers</span>, arraste um <span class=ui>Timer</span> e marque <span class=ui>Repeat Forever</span>. O atraso é em <b>décimos</b> de segundo: deixe <b>10</b>, que é um segundo.<br><b>4.</b> Em <span class=ui>GUI</span>, arraste um <span class=ui>Label</span>.<br><br>Dois fios: de <span class=ui>out</span> do <span class=ui>Timer</span> até a bolinha <b><span class=ui>+</span></b> do <span class=ui>Tempo</span> — a <b>terceira</b>, a de baixo — e de <span class=ui>out</span> do <span class=ui>Tempo</span> até <span class=ui>text</span> do <span class=ui>Label</span>.<br><br>Repare no que mudou de nome: o bloco deixou de se chamar <span class=ui>Global Variable</span> e passou a se chamar <b>Tempo</b>. O número agora tem <b>nome</b>, e qualquer objeto do jogo pode chamá-lo por ele.",
+    ck="O bloco da bolinha do mundo mostra <b>Tempo</b> no alto, e há dois fios: <span class=ui>Timer</span> → <span class=ui>+</span> e <span class=ui>out</span> → <span class=ui>text</span>.",
+    sos=[("O número não sobe","O fio foi para <span class=ui>set</span> ou <span class=ui>get</span>. Ele tem de chegar na bolinha <span class=ui>+</span>, a de baixo."),
+         ("Não achei o + Add New Name","Clique em cima do campo <span class=ui>Global Name</span>: ele é uma lista, e abre."),
+         ("O relógio corre rápido demais","O atraso está baixo. Ele é em décimos: <b>10</b> é um segundo.")]),
+
+  dict(n=15, titulo="Zere o relógio no começo da partida", img="aula8/p11_zera.jpg",
+    corpo="Ainda na mesa do corredor, embaixo do que você montou:<br><br><b>1.</b> Em <span class=ui>Triggers</span>, arraste o <span class=ui>Once</span> — o raio. Ele dispara <b>uma vez</b>, quando a fase começa.<br><b>2.</b> Em <span class=ui>Logic &amp; Math</span>, arraste um <span class=ui>Number</span>. Deixe em <b>0</b>.<br><br>Os fios: de <span class=ui>out</span> do <span class=ui>Once</span> até <span class=ui>get</span> do <span class=ui>Number</span>, e de <span class=ui>out</span> do <span class=ui>Number</span> até <span class=ui>set</span> do <b>mesmo bloco <span class=ui>Tempo</span></b> que já está na mesa — a <b>primeira</b> bolinha dele.<br><br>Repare que o bloco do tempo tem <b>três portas de entrada</b>: o <span class=ui>+</span> embaixo, que o relógio usa para somar, e o <span class=ui>set</span> em cima, que o zero usa para escrever. Um bloco, duas conversas.<br><br>Sem este passo o cronômetro continuaria de onde parou: variável global <b>não esquece</b>. É justamente isso que vai salvar o recorde daqui a pouco.",
+    ck="Dois blocos novos na mesa, e um fio chegando no <span class=ui>set</span> do <span class=ui>Tempo</span>.",
+    sos=[("O relógio começa num número alto","Faltou este passo, ou o fio não chegou no <span class=ui>set</span>."),
+         ("Liguei no + sem querer","Aí o zero <b>soma</b> em vez de escrever. O fio tem de chegar na <b>primeira</b> bolinha, o <span class=ui>set</span>.")]),
+
+  dict(n=16, titulo="Jogue: o relógio corre", img="aula8/p12_relogio.jpg",
+    corpo="Feche as duas telas e clique em <span class=ui>Play</span>.<br><br>O número no canto de cima começa em <b>0</b> e sobe de um em um, sozinho — você não precisa fazer nada. Corra até a bandeira e veja em quanto parou… ou melhor: veja que ele <b>não para</b>. Ainda não mandamos ninguém pará-lo.",
+    ck="O número no canto sobe sozinho enquanto o jogo roda.",
+    sos=[("O número não aparece","Confira o fio do <span class=ui>Tempo</span> até o <span class=ui>text</span> do <span class=ui>Label</span>."),
+         ("O número está pequeno","Clique devagar no <span class=ui>Label</span> e puxe a régua <span class=ui>size</span> para a direita.")]),
+
+  dict(n=17, titulo="O RECORDE, na bandeira", img="aula8/p13_recorde.jpg",
+    corpo="Volte ao editor, clique na <b>bandeira</b> e depois em <span class=ui>Behaviors</span>. A mesa dela está vazia.<br><br><b>1.</b> Em <span class=ui>Logic &amp; Math</span>, arraste um <span class=ui>Global Variable</span>. No <span class=ui>Global Name</span>, escolha <span class=ui>+ Add New Name</span>, chame de <b>Recorde</b> e ponha <span class=ui>Default Value</span> <b>99</b>.<br><b>2.</b> Em <span class=ui>Triggers</span>, arraste um <span class=ui>Timer</span> e marque <span class=ui>Repeat Forever</span>.<br><b>3.</b> Em <span class=ui>GUI</span>, arraste um <span class=ui>Label</span>.<br><br>Os fios: de <span class=ui>out</span> do <span class=ui>Timer</span> até <span class=ui>get</span> do <span class=ui>Recorde</span>, e de <span class=ui>out</span> do <span class=ui>Recorde</span> até <span class=ui>text</span> do <span class=ui>Label</span>.<br><br><b>Por que 99?</b> Porque o recorde é o <b>menor</b> tempo, e qualquer corrida de verdade é menor que 99. Se começasse em 0, nenhum tempo seria menor e o recorde nunca mudaria.",
+    ck="O bloco do mundo da bandeira diz <b>Recorde</b> e mostra <b>99</b> embaixo.",
+    sos=[("O bloco mostra 0","Você deixou o <span class=ui>Default Value</span> em zero. Clique devagar nele, escolha <span class=ui>+ Add New Name</span> e crie de novo com <b>99</b>."),
+         ("Os dois números ficam um em cima do outro","É o próximo passo que resolve.")]),
+
+  dict(n=18, titulo="O tempo vai para cima do corredor", img="aula8/p14_na_cabeca.jpg", clipe="grudar_no_corredor.gif",
+    corpo="Os dois números nascem <b>no mesmo canto</b>, um em cima do outro — e assim não dá para ler nenhum dos dois.<br><br>Volte para a mesa do <b>corredor</b>, clique devagar no <span class=ui>Label</span> dele e marque a caixinha <span class=ui>attach to object</span>, embaixo do painel.<br><br>Pronto: o <b>tempo</b> passa a ser desenhado em cima do corredor, e corre com ele. O <b>recorde</b> continua parado no canto da tela.<br><br>Repare que não entrou bloco nenhum: foi <b>uma caixinha</b>. Nem toda mudança num jogo precisa de peça nova.",
+    ck="Na próxima vez que jogar, o tempo anda junto com o boneco e o recorde fica no canto.",
+    sos=[("Marquei e nada mudou","Confira se marcou no <span class=ui>Label</span> do <b>corredor</b>, não no da bandeira."),
+         ("O número ficou em cima do boneco e atrapalha","Clique devagar no <span class=ui>Label</span> e diminua a régua <span class=ui>size</span>.")]),
+
+  dict(n=19, titulo="A bandeira COMPARA os dois tempos", img="aula8/p15_compara.jpg", clipe="condicao_menor.gif",
+    corpo="Ainda na mesa da bandeira. Agora o pedaço que decide:<br><br><b>1.</b> Em <span class=ui>Triggers</span>, arraste um <span class=ui>Collision</span>. Clique devagar nele e, na lista <span class=ui>Any Type</span>, escolha <b>Corredor</b>.<br><b>2.</b> Em <span class=ui>Logic &amp; Math</span>, arraste um <span class=ui>Global Variable</span> e escolha o nome <b>Tempo</b>.<br><b>3.</b> Em <span class=ui>Logic &amp; Math</span>, arraste um <span class=ui>Filter</span>. Clique devagar nele e, no seletor que diz <span class=ui>greater than</span>, escolha <span class=ui>less than</span>. O bloco passa a mostrar <span class=ui>input &lt; 0</span>.<br><br>Quatro fios:<br>• de <span class=ui>hit</span> do <span class=ui>Collision</span> até <span class=ui>get</span> do <span class=ui>Tempo</span>;<br>• de <span class=ui>out</span> do <span class=ui>Tempo</span> até <span class=ui>in</span> do <span class=ui>Filter</span>;<br>• de <span class=ui>out</span> do <span class=ui>Recorde</span> até <span class=ui>set</span> do <span class=ui>Filter</span>;<br>• de <span class=ui>pass</span> do <span class=ui>Filter</span> até <span class=ui>set</span> do <span class=ui>Recorde</span>.<br><br>Lendo em voz alta: <i>quando o Corredor encostar em mim, pegue o Tempo; se ele for menor que o Recorde, o Recorde passa a ser ele</i>.<br><br>Na Aula 7 o funil comparava com um número que você escreveu. Hoje ele compara com <b>outro número do jogo</b> — e é o fio no <span class=ui>set</span> que faz isso.",
+    ck="O funil mostra <span class=ui>input &lt; 0</span> e tem fio chegando nas duas bolinhas da esquerda, <span class=ui>set</span> e <span class=ui>in</span>.",
+    sos=[("O recorde vira 1 no primeiro segundo","O fio do <span class=ui>Tempo</span> saiu de um bloco que recebe o <span class=ui>+</span> do relógio. Na bandeira, o <span class=ui>Tempo</span> só pode ser disparado pelo <span class=ui>Collision</span>."),
+         ("O recorde nunca muda","Confira se o seletor diz <span class=ui>less than</span> e se o fio do <span class=ui>pass</span> chega no <span class=ui>set</span> do <b>Recorde</b>."),
+         ("Liguei no fail sem querer","O <span class=ui>fail</span> é a bolinha de baixo, e dispara quando a conta <b>não</b> bate.")]),
+
+  dict(n=20, titulo="Volte para a largada e tente de novo", img="aula8/p16_volta.jpg",
+    corpo="Falta uma coisa: depois de chegar, dar a volta.<br><br>Clique no <b>corredor</b> e depois em <span class=ui>Behaviors</span>.<br><br><b>1.</b> Em <span class=ui>Triggers</span>, arraste um <span class=ui>Collision</span> e escolha o tipo <b>Bandeira</b>.<br><b>2.</b> Em <span class=ui>Triggers</span>, arraste um <span class=ui>Timer</span>. Não marque o <span class=ui>Repeat Forever</span>.<br><b>3.</b> Em <span class=ui>Game Flow</span>, arraste o <span class=ui>Restart Game</span>.<br><br>Dois fios: de <span class=ui>hit</span> do <span class=ui>Collision</span> até <span class=ui>start</span> do <span class=ui>Timer</span>, e de <span class=ui>out</span> do <span class=ui>Timer</span> até <span class=ui>go</span> do <span class=ui>Restart Game</span>.<br><br>O segundo de espera não é enfeite: é o tempinho para a bandeira guardar o recorde <b>antes</b> de tudo recomeçar.<br><br>E aqui está a mágica do dia: o jogo recomeça, o cronômetro volta a zero — e o <b>recorde fica</b>. Ele é global.",
+    ck="Ao encostar na bandeira, o jogo recomeça sozinho depois de um segundo.",
+    sos=[("O jogo recomeça sozinho sem eu chegar","O fio tem de chegar no <span class=ui>start</span> do <span class=ui>Timer</span>. Sem fio ali, ele começa sozinho."),
+         ("O recorde some no recomeço","Confira se o bloco é mesmo o <span class=ui>Global Variable</span>, e não o <span class=ui>Number</span>.")]),
+
+  dict(n=21, titulo="Jogue, bata o recorde e mande o link", img="aula8/p17_jogo.jpg",
+    corpo="Feche as duas telas e clique em <span class=ui>Play</span>.<br><br>Na primeira corrida o recorde está em <b>99</b>: qualquer tempo ganha dele. Na segunda, você corre contra <b>você mesmo</b> — e só troca o número se for mais rápido.<br><br>Para mandar para alguém: copie o endereço da barra do navegador e mande. Quem abrir vai tentar bater o seu tempo.",
+    ck="O tempo zera a cada corrida, e o recorde só muda quando você é mais rápido.",
+    sos=[("O recorde não muda nunca","O seletor do funil ficou em <span class=ui>greater than</span>. Volte ao passo 19."),
+         ("O recorde é sempre o último tempo","O fio do <span class=ui>Recorde</span> até o <span class=ui>set</span> do funil está faltando: sem ele o funil compara com o número do painel."),
+         ("Quero mais difícil","Ponha mais um buraco, ou afaste a bandeira. O recorde começa de novo em 99 se você trocar o <span class=ui>Default Value</span>.")]),
+ ],
+}

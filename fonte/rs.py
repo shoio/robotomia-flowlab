@@ -896,6 +896,38 @@ def procura_forte(alvo, arquivo=None, regiao=None, psm="6", escada=ESCADA, exato
         #    comeco, entao prefixo e a forma certa de tolera-lo — e nao abre a
         #    porta que o piso por palavra abria: nenhum prefixo de
         #    'game levels' com 6 letras ou mais cabe em 'new game'.
+        # 1a) alvo de VARIAS palavras com `exato`: o tesseract entrega UMA
+        # palavra por item, e nenhuma delas e igual ao alvo. Quem pode ser
+        # igual e a LINHA junta. Sem este ramo, `acha_bloco` nao achava
+        # NENHUM bloco de titulo composto — `Global Variable`, `Object
+        # Variable`, `Toggle Switch`, `Logic Gate` — e a falha chegava
+        # disfarcada de «soltei e nao consegui LER o titulo na mesa», que e a
+        # mesma frase de quando o bloco nao cai. Dois dignosticos opostos com
+        # uma frase so.
+        if exato and " " in alvo_l:
+            for junto, palavras in linhas:
+                if junto == alvo_l:
+                    return palavras_do_trecho(palavras, junto, alvo_l)[0]
+            # E o alvo NO MEIO da linha, com limite de palavra dos dois lados.
+            #
+            # Dois blocos na mesma altura da mesa entram na MESMA linha do
+            # OCR: o titulo do `Global Variable` chegava como
+            # 'timer global variable', e a igualdade acima nao casava. O bloco
+            # estava la, aceso, e `solta` DESFAZIA o arrasto tres vezes
+            # seguidas antes de desistir — e o diagnostico que saia ("nao
+            # consegui LER o titulo") e o mesmo de bloco que nao nasceu.
+            #
+            # O limite de palavra e o que mantem isto EXATO: 'global variable'
+            # nao casa com 'global variables'.
+            for junto, palavras in linhas:
+                i = junto.find(alvo_l)
+                while i >= 0:
+                    fim = i + len(alvo_l)
+                    antes_ok = i == 0 or not junto[i - 1].isalnum()
+                    depois_ok = fim >= len(junto) or not junto[fim].isalnum()
+                    if antes_ok and depois_ok:
+                        return palavras_do_trecho(palavras, junto, alvo_l)[0]
+                    i = junto.find(alvo_l, i + 1)
         if not exato:
             for junto, palavras in linhas:
                 pedaco = next((alvo_l[:k] for k in range(len(alvo_l), minimo - 1, -1)

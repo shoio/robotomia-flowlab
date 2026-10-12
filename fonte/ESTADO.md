@@ -1,11 +1,25 @@
-# Estado do curso de Flowlab — 11-10-2026 (noite)
+# Estado do curso de Flowlab — 12-10-2026 (madrugada)
 
-**Sete aulas no ar**, em https://shoio.github.io/robotomia-flowlab/ — conferido
+**Oito aulas no ar**, em https://shoio.github.io/robotomia-flowlab/ — conferido
 em produção, não só commitado.
 
-O que custou a madrugada está no `PADRAO.md`, §2n a §2t. O maior é o §2n: o
+O que custou esta madrugada está no `PADRAO.md`, §2ac a §2ag. O que a Aula 8
+trouxe de novo para a caixa de ferramentas:
+
+- a **variável global** — criar, nomear, dar valor de partida, e a descoberta
+  que sustenta a aula: ela **sobrevive ao `Restart Game`**;
+- o **`Filter` comparando por fio**: o número que chega no `set` manda no
+  número do painel — mas só depois de ter chegado uma vez;
+- ⛔ os pinos `x`/`y` do `Label` **não movem o texto**; quem move é a caixinha
+  `attach to object`;
+- ⛔ **buraco sem fundo tira o boneco do nível** — e a foto do passo que
+  promete «você corre e pula os buracos» saiu com o percurso vazio;
+- ⛔ a mesa **anda** entre um arrasto e outro, então fileira em fração da tela
+  envelhece: nasceu o `blocos.acha_todos`, que devolve os blocos em ORDEM.
+
+A madrugada anterior (§2n a §2t) continua valendo; o maior de lá é o §2n: o
 remendo da bancada sumia por ordem de import e **todo arrasto ia para a tela de
-verdade**, em silêncio, com o defeito latente também em `cap1`, `cap2` e `cap3`.
+verdade**, em silêncio.
 
 ## O que está pronto
 
@@ -18,8 +32,9 @@ verdade**, em silêncio, com o defeito latente também em `cap1`, `cap2` e `cap3
 | 5 | um botão só | passarinho com gravidade, chão, bolas de fogo em alturas sorteadas, fim de jogo e **placar na tela** | espaço levanta 331 px e a gravidade traz de volta · fogo separado por 653 px num mesmo quadro · placar sobe sozinho |
 | 6 | chave e porta | plataforma, porta de três pedaços fechando o caminho, chave que **manda recado** e estrela do outro lado | seta leva o jogador 398 px · pulo de 154 px · a metade de cima vai de 8128 a 0 px de não-céu quando a chave fala · estrela de 704 a 0 |
 | 7 | empurra-blocos | três caixas empurráveis, um alvo que **conta**, e um `Filter` que abre a porta quando o número passa de 2 | placar sobe até 3 e a porta cai sozinha (13004 → 1170 px de não-céu) |
+| 8 | contra o relógio | percurso com dois buracos, cronômetro grudado no corredor, e um **recorde** que não some no recomeço | o relógio vai de 12 a 17 sozinho · o recorde virou **15** na primeira corrida e **não mudou** na corrida lenta (o lado `fail` do funil) |
 
-Aulas 8 a 12: planejadas em `PLANO.md`, não construídas.
+Aulas 9 a 12: planejadas em `PLANO.md`, não construídas.
 
 ## Pendente para o Julio
 

@@ -28,8 +28,14 @@ CATEGORIAS = ["Triggers", "Logic & Math", "Components", "Properties",
 
 
 class Bloco:
-    def __init__(self, nome, x, y, confirmado=True):
+    # `tipo` e o nome do bloco NA PALHETA; `nome` e o que ele mostra na mesa.
+    # Quase sempre sao o mesmo texto — mas o `Global Variable`, depois de
+    # apontar para uma variavel, passa a se chamar pelo NOME DELA ('Recorde'),
+    # e as tabelas de pinos (DESLOC/PORTAS) sao por TIPO. Sem esta separacao,
+    # `liga_fixo` dizia "nao tenho o deslocamento do pino 'get' de 'Recorde'".
+    def __init__(self, nome, x, y, confirmado=True, tipo=None):
         self.nome = nome
+        self.tipo = tipo or nome
         self.x, self.y = x, y          # onde eu soltei (canto de cima-esquerda)
         # `confirmado` = este bloco foi LIDO na tela, nao suposto.
         #
@@ -362,7 +368,39 @@ def ok():
     return True
 
 
-def acha_bloco(nome, regiao=TELA, tentativas=3):
+def acha_todos(nome, regiao=TELA, tipo=None):
+    """TODOS os blocos com este titulo na mesa, de cima para baixo.
+
+       Existe porque a mesa ANDA: cada arrasto da palheta recarrega a pagina, e
+       o editor recentra os blocos. Fileira em fracao da tela (`_na_fila`)
+       deixa de valer depois de alguns arrastos, e o `acha_bloco` sozinho
+       devolve sempre o PRIMEIRO de dois blocos de mesmo nome — os dois
+       `Timer` de uma mesa, por exemplo. Com a lista, quem escolhe e a ORDEM
+       na tela, que e o que a crianca ve.
+
+       Devolve [] quando nao ha nenhum."""
+    a, _ = nav.captura("/tmp/_bl_todos.png")
+    alvo = nome.lower()
+    for escala, limiar in rs.ESCADA:
+        achados = []
+        itens = rs.ocr(a, regiao=regiao, psm="6", escala=escala, limiar=limiar)
+        for junto, palavras in rs._por_linha(itens):
+            i = junto.find(alvo)
+            while i >= 0:
+                fim = i + len(alvo)
+                antes_ok = i == 0 or not junto[i - 1].isalnum()
+                depois_ok = fim >= len(junto) or not junto[fim].isalnum()
+                if antes_ok and depois_ok:
+                    t, x, y, w, h = rs.palavras_do_trecho(
+                        palavras, junto, junto[i:fim])[0]
+                    achados.append(Bloco(nome, x, y + h // 2, tipo=tipo))
+                i = junto.find(alvo, i + 1)
+        if achados:
+            return sorted(achados, key=lambda b: (b.y, b.x))
+    return []
+
+
+def acha_bloco(nome, regiao=TELA, tentativas=3, tipo=None):
     """Acha um bloco JA na tela pelo titulo e devolve um Bloco posicionado.
 
        Guardar a coordenada onde eu soltei nao serve: qualquer zoom, rolagem ou
@@ -373,7 +411,7 @@ def acha_bloco(nome, regiao=TELA, tentativas=3):
         achado = rs.procura_forte(nome, a, regiao=regiao, psm="6", exato=True)
         if achado:
             t, x, y, w, h = achado
-            return Bloco(nome, x, y + h // 2)
+            return Bloco(nome, x, y + h // 2, tipo=tipo)
         time.sleep(0.8)
     raise RuntimeError(f"nao achei o bloco '{nome}' na tela")
 
@@ -395,6 +433,9 @@ PORTAS = {
                   "dir": ["text", "alpha", "x", "y"]},
     "Random":    {"esq": ["min", "max", "new"],    "dir": ["out"]},
     "Position":  {"esq": ["x", "y", "maisx", "maisy"], "dir": ["x", "y"]},
+    # MEDIDOS com `mede_pinos` no prototipo 3155726 (Aula 8).
+    "Global Variable": {"esq": ["set", "get", "mais"], "dir": ["out"]},
+    "Switch":    {"esq": ["off", "on", "in"],      "dir": ["out"]},
     # ⚠️ `Once`, `Impulse` e `Label` ESTAVAM REPETIDOS AQUI, e em Python a
     # segunda chave apaga a primeira sem avisar. As que venciam eram as
     # escritas de cabeca: o `Label` ficava com `text/show/hide`, quando na tela
@@ -470,7 +511,7 @@ def bolinhas(bloco, folga=(70, 620, 60, 340), claro=185, raio=(3, 11)):
 def pino_por_nome(bloco, rotulo, lado):
     """A bolinha do pino, pela ORDEM conhecida do bloco — sem ler texto."""
     bloco.exige_achado(f"medir o pino '{rotulo}'")
-    ordem = PORTAS.get(bloco.nome, {}).get(lado)
+    ordem = PORTAS.get(bloco.tipo, {}).get(lado)
     if not ordem or rotulo not in ordem:
         raise RuntimeError(f"nao sei a ordem dos pinos de '{bloco.nome}' "
                            f"({lado}) — acrescente em blocos.PORTAS")
@@ -748,7 +789,7 @@ def pinos(bloco, margem=22, claro=175, folga=4):
     esq = [p for p in faixa(x0 - largo, x0) if x0 - margem <= p[0] <= x0 - folga]
     dire = [p for p in faixa(x1, x1 + largo) if x1 + folga <= p[0] <= x1 + margem]
     achados = {"esq": esq, "dir": dire}
-    esperado = PORTAS.get(bloco.nome)
+    esperado = PORTAS.get(bloco.tipo)
     if esperado:
         for lado in ("esq", "dir"):
             if len(achados[lado]) != len(esperado[lado]):
@@ -846,7 +887,7 @@ def discos(bloco, esq=45, dir_=430, cima=25, baixo=250, claro=175):
 
 def pino(bloco, rotulo, lado):
     """A bolinha de um pino, pela ordem conhecida, com a contagem conferida."""
-    ordem = PORTAS.get(bloco.nome, {}).get(lado)
+    ordem = PORTAS.get(bloco.tipo, {}).get(lado)
     if ordem is None:
         raise RuntimeError(f"nao sei a ordem dos pinos de '{bloco.nome}' ({lado})")
     achados = discos(bloco)[lado]
@@ -913,6 +954,13 @@ DESLOC = {
                  "dir": {"out": (247, 50), "done": (247, 103)}},
     "Spawn":    {"esq": {"x": (-25, 41), "y": (-25, 76), "spawn": (-25, 116)},
                  "dir": {"out": (246, 76)}},
+    # Aula 8, medidos na mesa (o ponto do meio do `Switch` e o ICONE, nao
+    # pino: `mede_pinos` devolve (109,66) junto, e ele nao entra aqui).
+    "Global Variable": {"esq": {"set": (-27, 41), "get": (-27, 79),
+                                "mais": (-27, 117)},
+                        "dir": {"out": (244, 77)}},
+    "Switch":   {"esq": {"off": (-26, 42), "on": (-26, 80), "in": (-26, 118)},
+                 "dir": {"out": (245, 78)}},
     "Destroyer": {"esq": {"in": (-28, 57)}, "dir": {"out": (248, 57)}},
     # o titulo no canvas e 'RestartGame' (sem espaco), mas na palheta ele
     # aparece como 'Restart Game' — por isso solta() aceita titulo diferente
@@ -930,7 +978,7 @@ DESLOC = {
 def pino_fixo(bloco, rotulo, lado):
     """(x, y) do pino pelo deslocamento medido do tipo do bloco."""
     bloco.exige_achado(f"medir o pino '{rotulo}'")
-    tab = DESLOC.get(bloco.nome, {}).get(lado, {})
+    tab = DESLOC.get(bloco.tipo, {}).get(lado, {})
     if rotulo not in tab:
         raise RuntimeError(f"nao tenho o deslocamento do pino '{rotulo}' ({lado}) "
                            f"de '{bloco.nome}' — meça e acrescente em blocos.DESLOC")
@@ -1484,6 +1532,28 @@ def escolhe_na_lista(rotulo, nome, dy=0):
     return p
 
 
+def caixa_do_painel(arquivo=None):
+    """A caixa do painel de ajustes ABERTO, achada pelo par `Help`/`Note`.
+
+       Existe porque o rotulo de um campo do painel costuma ter o mesmo texto
+       de um PINO do bloco — `delay` e o caso exemplar. Procurando na tela
+       inteira, `acha_texto('delay')` ora devolvia o campo, ora o pino, e no
+       segundo caso a escrita ia para a mesa: um `Timer` ficou com o atraso de
+       fabrica e eu li de volta o painel inteiro como se fosse o campo.
+
+       `Help` e `Note` so existem dentro do painel, e ficam no pe dele."""
+    a = arquivo or nav.captura("/tmp/_bl_painel.png")[0]
+    ph = nav.acha_texto("help", arquivo=a)
+    pn = nav.acha_texto("note", arquivo=a)
+    if not (ph and pn):
+        return None
+    x0 = min(ph[0], pn[0]) - 140
+    x1 = max(ph[0], pn[0]) + 260
+    y1 = max(ph[1], pn[1]) + 30
+    y0 = y1 - 560
+    return _regiao_px(x0, y0, x1, y1)
+
+
 def campo_abaixo(rotulo, valor, dy=55):
     """Escreve num campo que fica ABAIXO do seu rotulo, e confere.
 
@@ -1491,19 +1561,272 @@ def campo_abaixo(rotulo, valor, dy=55):
        linha do rotulo. Ja o `Max value` do `Random` fica na linha de baixo:
        ali o `campo_ao_lado` escrevia no vazio e lia `['|']` de volta."""
     a, _ = nav.captura("/tmp/_bl_abaixo.png")
-    p = nav.acha_texto(rotulo, arquivo=a)
+    # DENTRO DO PAINEL primeiro: o mesmo texto costuma estar tambem num pino
+    # do bloco, e escrever no pino nao acusa nada.
+    caixa = caixa_do_painel(a)
+    p = nav.acha_texto(rotulo, arquivo=a, regiao=caixa) if caixa else None
+    if not p:
+        p = nav.acha_texto(rotulo, arquivo=a)
     if not p:
         raise RuntimeError(f"nao achei o rotulo '{rotulo}' no painel")
     nav.clique_seguro(p[0] + 10, p[1] + dy); time.sleep(0.5)
     rs.tecla(0, cmd=True); time.sleep(0.25)
     rs.digita_teclas(str(valor)); time.sleep(0.6)
     b, _ = nav.captura("/tmp/_bl_abaixo2.png")
-    if not rs.tem_texto(str(valor), arquivo=b):
-        raise RuntimeError(f"escrevi '{valor}' em '{rotulo}' e o painel nao o mostra")
+    # NO CAMPO, nao na tela: `tem_texto` na tela inteira aprovava um '50' que
+    # estivesse em qualquer outro lugar do editor — e o campo errado nao
+    # acusa nada. A faixa e a do proprio campo, com o cursor ainda dentro
+    # dele (sem foco, o cinza claro sobre cinza escuro nao e lido).
+    faixa = (max(0.0, (p[0] - 340) / 2940), max(0.0, (p[1] + dy - 75) / 1604),
+             min(1.0, (p[0] + 460) / 2940), min(1.0, (p[1] + dy + 75) / 1604))
+    # DUAS LEITURAS da mesma faixa, com psm diferente. Nao e superstic~ao: o
+    # mesmo campo com `50` escrito saiu como '50 - +' numa e como 'a +' na
+    # outra, e reprovar aqui e reprovar uma escrita que esta certa na tela.
+    lido = " ".join([nav.texto_da_tela(regiao=faixa),
+                     nav.texto_da_tela(regiao=faixa, psm="7")])
+    if (str(valor) not in lido.replace(" ", "")
+            and not rs.procura_forte(str(valor), b, regiao=faixa, psm="7")):
+        raise RuntimeError(f"escrevi '{valor}' em '{rotulo}' e o campo mostra {lido!r}")
     print(f"   {rotulo} = {valor}", flush=True)
     # O PONTO DO CAMPO, nao `True`: quando esta chamada e o gesto de um clipe,
     # e ele que vira a seta. Com `True` o alvo ficava em (0,0).
     return (p[0] + 10, p[1] + dy)
+
+
+def _regiao_px(x0, y0, x1, y1):
+    """Caixa em PIXELS da tela virada em fracoes, que e o que `regiao` quer."""
+    return (max(0.0, x0 / 2940), max(0.0, y0 / 1604),
+            min(1.0, x1 / 2940), min(1.0, y1 / 1604))
+
+
+CONDICOES = {"greater than": ">", "less than": "<", "equal to": "=",
+             "not equal to": "!=", "less than or equal to": "<=",
+             "greater than or equal to": ">="}
+
+
+def escolhe_condicao_no_painel(bloco, condicao):
+    """Troca a comparacao COM O PAINEL JA ABERTO, e devolve o ponto clicado.
+
+       Existe separada de `poe_condicao` por causa do CLIPE: o gesto que a
+       crianca ve e clicar no seletor e escolher a linha, com o painel aberto
+       nos dois quadros. Com o painel fechando no meio, a diferenca entre o
+       antes e o depois era de 93 px — um `>` virando `<` — e o
+       `confere_alvos` (com razao) chamava aquilo de «clipe sem gesto»."""
+    condicao = condicao.lower()
+    if condicao not in CONDICOES:
+        raise RuntimeError(f"nao conheco a comparacao '{condicao}'")
+    a, _ = nav.captura("/tmp/_bl_cond.png")
+    atual = next((c for c in CONDICOES if nav.acha_texto(c, arquivo=a)), None)
+    if atual == condicao:
+        print(f"   a comparacao ja e '{condicao}'", flush=True)
+        return (bloco.x + 80, bloco.y + 60)
+    p = nav.acha_texto(atual or "greater than", arquivo=a)
+    if not p:
+        raise RuntimeError("nao achei o seletor de comparacao do Filter")
+    nav.clique_seguro(*p); time.sleep(1.5)
+    b, _ = nav.captura("/tmp/_bl_cond2.png")
+    lista = _regiao_px(p[0] - 300, p[1] - 200, p[0] + 400, p[1] + 420)
+    achado = rs.procura_forte(condicao, b, regiao=lista, exato=True)
+    if not achado:
+        raise RuntimeError(f"a comparacao '{condicao}' nao esta na lista")
+    t, x, y, w, h = achado
+    ponto = (x + w // 2, y + h // 2)
+    nav.clique_seguro(*ponto); time.sleep(1.5)
+    return ponto
+
+
+def confere_condicao(bloco, condicao):
+    """LE DE VOLTA a comparacao na cara do bloco (com o painel ja fechado)."""
+    simbolo = CONDICOES[condicao.lower()]
+    c, _ = nav.captura("/tmp/_bl_cond3.png")
+    perto = _regiao_px(bloco.x - 60, bloco.y - 40, bloco.x + 330, bloco.y + 180)
+    lido = nav.texto_da_tela(regiao=perto)
+    if f"input {simbolo}" not in lido.replace("  ", " "):
+        raise RuntimeError(f"escolhi '{condicao}' e o bloco mostra {lido!r}")
+    print(f"   comparacao = input {simbolo}", flush=True)
+    return (bloco.x + 80, bloco.y + 60)
+
+
+def poe_condicao(bloco, condicao):
+    """Troca a comparacao de um `Filter` ('less than', 'equal to'...).
+
+       MEDIDO: o painel do `Filter` tem um SELETOR com as seis comparacoes e,
+       embaixo, o numero. Quando o pino `set` tem fio, quem manda e o fio — o
+       numero do painel fica de reserva.
+
+       ⚠️ 'less than' esta DENTRO de 'less than or equal to'. Procurar o texto
+       solto clica na linha errada, e o bloco passa a comparar outra coisa sem
+       nenhum erro na tela. Por isso a linha da lista e casada INTEIRA."""
+    abre_ajustes(bloco); time.sleep(1.5)
+    escolhe_condicao_no_painel(bloco, condicao)
+    fecha_ajustes(); time.sleep(1.0)
+    return confere_condicao(bloco, condicao)
+
+
+def usa_global(bloco, nome, inicial=0):
+    """Aponta este `Global Variable` para a global `nome`, criando-a se
+       preciso, com `inicial` como valor de partida.
+
+       MEDIDO no prototipo 3155726, e sao quatro telas, nao uma:
+         1. o painel do `Global Variable` tem um campo `Global Name` que e uma
+            LISTA — clicar no texto dele ja abre;
+         2. a lista traz as globais que existem mais `+ Add New Name`;
+         3. o `+ Add New Name` abre um DIALOGO proprio, a direita do painel,
+            com `Name`, `Type: Number` e **`Default Value`**;
+         4. o OK azul do dialogo e OUTRO botao, abaixo do campo do valor — o
+            `OK` do painel fica a esquerda e NAO salva a variavel nova.
+
+       O `Default Value` e o que dispensa semear o recorde com `Once` +
+       `Number`: a variavel ja nasce em 99, e nenhum tempo de verdade perde
+       para ela."""
+    abre_ajustes(bloco); time.sleep(1.5)
+    a, _ = nav.captura("/tmp/_bl_gv.png")
+    if rs.procura_forte(nome, a, regiao=(0.2, 0.05, 1.0, 0.95)):
+        print(f"   o bloco ja aponta para '{nome}'", flush=True)
+        fecha_ajustes(); time.sleep(0.8)
+        return (bloco.x + 80, bloco.y + 60)
+    # O CAMPO, nao o texto dele: enquanto nenhuma variavel esta escolhida ele
+    # diz `Global Name`, mas depois de escolhida passa a dizer o NOME dela — e
+    # procurar pelo texto de fabrica falha exatamente quando o bloco ja tem
+    # variavel (que e o caso de todo bloco que se vai TROCAR). O endereco
+    # estavel e o rotulo `Name:` do painel, com o campo 70 px abaixo.
+    cx = caixa_do_painel(a)
+    pr = nav.acha_texto("name:", arquivo=a, regiao=cx)
+    p = (pr[0] + 120, pr[1] + 70) if pr else nav.acha_texto("global name", arquivo=a)
+    if not p:
+        raise RuntimeError("nao achei o campo da variavel no painel da global")
+    nav.clique_seguro(*p); time.sleep(1.5)
+    a, _ = nav.captura("/tmp/_bl_gv2.png")
+    # A LISTA, nao a tela: o nome da global tambem aparece no proprio bloco e
+    # no rotulo do `Label`, e procurar na tela inteira clica em outro lugar.
+    lista = _regiao_px(p[0] - 300, p[1], p[0] + 300, p[1] + 420)
+    ja = nav.acha_texto(nome, arquivo=a, regiao=lista)
+    if ja:
+        nav.clique_seguro(*ja); time.sleep(1.5)
+        c, _ = nav.captura("/tmp/_bl_gv6.png")
+        if not rs.procura_forte(nome, c, regiao=(0.2, 0.05, 1.0, 0.95)):
+            raise RuntimeError(f"escolhi '{nome}' e o painel nao a mostra")
+        print(f"   global escolhida: {nome}", flush=True)
+        bloco.nome = str(nome)      # o titulo na mesa passa a ser o da variavel
+        fecha_ajustes(); time.sleep(0.8)
+        return (bloco.x + 80, bloco.y + 60)
+
+    q = nav.acha_texto("add new name", arquivo=a, regiao=lista)
+    if not q:
+        raise RuntimeError("a lista de globais nao abriu")
+    nav.clique_seguro(*q); time.sleep(2.0)
+
+    a, _ = nav.captura("/tmp/_bl_gv3.png")
+    pd = nav.acha_texto("default value", arquivo=a)
+    if not pd:
+        raise RuntimeError("o dialogo da variavel nova nao abriu")
+    # ⚠️ O DIALOGO NAO NASCE SEMPRE DO MESMO LADO: com o bloco perto da
+    # beirada direita ele abre para a esquerda, e o rotulo 'Name' que eu
+    # procurava numa caixa fixa era o do PAINEL — a escrita ia para a mesa e a
+    # leitura de volta trazia '@jget', que e um PINO. Agora os dois campos sao
+    # ancorados no proprio dialogo: a COLUNA e a do `Default Value`, e a altura
+    # do campo do nome vem do rotulo `Type:`, que so existe aqui.
+    pt = nav.acha_texto("type:", arquivo=a, regiao=_regiao_px(
+        pd[0] - 300, pd[1] - 400, pd[0] + 300, pd[1] - 50))
+    if not pt:
+        raise RuntimeError("nao achei o rotulo 'Type:' do dialogo da variavel")
+    # Os tres campos do dialogo ficam 82 px ABAIXO do seu rotulo (medido nas
+    # duas geometrias: dialogo a direita do painel e dialogo embaixo dele). O
+    # campo do nome e, portanto, 82 px ACIMA do rotulo `Type:`.
+    pn = (pd[0], pt[1] - 82)
+    pv = (pd[0], pd[1] + 82)
+
+    def _escreve_e_le(ponto, texto, quem):
+        """Escreve no campo e le DE VOLTA COM ELE AINDA EM FOCO.
+
+           ⚠️ O texto de um campo SEM foco deste dialogo nao e lido pelo OCR —
+           cinza claro sobre cinza escuro. A leitura de depois trazia so os
+           rotulos, e eu reprovava uma escrita que estava certa na tela. Com o
+           foco o campo fica realcado e a leitura sai limpa."""
+        nav.clique_seguro(*ponto); time.sleep(0.6)
+        rs.tecla(0, cmd=True); time.sleep(0.3)
+        rs.digita_teclas(str(texto)); time.sleep(0.8)
+        f, _ = nav.captura("/tmp/_bl_gv4.png")
+        faixa = _regiao_px(ponto[0] - 350, ponto[1] - 60,
+                           ponto[0] + 350, ponto[1] + 60)
+        # `procura_forte` percorre a escada de escalas; `texto_da_tela` le uma
+        # vez so e devolvia '”' para um '99' de dois digitos numa faixa fina.
+        lido = nav.texto_da_tela(regiao=faixa)
+        if (str(texto).lower() not in lido.lower().replace(" ", "")
+                and not rs.procura_forte(str(texto), f, regiao=faixa, psm="7")):
+            raise RuntimeError(f"escrevi {quem} '{texto}' e o campo mostra {lido!r}")
+        return f
+
+    _escreve_e_le(pn, nome, "o nome")
+    b = _escreve_e_le(pv, inicial, "o valor inicial")
+    pok = nav.acha_texto("ok", arquivo=b, regiao=_regiao_px(
+        pd[0] - 500, pd[1] + 100, pd[0] + 600, pd[1] + 400))
+    if not pok:
+        raise RuntimeError("nao achei o OK azul do dialogo da variavel")
+    nav.clique_seguro(*pok); time.sleep(2.0)
+
+    c, _ = nav.captura("/tmp/_bl_gv5.png")
+    if not rs.tem_texto(str(nome), arquivo=c):
+        raise RuntimeError(f"criei a global '{nome}' e o painel nao a mostra")
+    print(f"   global '{nome}' criada, comecando em {inicial}", flush=True)
+    bloco.nome = str(nome)
+    fecha_ajustes(); time.sleep(0.8)
+    # o ponto do BLOCO: o titulo dele acabou de virar o nome da variavel
+    return (bloco.x + 80, bloco.y + 60)
+
+
+def apaga_bloco(bloco):
+    """Apaga um bloco da mesa pelo botao `Delete` do painel dele, e confere.
+
+       Serve para sonda e para conserto: um bloco solto em cima de outro nao
+       da erro nenhum — os dois ficam empilhados, e o arrasto do fio sai do
+       pino errado."""
+    abre_ajustes(bloco); time.sleep(1.4)
+    a, _ = nav.captura("/tmp/_bl_del.png")
+    caixa = caixa_do_painel(a)
+    p = nav.acha_texto("delete", arquivo=a, regiao=caixa)
+    if not p:
+        raise RuntimeError(f"nao achei o Delete no painel de {bloco.nome}")
+    nav.clique_seguro(*p); time.sleep(1.8)
+    b, _ = nav.captura("/tmp/_bl_del2.png")
+    if rs.procura_forte(bloco.nome, b, regiao=bloco.regiao(), exato=True):
+        raise RuntimeError(f"apaguei {bloco.nome} e ele continua na mesa")
+    print(f"   apaguei o bloco {bloco.nome}", flush=True)
+    return True
+
+
+def campo_acima(rotulo, valor, dy=76):
+    """Escreve no campo que fica ACIMA de um rotulo, e le de volta.
+
+       Nasceu do `Delay` do `Timer`: o rotulo dele é COMPRIDO
+       (`Delay (1/10th of a second):`) e, em painel estreito, QUEBRA EM DUAS
+       LINHAS. Com isso a distancia do rotulo ate o campo muda — `campo_abaixo`
+       escrevia na segunda linha do proprio rotulo e lia o rotulo de volta.
+
+       O `Repeat Forever`, logo abaixo do campo, nao quebra nunca: a distancia
+       dele ate o campo e fixa, e e por ele que o campo se acha."""
+    a, _ = nav.captura("/tmp/_bl_acima.png")
+    caixa = caixa_do_painel(a)
+    p = nav.acha_texto(rotulo, arquivo=a, regiao=caixa) if caixa else None
+    if not p:
+        p = nav.acha_texto(rotulo, arquivo=a)
+    if not p:
+        raise RuntimeError(f"nao achei o rotulo '{rotulo}' no painel")
+    ponto = (p[0] + 10, p[1] - dy)
+    nav.clique_seguro(*ponto); time.sleep(0.5)
+    rs.tecla(0, cmd=True); time.sleep(0.25)
+    rs.digita_teclas(str(valor)); time.sleep(0.6)
+    b, _ = nav.captura("/tmp/_bl_acima2.png")
+    faixa = (max(0.0, (ponto[0] - 350) / 2940), max(0.0, (ponto[1] - 60) / 1604),
+             min(1.0, (ponto[0] + 450) / 2940), min(1.0, (ponto[1] + 60) / 1604))
+    lido = " ".join([nav.texto_da_tela(regiao=faixa),
+                     nav.texto_da_tela(regiao=faixa, psm="7")])
+    if (str(valor) not in lido.replace(" ", "")
+            and not rs.procura_forte(str(valor), b, regiao=faixa, psm="7")):
+        raise RuntimeError(f"escrevi '{valor}' acima de '{rotulo}' e o campo "
+                           f"mostra {lido!r}")
+    print(f"   campo acima de '{rotulo}' = {valor}", flush=True)
+    return ponto
 
 
 def marca_do_bloco(rotulo, quero=True, folga=150):
@@ -1599,6 +1922,15 @@ def escolhe_tipo_da_colisao(bloco, tipo):
     a, _ = nav.captura("/tmp/_bl_col0.png")
     q = nav.acha_texto("any type", arquivo=a)
     if not q:
+        # Sem `Any Type` no painel, o seletor ja mostra ALGUM tipo. Se for o
+        # que eu quero, o trabalho esta feito — e foi assim que uma etapa
+        # repetida parou com «nao achei a lista de tipos», que soa como painel
+        # quebrado quando o painel estava certo e a escolha, no lugar.
+        cx = caixa_do_painel(a)
+        if cx and rs.procura_forte(tipo.lower(), a, regiao=cx, psm="6"):
+            print(f"   colisao ja estava em {tipo!r} (lido no painel)", flush=True)
+            fecha_ajustes(); time.sleep(0.8)
+            return True
         raise RuntimeError("nao achei a lista de tipos no bloco Collision")
     nav.clique_seguro(q[0], q[1]); time.sleep(1.5)
     a2, _ = nav.captura("/tmp/_bl_col1.png")

@@ -51,7 +51,11 @@ def _chama(rota, **kw):
 # acento. Aqui o navegador recebe o NOME da tecla e digita de verdade.
 TECLAS = {123: "ArrowLeft", 124: "ArrowRight", 125: "ArrowDown", 126: "ArrowUp",
           36: "Enter", 48: "Tab", 53: "Escape", 51: "Backspace", 49: " ",
-          0: "a", 6: "z", 8: "c", 9: "v", 7: "x", 45: "n", 15: "r"}
+          0: "a", 6: "z", 8: "c", 9: "v", 7: "x", 45: "n", 15: "r",
+          # o resto das letras que uma aula pode pedir numa tecla de jogo
+          1: "s", 2: "d", 13: "w", 14: "e", 17: "t", 5: "g", 4: "h",
+          38: "j", 40: "k", 37: "l", 11: "b", 46: "m", 3: "f", 12: "q",
+          16: "y", 31: "o", 32: "u", 34: "i", 35: "p"}
 
 
 def _nome_tecla(codigo, cmd=False, shift=False, alt=False, ctrl=False):

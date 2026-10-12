@@ -709,6 +709,98 @@ do botão. Quando o alvo é pequeno (um `+`, um `−`), ache-o por LEITURA, como
 `cap7` faz agora, em vez de somar deslocamento a um ponto cuja origem você não
 conferiu. Ver também §2o, o `−` que ficava no vão.
 
+## 2ac. As peças da Aula 8, medidas antes de a aula existir
+
+| peça | medido | o que ficou sabido |
+|---|---|---|
+| `Global Variable` | ✅ | entradas `set`, `get`, `+`; saída `out`. O painel é **uma lista**: clicar no campo abre, `+ Add New Name` abre um diálogo com `Name`, `Type: Number` e **`Default Value`** |
+| o título do bloco | ⚠️ | depois de escolhida a variável, o bloco **passa a se chamar pelo nome dela** (`Recorde`), e `DESLOC`/`PORTAS` são por TIPO — daí o campo `tipo` do `Bloco` |
+| sobreviver ao recomeço | ✅ | com 99 de fábrica, foi a 7, o `Restart Game` rodou e ela **continuou 7** — nunca voltou a 99. É o que faz o «recorde da partida» existir |
+| `Default Value` | ✅ | vale no começo da partida (lido 99 na tela por 8 s antes do primeiro `set`) — dispensa semear o recorde com `Once` + `Number` |
+| `Filter`: as comparações | ✅ | seis: `greater than`, `less than`, `equal to`, `not equal to`, `less than or equal to`, `greater than or equal to` |
+| ⭐ fio no `set` do `Filter` | ✅ | **o fio manda no número do painel.** Provado com 50 no fio contra `input > 0` no painel: com o fio, o objeto viveu os 26 s contando até 25; sem ele, morria no primeiro segundo |
+| ⚠️ ordem do primeiro pulso | ⛔ | o fio só manda **depois de ter entregue alguma coisa**. Se o primeiro `in` chega antes do primeiro `set`, quem decide é o painel — e foi assim que a minha primeira medição disse «o painel manda» |
+| `Timer` | ✅ | o atraso de fábrica é **10 décimos = 1 segundo**: a aula não precisa mexer nele |
+| `Label` | ⚠️ | nasce **salmão** e desenha no canto de cima do nível. Dois `Label` nascem **um em cima do outro** — o segundo desce pelo pino `y`. E em céu ESCURO ninguém lê o salmão: duas medições minhas voltaram vazias por isso, e eu quase fui procurar o defeito no jogo |
+
+⭐ **A regra que sai daí:** num `Filter` que compara com fio, **alimente o `set`
+antes** — na Aula 8 quem faz isso é o `Timer` da bandeira, de segundo em
+segundo, desde o começo da partida.
+
+## 2ad. ⛔ A mesa ANDA entre um arrasto e outro
+
+Cada arrasto da palheta recarrega a página (§2 do `solta`), e o editor
+**recentra os blocos**. Com isso:
+
+- coordenada de bloco guardada **antes** de um arrasto está velha — por isso
+  `liga_fixo` tem de re-achar os dois blocos na hora de ligar;
+- fileira em fração da tela (`_na_fila`) deixa de valer depois de alguns
+  arrastos. Quem precisa escolher entre dois blocos de mesmo nome usa
+  **`blocos.acha_todos`**, que devolve todos em ORDEM na tela.
+
+E duas armadilhas de leitura que vieram junto, as duas trancadas em
+`prova_titulo_composto`:
+
+1. **Título de DUAS palavras** (`Global Variable`) não era achado: o ramo
+   `exato` comparava item por item do OCR, e o tesseract entrega uma palavra
+   por item.
+2. **Dois blocos na mesma altura entram na MESMA linha do OCR** — o título
+   chegava como `timer global variable`. O bloco estava na tela, aceso, e
+   `solta` desfazia o arrasto três vezes antes de desistir. O diagnóstico que
+   saía («não consegui LER o título») é o mesmo de bloco que não nasceu.
+
+## 2ae. ⚠️ Campo de painel com o mesmo nome de um PINO
+
+O `Delay` do `Timer` tem um gêmeo: o pino `delay` do próprio bloco.
+`acha_texto('delay')` ora devolvia um, ora outro — e escrever no pino não
+acusa nada. Daí `blocos.caixa_do_painel()`, que acha a caixa do painel aberto
+pelo par `Help`/`Note` (que só existe dentro dele), e `campo_abaixo` procura
+ali primeiro.
+
+E o rótulo comprido **quebra em duas linhas** em painel estreito, o que muda a
+distância até o campo: por isso o atraso do `Timer` se escreve com
+`campo_acima('repeat forever', ...)`, ancorado no rótulo que não quebra.
+
+⚠️ **Campo sem foco deste editor não é lido pelo OCR** (cinza claro sobre cinza
+escuro). A leitura de volta tem de ser feita com o cursor ainda dentro do
+campo — e em DUAS escalas: o mesmo `50` saiu como `'50 - +'` numa e `'a +'` na
+outra.
+
+## 2af. ⛔ Os pinos `x`/`y` do `Label` NÃO movem o texto
+
+Dois `Label` de objetos diferentes nascem **no mesmo canto do nível**, um em
+cima do outro, e os dois números ficam ilegíveis. Eu liguei `Number(80)` no
+pino `y` — pelo `Once` e depois pelo `Timer`, para descartar «disparou cedo
+demais» — e nas duas vezes o texto **não se moveu um pixel**. O fio estava no
+pino certo (conferido na foto da mesa).
+
+**Quem move é a caixinha `attach to object` do painel**: marcada, o texto passa
+a ser desenhado em cima do OBJETO dono do bloco. Medido na Aula 8: com ela
+marcada na bandeira, o recorde saiu do canto e foi desenhado na bandeira.
+
+⭐ E isso resolveu a aula com MENOS peça, não mais: o tempo gruda no corredor
+(e corre com ele), o recorde fica no canto, e nenhum bloco entra na mesa.
+
+## 2ag. ⛔ Buraco sem fundo não custa tempo, custa o JOGO
+
+A Aula 8 nasceu com dois buracos no chão. O corredor caiu no primeiro, saiu
+pelo pé do nível e **sumiu** — e a foto do passo que promete «você corre e pula
+os buracos» saiu com o percurso vazio, sem boneco nenhum. Nenhum guarda de
+forma pega isso: o arquivo existe, abre, e tem o tamanho certo.
+
+Duas consequências:
+
+1. **Buraco de percurso leva uma casa de chão uma fileira abaixo.** Cair passa
+   a custar segundos, que é o que um jogo contra o relógio quer.
+2. **A foto de uma etapa que mostra o jogador tem de PROVAR que ele está lá.**
+   `cap8` mede a posição dele por cor antes e depois da corrida, e reprova se
+   ele sumiu ou não andou.
+
+E uma terceira, medida no mesmo lugar: **passar da bandeira também tira o
+boneco do nível** — ele pula por cima e cai fora pela direita. A corrida da
+captura para ANTES da bandeira; quem chega na bandeira é a etapa da prova,
+onde a batida já recomeça o jogo.
+
 ## 3. As três armadilhas de FÍSICA que não aparecem no editor
 
 Todas custaram horas na Aula 3, e nenhuma dá erro em lugar nenhum:

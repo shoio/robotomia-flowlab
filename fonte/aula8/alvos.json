@@ -1,0 +1,132 @@
+{
+ "abrir_niveis": {
+  "antes": "g08a_a.jpg",
+  "depois": "g08a_b.jpg",
+  "alvo": [
+   1470,
+   1584
+  ],
+  "botao": "esq",
+  "clicado": true
+ },
+ "pintar_o_ceu": {
+  "antes": "g08_a.jpg",
+  "depois": "g08_b.jpg",
+  "alvo": [
+   1296,
+   1298
+  ],
+  "botao": "esq",
+  "clicado": false
+ },
+ "criar_objeto": {
+  "antes": "g01_a.jpg",
+  "depois": "g01_b.jpg",
+  "alvo": [
+   1054,
+   1026
+  ],
+  "botao": "esq",
+  "clicado": true
+ },
+ "escolher_create": {
+  "antes": "g02_a.jpg",
+  "depois": "g02_b.jpg",
+  "alvo": [
+   934,
+   1024
+  ],
+  "botao": "esq",
+  "clicado": true
+ },
+ "escolher_sprite": {
+  "antes": "g13_a.jpg",
+  "depois": "g13_b.jpg",
+  "alvo": [
+   2307,
+   184
+  ],
+  "botao": "esq",
+  "clicado": true
+ },
+ "abrir_physics": {
+  "antes": "g03_a.jpg",
+  "depois": "g03_b.jpg",
+  "alvo": [
+   1234,
+   861
+  ],
+  "botao": "esq",
+  "clicado": true
+ },
+ "marcar_movable": {
+  "antes": "g04_a.jpg",
+  "depois": "g04_b.jpg",
+  "alvo": [
+   784,
+   137
+  ],
+  "botao": "esq",
+  "clicado": true
+ },
+ "clonar_o_chao": {
+  "antes": "g05_a.jpg",
+  "depois": "g05_b.jpg",
+  "alvo": [
+   1054,
+   1090
+  ],
+  "botao": "esq",
+  "clicado": true
+ },
+ "levantar_a_bandeira": {
+  "antes": "g16_a.jpg",
+  "depois": "g16_b.jpg",
+  "alvo": [
+   1950,
+   962
+  ],
+  "botao": "esq",
+  "clicado": true
+ },
+ "jogar": {
+  "antes": "g07_a.jpg",
+  "depois": "g07_b.jpg",
+  "alvo": [
+   1051,
+   1586
+  ],
+  "botao": "esq",
+  "clicado": true
+ },
+ "criar_variavel_global": {
+  "antes": "g14_a.jpg",
+  "depois": "g14_b.jpg",
+  "alvo": [
+   1555,
+   476
+  ],
+  "botao": "esq",
+  "clicado": false
+ },
+ "grudar_no_corredor": {
+  "antes": "g15_a.jpg",
+  "depois": "g15_b.jpg",
+  "alvo": [
+   1585,
+   987
+  ],
+  "botao": "esq",
+  "clicado": false
+ },
+ "condicao_menor": {
+  "antes": "g11_a.jpg",
+  "depois": "g11_b.jpg",
+  "alvo": [
+   2235,
+   902
+  ],
+  "botao": "esq",
+  "clicado": false
+ }
+}
