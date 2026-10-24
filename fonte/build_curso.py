@@ -8,7 +8,7 @@ import os, json, shutil
 from PIL import Image
 import gera_curso as G
 import conteudo_a1, conteudo_a2, conteudo_a3, conteudo_a4, conteudo_a5, conteudo_a6, conteudo_a7
-import conteudo_a8
+import conteudo_a8, conteudo_a9
 
 AQUI  = os.path.dirname(os.path.abspath(__file__))     # .../fonte
 SAIDA = os.path.dirname(AQUI)                          # a raiz do repositorio
@@ -23,7 +23,7 @@ PLANO = [
     (6,  "Chave e porta", "Uma porta fecha o caminho e uma chave a abre — de longe, por recado.", True),
     (7,  "Empurra-blocos", "Três caixas, um alvo e uma porta: o número passa a decidir.", True),
     (8,  "Contra o relógio", "Um percurso cronometrado e um recorde que não some no recomeço.", True),
-    (9,  "Inimigo que persegue", "IA simples, vida e barra de vida.", False),
+    (9,  "Inimigo que persegue", "Um morcego que olha, vira e voa atrás de você — e uma barra de vida que desce.", True),
     (10, "Menu, fases e fim de jogo", "Tela de título, três fases e tela de vitória.", False),
     (11, "Som, animação e brilho", "O mesmo jogo, mas com vida.", False),
     (12, "Projeto livre e mostra", "O jogo do aluno, publicado, com link para a família.", False),
@@ -38,6 +38,7 @@ def aula5(): return _de_conteudo(conteudo_a5)
 def aula6(): return _de_conteudo(conteudo_a6)
 def aula7(): return _de_conteudo(conteudo_a7)
 def aula8(): return _de_conteudo(conteudo_a8)
+def aula9(): return _de_conteudo(conteudo_a9)
 
 
 def _de_conteudo(mod):
@@ -115,7 +116,7 @@ def monta():
     # captura dela existir, e o build inteiro travou no guarda — com as tres
     # aulas que estavam no ar reféns de uma quarta que ainda nao tinha foto.
     construtores = {1: aula1, 2: aula2, 3: aula3, 4: aula4, 5: aula5,
-                    6: aula6, 7: aula7, 8: aula8}
+                    6: aula6, 7: aula7, 8: aula8, 9: aula9}
     for n, _tit, _sub, pronta in PLANO:
         if not pronta or n not in construtores:
             continue

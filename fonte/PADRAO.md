@@ -801,6 +801,59 @@ boneco do nível** — ele pula por cima e cai fora pela direita. A corrida da
 captura para ANTES da bandeira; quem chega na bandeira é a etapa da prova,
 onde a batida já recomeça o jogo.
 
+## 2ah. As peças da Aula 9, medidas antes de a aula existir
+
+| peça | medido | o que ficou sabido |
+|---|---|---|
+| `Proximity` | ✅ | entradas `dist` (valor) e `check` (gatilho); saídas `x`, `y`, `miss`. Só olha quando recebe o `check` — daí o `Timer`. **`Distance` nasce em 32 px**: só acha quem está encostado; 3000 enxerga a fase inteira |
+| `PointAt` | ✅ | entradas `x` e `y`, saída `rot`; a caixinha `Rotate sprite` nasce marcada. Liga-se `Proximity.x → x` e `Proximity.y → y` |
+| `Velocity.forward` | ✅ | «frente» é para onde o `PointAt` virou o objeto. **Número 2 leva ~8,5 s para cruzar a fase** (≈100 px de imagem por segundo) |
+| `Object Variable` | ⚠️ | mesmas três entradas (`set`, `get`, `+`) e saída `out` da global, mas o diálogo de criar **só tem `Name` e `Type`** — sem `Default Value`. Nasce valendo 0. O valor de partida entra por `Once → Number → set` |
+| a lista de nomes | ⚠️ | na global a entrada se chama `+ Add New Name`; na variável do objeto, `+ Add New Variable`. `usa_global` procura o pedaço comum, `add new` |
+| `+` com valor negativo | ✅ | a documentação diz que o `+` **soma o valor que chega**, e funciona: `Number(-1)` ligado nele subtrai um, e a variável avisa a barra pela saída `out` |
+| `Bar` | ✅ | entrada `value`, saída `out`; painel `Current value` (nasce 5), `Max value` (nasce 10), cor da moldura e cor da barra — **as duas cores nascem ALEATÓRIAS**. Desenha no canto de cima, à esquerda, da fase |
+| `Expression` | ✅ | existe (`A`, `B`, `eval` → `out`), mas **ficou de fora**: o `+` negativo faz a mesma conta com um bloco a menos |
+| `Collision` | ⛔ | **dispara UMA vez por batida.** Com um morcego atravessável em cima do jogador por 40 s, a barra desceu uma vez (5096 → 3404 px) e parou. O dano contínuo é `Timer → Proximity` do lado do jogador |
+
+⛔ **O morcego sólido empurra o jogador para fora da fase.** Parado no chão, o
+jogador foi arrastado até a beirada, caiu fora do nível e **sumiu** — com o
+morcego pregado na borda. O conserto é o da lava da Aula 3: `is solid`
+desmarcado (atravessa) e `enable collisions` marcado (devolve o toque sem o
+empurrão).
+
+## 2ai. ⛔ Prova que mede um objeto em movimento começa NO CLIQUE
+
+A prova da perseguição saiu «verde» três vezes com a distância já em 3 px na
+primeira leitura. Três atrasos somados, todos ANTES da primeira medida:
+
+1. `A.gesto('jogar')` espera a tela **parar** (até 15 s) — e numa fase em que
+   o morcego voa ela nunca para. O clipe `jogar` agora vem da aula anterior;
+2. `editor.exige_jogo()` lê a tela várias vezes: **~30 s**;
+3. o clique de foco no jogo.
+
+O morcego cruza a fase em 8,5 s. A regra: **clicar em Play e ler NA HORA**; o
+`exige_jogo` e o clique de foco vêm depois (retrospectivos). E a prova passou a
+exigir que a **primeira** leitura seja longe (≥ 250 px), senão ela reprova por
+«não vi a viagem».
+
+⭐ E a segunda fase da prova, que é a que prova «olhar»: depois de o morcego
+chegar, o jogador corre para o outro lado e o morcego **tem de mudar de rumo**
+(x 1082 → 1594). Um morcego que só voasse em linha reta até onde o jogador
+ESTAVA passaria na primeira fase.
+
+## 2aj. A leitura do campo precisa de recorte do tamanho do campo
+
+- `campo_abaixo` lia uma faixa de ±75 px; num painel de campos empilhados (a
+  `Bar`) ela apanhava o rótulo do campo de cima — `Current value: ...` em vez
+  de `3`. Agora `meia=` é parâmetro (38 na `Bar`).
+- O `+` do painel do `Filter` **não é uma palavra**: o OCR não o lê, e a Aula 7
+  só o achava por sorte. O número agora se **escreve** no campo (positivo não
+  sofre do problema do hífen).
+- A cara do bloco chega do OCR como `input` e `<1` — duas palavras.
+  `tem_texto('input < 1')` reprovava uma condição CERTA; compare sem espaços.
+- O clique no campo do número cai em `centro da frase − 25 px`. Com −60 ele
+  caía na borda esquerda do campo, fora dele.
+
 ## 3. As três armadilhas de FÍSICA que não aparecem no editor
 
 Todas custaram horas na Aula 3, e nenhuma dá erro em lugar nenhum:

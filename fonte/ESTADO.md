@@ -1,6 +1,6 @@
-# Estado do curso de Flowlab — 12-10-2026 (madrugada)
+# Estado do curso de Flowlab — 24-10-2026 (madrugada)
 
-**Oito aulas no ar**, em https://shoio.github.io/robotomia-flowlab/ — conferido
+**Nove aulas no ar**, em https://shoio.github.io/robotomia-flowlab/ — conferido
 em produção, não só commitado.
 
 O que custou esta madrugada está no `PADRAO.md`, §2ac a §2ag. O que a Aula 8
@@ -16,6 +16,14 @@ trouxe de novo para a caixa de ferramentas:
   promete «você corre e pula os buracos» saiu com o percurso vazio;
 - ⛔ a mesa **anda** entre um arrasto e outro, então fileira em fração da tela
   envelhece: nasceu o `blocos.acha_todos`, que devolve os blocos em ORDEM.
+
+A Aula 9 acrescentou (§2ah a §2aj do `PADRAO.md`): a IA de perseguição
+(`Proximity` + `PointAt` + `Velocity.forward`), a `Bar`, e o `+` com valor
+NEGATIVO que subtrai. E três defeitos de prova: a medida de um objeto em
+movimento tem de começar **no clique** (o `exige_jogo` custava 30 s, e o
+morcego cruza a fase em 8,5 s); o `Collision` dispara **uma vez** por batida
+(o dano contínuo é `Timer → Proximity`); e um clipe copiado de outra aula
+mostra o céu e o chão da aula errada.
 
 A madrugada anterior (§2n a §2t) continua valendo; o maior de lá é o §2n: o
 remendo da bancada sumia por ordem de import e **todo arrasto ia para a tela de
@@ -34,7 +42,9 @@ verdade**, em silêncio.
 | 7 | empurra-blocos | três caixas empurráveis, um alvo que **conta**, e um `Filter` que abre a porta quando o número passa de 2 | placar sobe até 3 e a porta cai sozinha (13004 → 1170 px de não-céu) |
 | 8 | contra o relógio | percurso com dois buracos, cronômetro grudado no corredor, e um **recorde** que não some no recomeço | o relógio vai de 12 a 17 sozinho · o recorde virou **15** na primeira corrida e **não mudou** na corrida lenta (o lado `fail` do funil) |
 
-Aulas 9 a 12: planejadas em `PLANO.md`, não construídas.
+| 9 | inimigo que persegue | morcego que olha, vira e voa atrás do jogador; barra de vida que desce a cada segundo perto dele; sem vida, recomeça | o morcego chegou a 32 px do jogador e, quando ele correu, **virou** e foi atrás (x 1082 → 1599) · a barra desceu de 5096 a 0 px · e o jogo recomeçou com ela **cheia** |
+
+Aulas 10 a 12: planejadas em `PLANO.md`, não construídas.
 
 ## Pendente para o Julio
 

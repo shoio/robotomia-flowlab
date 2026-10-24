@@ -435,6 +435,12 @@ PORTAS = {
     "Position":  {"esq": ["x", "y", "maisx", "maisy"], "dir": ["x", "y"]},
     # MEDIDOS com `mede_pinos` no prototipo 3155726 (Aula 8).
     "Global Variable": {"esq": ["set", "get", "mais"], "dir": ["out"]},
+    # MEDIDOS com `mede_pinos` no prototipo 3166005 (Aula 9).
+    "Object Variable": {"esq": ["set", "get", "mais"], "dir": ["out"]},
+    "Proximity": {"esq": ["dist", "check"], "dir": ["x", "y", "miss"]},
+    "PointAt":   {"esq": ["x", "y"],        "dir": ["rot"]},
+    "Expression": {"esq": ["A", "B", "eval"], "dir": ["out"]},
+    "Bar":       {"esq": ["value"],         "dir": ["out"]},
     "Switch":    {"esq": ["off", "on", "in"],      "dir": ["out"]},
     # ⚠️ `Once`, `Impulse` e `Label` ESTAVAM REPETIDOS AQUI, e em Python a
     # segunda chave apaga a primeira sem avisar. As que venciam eram as
@@ -956,6 +962,19 @@ DESLOC = {
                  "dir": {"out": (246, 76)}},
     # Aula 8, medidos na mesa (o ponto do meio do `Switch` e o ICONE, nao
     # pino: `mede_pinos` devolve (109,66) junto, e ele nao entra aqui).
+    # Aula 9, medidos na mesa (a leitura do `Expression` veio suja porque o
+    # bloco caiu em cima do `Proximity`: os tres pinos da esquerda a partir de
+    # (-27, 39) sao A, B e eval, e a saida e (244, 75) — conferido na foto).
+    "Object Variable": {"esq": {"set": (-25, 39), "get": (-25, 77),
+                                "mais": (-25, 115)},
+                        "dir": {"out": (246, 75)}},
+    "Proximity": {"esq": {"dist": (-27, 51), "check": (-27, 101)},
+                  "dir": {"x": (244, 39), "y": (244, 77), "miss": (244, 115)}},
+    "PointAt":   {"esq": {"x": (-27, 45), "y": (-27, 87)},
+                  "dir": {"rot": (244, 65)}},
+    "Expression": {"esq": {"A": (-27, 39), "B": (-27, 77), "eval": (-27, 115)},
+                   "dir": {"out": (244, 75)}},
+    "Bar":       {"esq": {"value": (-27, 57)}, "dir": {"out": (244, 57)}},
     "Global Variable": {"esq": {"set": (-27, 41), "get": (-27, 79),
                                 "mais": (-27, 117)},
                         "dir": {"out": (244, 77)}},
@@ -1554,7 +1573,7 @@ def caixa_do_painel(arquivo=None):
     return _regiao_px(x0, y0, x1, y1)
 
 
-def campo_abaixo(rotulo, valor, dy=55):
+def campo_abaixo(rotulo, valor, dy=55, meia=75):
     """Escreve num campo que fica ABAIXO do seu rotulo, e confere.
 
        O `campo_ao_lado` serve aos campos do `Emitter`, que ficam na MESMA
@@ -1577,8 +1596,11 @@ def campo_abaixo(rotulo, valor, dy=55):
     # estivesse em qualquer outro lugar do editor — e o campo errado nao
     # acusa nada. A faixa e a do proprio campo, com o cursor ainda dentro
     # dele (sem foco, o cinza claro sobre cinza escuro nao e lido).
-    faixa = (max(0.0, (p[0] - 340) / 2940), max(0.0, (p[1] + dy - 75) / 1604),
-             min(1.0, (p[0] + 460) / 2940), min(1.0, (p[1] + dy + 75) / 1604))
+    # `meia` e a meia-altura da faixa de leitura. 75 serve ao `Timer`; num
+    # painel de campos EMPILHADOS (a `Bar`) a faixa larga apanha o rotulo do
+    # campo de cima e a leitura volta `Current value: ...` em vez do numero.
+    faixa = (max(0.0, (p[0] - 340) / 2940), max(0.0, (p[1] + dy - meia) / 1604),
+             min(1.0, (p[0] + 460) / 2940), min(1.0, (p[1] + dy + meia) / 1604))
     # DUAS LEITURAS da mesma faixa, com psm diferente. Nao e superstic~ao: o
     # mesmo campo com `50` escrito saiu como '50 - +' numa e como 'a +' na
     # outra, e reprovar aqui e reprovar uma escrita que esta certa na tela.
@@ -1711,30 +1733,33 @@ def usa_global(bloco, nome, inicial=0):
         fecha_ajustes(); time.sleep(0.8)
         return (bloco.x + 80, bloco.y + 60)
 
-    q = nav.acha_texto("add new name", arquivo=a, regiao=lista)
+    # `Add New Name` na global e `Add New Variable` na variavel DO OBJETO:
+    # procura-se o pedaco que e comum aos dois.
+    q = nav.acha_texto("add new", arquivo=a, regiao=lista)
     if not q:
         raise RuntimeError("a lista de globais nao abriu")
     nav.clique_seguro(*q); time.sleep(2.0)
 
     a, _ = nav.captura("/tmp/_bl_gv3.png")
+    # DUAS FORMAS de dialogo, medidas: a da GLOBAL tem `Name`, `Type` e
+    # `Default Value`; a da variavel DO OBJETO so tem `Name` e `Type` — o valor
+    # de partida dela e sempre 0, e quem quiser outro tem de `set`ar.
     pd = nav.acha_texto("default value", arquivo=a)
-    if not pd:
-        raise RuntimeError("o dialogo da variavel nova nao abriu")
-    # ⚠️ O DIALOGO NAO NASCE SEMPRE DO MESMO LADO: com o bloco perto da
-    # beirada direita ele abre para a esquerda, e o rotulo 'Name' que eu
-    # procurava numa caixa fixa era o do PAINEL — a escrita ia para a mesa e a
-    # leitura de volta trazia '@jget', que e um PINO. Agora os dois campos sao
-    # ancorados no proprio dialogo: a COLUNA e a do `Default Value`, e a altura
-    # do campo do nome vem do rotulo `Type:`, que so existe aqui.
-    pt = nav.acha_texto("type:", arquivo=a, regiao=_regiao_px(
-        pd[0] - 300, pd[1] - 400, pd[0] + 300, pd[1] - 50))
+    pt = nav.acha_texto("type:", arquivo=a, regiao=(0.3, 0.0, 1.0, 0.7))
     if not pt:
-        raise RuntimeError("nao achei o rotulo 'Type:' do dialogo da variavel")
-    # Os tres campos do dialogo ficam 82 px ABAIXO do seu rotulo (medido nas
-    # duas geometrias: dialogo a direita do painel e dialogo embaixo dele). O
-    # campo do nome e, portanto, 82 px ACIMA do rotulo `Type:`.
-    pn = (pd[0], pt[1] - 82)
-    pv = (pd[0], pd[1] + 82)
+        raise RuntimeError("o dialogo da variavel nova nao abriu")
+    if pd:
+        # Os tres campos ficam 82 px ABAIXO do rotulo. O dialogo nao nasce
+        # sempre do mesmo lado (perto da beirada ele abre para a esquerda): a
+        # coluna e a do `Default Value`.
+        pn = (pd[0], pt[1] - 82)
+        pv = (pd[0], pd[1] + 82)
+    else:
+        pn = (pt[0] + 150, pt[1] - 82)
+        pv = None
+        if inicial not in (0, None):
+            raise RuntimeError(f"a variavel do objeto nao tem valor de partida "
+                               f"({inicial}): ligue um Once -> Number -> set")
 
     def _escreve_e_le(ponto, texto, quem):
         """Escreve no campo e le DE VOLTA COM ELE AINDA EM FOCO.
@@ -1749,18 +1774,19 @@ def usa_global(bloco, nome, inicial=0):
         f, _ = nav.captura("/tmp/_bl_gv4.png")
         faixa = _regiao_px(ponto[0] - 350, ponto[1] - 60,
                            ponto[0] + 350, ponto[1] + 60)
-        # `procura_forte` percorre a escada de escalas; `texto_da_tela` le uma
-        # vez so e devolvia '”' para um '99' de dois digitos numa faixa fina.
         lido = nav.texto_da_tela(regiao=faixa)
         if (str(texto).lower() not in lido.lower().replace(" ", "")
                 and not rs.procura_forte(str(texto), f, regiao=faixa, psm="7")):
             raise RuntimeError(f"escrevi {quem} '{texto}' e o campo mostra {lido!r}")
         return f
 
-    _escreve_e_le(pn, nome, "o nome")
-    b = _escreve_e_le(pv, inicial, "o valor inicial")
+    b = _escreve_e_le(pn, nome, "o nome")
+    if pv:
+        b = _escreve_e_le(pv, inicial, "o valor inicial")
+    # o OK azul do dialogo: abaixo do ultimo campo, na coluna dos campos
+    ancora = pv or (pn[0], pt[1] + 82)
     pok = nav.acha_texto("ok", arquivo=b, regiao=_regiao_px(
-        pd[0] - 500, pd[1] + 100, pd[0] + 600, pd[1] + 400))
+        ancora[0] - 500, ancora[1] + 40, ancora[0] + 600, ancora[1] + 400))
     if not pok:
         raise RuntimeError("nao achei o OK azul do dialogo da variavel")
     nav.clique_seguro(*pok); time.sleep(2.0)
