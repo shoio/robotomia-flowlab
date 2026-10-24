@@ -1,0 +1,390 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Projeto livre e mostra — Robotomia</title>
+<meta name="description" content="O jogo agora é seu: clone um jogo do curso, deixe com a sua cara e mande o link para a família.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='26' font-size='26'>&#129302;</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@700;800&family=Atkinson+Hyperlegible:wght@400;700&display=swap">
+<style>
+:root{
+  --papel:#FBFAF7; --carta:#FFFFFF; --tinta:#14161C; --tinta2:#4E525C;
+  --linha:#E3E0D8; --azul:#1B62DC; --azul-fraco:#EAF0FC;
+  --verde:#147A38; --verde-fraco:#E7F4EC;
+  --laranja:#C2560A; --laranja-fraco:#FDF0E4;
+  --roxo:#5B2E9E; --roxo-fraco:#F2ECFB;
+  --codigo:#12151C; --codigo-tinta:#E8EBF0;
+  --sombra:0 1px 2px rgba(20,22,28,.05), 0 8px 24px rgba(20,22,28,.06);
+  --raio:14px;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-tema="claro"]){
+    --papel:#12141A; --carta:#1A1D25; --tinta:#ECEEF2; --tinta2:#A4AAB6;
+    --linha:#2C313C; --azul:#6C9BF0; --azul-fraco:#1B2436;
+    --verde:#5CC183; --verde-fraco:#15271C;
+    --laranja:#F0964E; --laranja-fraco:#2A1E14;
+    --roxo:#B995F0; --roxo-fraco:#221A33;
+    --codigo:#0D1016; --codigo-tinta:#E8EBF0;
+    --sombra:0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+  }
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:68px}
+body{margin:0;background:var(--papel);color:var(--tinta);
+  font-family:"Atkinson Hyperlegible","Helvetica Neue",Arial,sans-serif;
+  font-size:17px;line-height:1.6;-webkit-text-size-adjust:100%}
+h1,h2,h3{font-family:Archivo,"Helvetica Neue",Arial,sans-serif;
+  font-weight:800;letter-spacing:-.015em;text-wrap:balance}
+img{max-width:100%;display:block}
+[hidden]{display:none!important}
+a{color:var(--azul)}
+
+.barra{position:sticky;top:0;z-index:40;background:color-mix(in srgb,var(--papel) 88%,transparent);
+  backdrop-filter:blur(10px);border-bottom:1px solid var(--linha)}
+.barra-in{max-width:1180px;margin:0 auto;padding:11px 20px;display:flex;align-items:center;gap:14px}
+.marca{font-family:Archivo,sans-serif;font-weight:800;font-size:15px;white-space:nowrap}
+.marca a{color:inherit;text-decoration:none}
+.marca span{color:var(--azul)}
+.conta{margin-left:auto;font-size:13px;color:var(--tinta2);font-variant-numeric:tabular-nums;white-space:nowrap}
+.trilho{position:absolute;left:0;bottom:-1px;height:3px;width:100%;background:transparent}
+.trilho i{display:block;height:100%;width:0;background:var(--azul);transition:width .25s ease}
+
+.capa{max-width:1180px;margin:0 auto;padding:46px 20px 10px}
+.etiqueta{display:inline-block;background:var(--azul);color:#fff;font-family:Archivo,sans-serif;
+  font-weight:700;font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;
+  padding:5px 13px;border-radius:99px}
+.capa h1{font-size:clamp(34px,6.2vw,58px);margin:16px 0 10px;line-height:1.02}
+.capa .linha-fina{font-size:19px;color:var(--tinta2);max-width:62ch;margin:0}
+.avisos{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));margin:26px 0 8px}
+.aviso{background:var(--carta);border:1px solid var(--linha);border-radius:var(--raio);
+  padding:14px 16px;font-size:15px;box-shadow:var(--sombra)}
+.aviso b{font-family:Archivo,sans-serif;display:block;font-size:12px;letter-spacing:.09em;
+  text-transform:uppercase;margin-bottom:5px;color:var(--azul)}
+.baixar{display:inline-flex;align-items:center;gap:8px;margin-top:6px;font-size:14.5px;
+  text-decoration:none;border:1px solid var(--linha);background:var(--carta);
+  padding:9px 15px;border-radius:99px;color:var(--tinta);font-weight:700}
+.baixar:hover{border-color:var(--azul);color:var(--azul)}
+
+main{max-width:1180px;margin:0 auto;padding:10px 20px 70px}
+.passo{background:var(--carta);border:1px solid var(--linha);border-radius:var(--raio);
+  padding:20px;margin:22px 0;box-shadow:var(--sombra);scroll-margin-top:70px}
+.passo.feito{border-color:var(--verde)}
+.cab{display:flex;align-items:flex-start;gap:13px;padding-bottom:13px;border-bottom:2px solid var(--linha)}
+.passo.feito .cab{border-bottom-color:var(--verde)}
+.bolha{flex:none;width:40px;height:40px;border-radius:11px;background:var(--azul);color:#fff;
+  font-family:Archivo,sans-serif;font-weight:800;font-size:19px;
+  display:flex;align-items:center;justify-content:center;font-variant-numeric:tabular-nums}
+.passo.feito .bolha{background:var(--verde)}
+.cab h2{font-size:clamp(20px,2.7vw,26px);margin:3px 0 0;flex:1}
+.risca{display:flex;align-items:center;gap:7px;font-size:13.5px;color:var(--tinta2);
+  cursor:pointer;user-select:none;flex:none;padding-top:8px;white-space:nowrap}
+.risca input{width:19px;height:19px;accent-color:var(--verde);cursor:pointer}
+
+.corpo{display:grid;gap:20px;grid-template-columns:1fr;margin-top:16px}
+@media (min-width:920px){ .corpo{grid-template-columns:1.35fr 1fr;align-items:start} }
+.midia{margin:0}
+.moldura{border:1px solid var(--linha);border-radius:10px;overflow:hidden;background:var(--papel)}
+.abas{display:flex;gap:6px;margin-bottom:9px}
+.aba{font-family:Archivo,sans-serif;font-size:12.5px;font-weight:700;letter-spacing:.04em;
+  border:1px solid var(--linha);background:var(--carta);color:var(--tinta2);
+  padding:6px 13px;border-radius:99px;cursor:pointer}
+.aba[aria-pressed="true"]{background:var(--roxo-fraco);border-color:var(--roxo);color:var(--roxo)}
+.legenda{font-size:13px;color:var(--tinta2);margin:8px 2px 0}
+
+.texto>p{margin:0 0 14px}
+.ui{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:.86em;
+  background:var(--azul-fraco);border:1px solid color-mix(in srgb,var(--azul) 25%,transparent);
+  border-radius:5px;padding:1px 6px;white-space:nowrap;color:var(--tinta)}
+.certo,.socorro{border-radius:0 10px 10px 0;padding:12px 15px;margin-top:14px;font-size:15.5px}
+.certo{background:var(--verde-fraco);border-left:5px solid var(--verde)}
+.socorro{background:var(--laranja-fraco);border-left:5px solid var(--laranja)}
+.certo>b:first-child,.socorro>b:first-child{font-family:Archivo,sans-serif;display:block;
+  font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:5px}
+.certo>b:first-child{color:var(--verde)}
+.socorro>b:first-child{color:var(--laranja)}
+.socorro dl{margin:0}
+.socorro dt{font-weight:700;margin-top:10px}
+.socorro dt:first-of-type{margin-top:2px}
+.socorro dd{margin:2px 0 0;color:var(--tinta2)}
+
+.codigo{margin:14px 0;border-radius:10px;overflow:hidden;border:1px solid var(--linha)}
+.codigo .titulo{display:flex;align-items:center;gap:8px;background:var(--roxo-fraco);
+  color:var(--roxo);font-family:Archivo,sans-serif;font-weight:700;font-size:11.5px;
+  letter-spacing:.1em;text-transform:uppercase;padding:7px 13px;border-bottom:1px solid var(--linha)}
+.codigo pre{margin:0;background:var(--codigo);color:var(--codigo-tinta);padding:14px 16px;
+  overflow-x:auto;font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:14.5px;line-height:1.7}
+.codigo ol{margin:0;padding:0 0 0 46px;background:var(--codigo);color:var(--codigo-tinta);
+  font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:14.5px;line-height:1.75;
+  overflow-x:auto}
+.codigo li{border-left:1px solid color-mix(in srgb,var(--codigo-tinta) 18%,transparent);
+  padding:0 16px 0 10px;white-space:pre}
+.codigo li::marker{color:color-mix(in srgb,var(--codigo-tinta) 40%,transparent);font-size:12px}
+.codigo li.auto{color:color-mix(in srgb,var(--codigo-tinta) 42%,transparent);font-style:italic}
+.codigo .rodape{background:var(--codigo);color:color-mix(in srgb,var(--codigo-tinta) 55%,transparent);
+  font-family:"Atkinson Hyperlegible",sans-serif;font-size:12.5px;padding:8px 16px 12px;
+  border-top:1px solid color-mix(in srgb,var(--codigo-tinta) 15%,transparent)}
+.codigo .rodape b{color:color-mix(in srgb,var(--codigo-tinta) 85%,transparent)}
+.codigo .rodape code{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:13px;
+  color:color-mix(in srgb,var(--codigo-tinta) 92%,transparent);
+  background:color-mix(in srgb,var(--codigo-tinta) 12%,transparent);
+  padding:1px 5px;border-radius:4px}
+.codigo .rodape+.rodape{padding-top:10px}
+.so-papel{display:none}
+
+.fim{max-width:1180px;margin:0 auto;padding:0 20px 40px;text-align:center;color:var(--tinta2);font-size:15px}
+.fim strong{color:var(--tinta)}
+.navega{max-width:1180px;margin:0 auto;padding:0 20px 80px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.navega a{text-decoration:none;border:1px solid var(--linha);background:var(--carta);
+  padding:11px 18px;border-radius:99px;color:var(--tinta);font-weight:700;font-size:15px}
+.navega a:hover{border-color:var(--azul);color:var(--azul)}
+
+/* indice */
+.grade{display:grid;gap:16px;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));
+  max-width:1180px;margin:0 auto;padding:10px 20px 80px}
+.cartao{display:block;text-decoration:none;color:inherit;background:var(--carta);
+  border:1px solid var(--linha);border-radius:var(--raio);padding:18px 20px;box-shadow:var(--sombra)}
+.cartao:hover{border-color:var(--azul)}
+.cartao .num{font-family:Archivo,sans-serif;font-weight:800;font-size:12px;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--azul)}
+.cartao h3{margin:6px 0 6px;font-size:21px}
+.cartao p{margin:0;color:var(--tinta2);font-size:15px}
+.cartao.embreve{opacity:.55}
+.cartao.embreve .num{color:var(--tinta2)}
+
+@media print{
+  .barra,.abas,.risca,.baixar,.navega{display:none}
+  body{background:#fff}
+  .gif{display:none!important}
+  .foto{display:block!important}
+  /* quebrar DENTRO do passo e nao antes dele: com page-break-inside:avoid num
+     passo alto o Chrome pulava a folha inteira e sobravam paginas em branco. */
+  .passo{break-inside:auto;box-shadow:none;border-color:#ccc;margin:0 0 16px;padding:16px 18px}
+  .cab{break-after:avoid}
+  .midia,.certo,.socorro,.codigo{break-inside:avoid}
+  .legenda{display:none}
+  .legenda.so-papel{display:block}
+  .midia img{max-height:11cm;width:auto;margin:0 auto}
+  .capa{break-after:page}
+}
+</style>
+</head>
+<body data-aula="aula12">
+
+<header class="barra"><div class="barra-in">
+  <div class="marca"><a href="../">Robotomia</a> <span>· Flowlab · Aula 12</span></div>
+  <div class="conta" id="conta">0 de 19 passos prontos</div>
+</div><div class="trilho"><i id="trilho"></i></div></header>
+
+<div class="capa">
+  <span class="etiqueta">Aula 12 · projeto livre e mostra</span>
+  <h1>Projeto livre e mostra</h1>
+  <p class="linha-fina">O jogo agora é seu: clone um jogo do curso, deixe com a sua cara e mande o link para a família. São 19 passos, 50 minutos.
+  Faça um de cada vez e só passe adiante depois de conferir o quadro verde.</p>
+  <div class="avisos"><div class="aviso"><b>Aula diferente</b>Hoje <b>não há bloco novo</b>. O projeto é seu: o roteiro mostra o <b>caminho</b> — clonar, mudar, jogar, mostrar — num jogo de exemplo. Na sua vez, mude o que quiser: outro céu, outro boneco, mais estrelas, um som diferente, uma fase a mais.</div><div class="aviso"><b>O clone é uma cópia</b><span class=ui>Clone</span> cria um jogo <b>novo</b>, igual ao primeiro. O que você mudar nele <b>não muda o original</b>: o jogo da Aula 11 continua do jeito que estava.</div><div class="aviso"><b>Cuidado com o Delete</b>O menu do cartão tem um <span class=ui>Delete</span> em <b>vermelho</b>. Ele apaga o jogo de verdade. Não clique nele.</div><div class="aviso"><b>O link é para quem o professor e a família combinarem</b>Quem tem o link joga o seu jogo. Mande só para as pessoas que o professor ou a sua família combinaram.</div><div class="aviso"><b>Travou?</b>Todo passo tem um quadro laranja embaixo com o conserto dos erros mais comuns.</div></div>
+  <a class="baixar" href="aula12.pdf">⤓ Baixar esta aula em PDF (para imprimir)</a>
+</div>
+
+<main>
+<section class="passo" id="passo1">
+  <div class="cab"><div class="bolha">1</div><h2>Abra o Flowlab e entre em MY GAMES</h2>
+  <label class="risca"><input type="checkbox" data-passo="1"> feito</label></div>
+  <div class="corpo"><figure class="midia"><div class="abas"><button class="aba" data-ver="clipe0" aria-pressed="true" data-legenda="O clipe repete sozinho. Repare onde o cursor vai antes de clicar.">▶ Clipe</button><button class="aba" data-ver="foto" aria-pressed="false" data-legenda="Foto da tela.">Foto</button></div><div class="moldura"><img class="gif clipe0" src="clipes/abrir_my_games.gif" alt="Animação do passo 1: Clipe" loading="lazy"><img hidden class="foto" src="fotos/c02_lista.jpg" alt="Tela do Flowlab no passo 1" loading="lazy"></div><p class="legenda">O clipe repete sozinho. Repare onde o cursor vai antes de clicar.</p><p class="legenda so-papel">Foto da tela.</p></figure>
+    <div class="texto"><p>Abra o navegador em <b>flowlab.io</b> e entre com a sua conta.<br><br>No alto da página, clique em <span class=ui>My Games</span>. Aparecem os jogos que você já fez.</p>
+      <div class="certo"><b>Está certo se</b>Você está na lista <span class=ui>My Games</span> e vê os seus jogos.</div>
+      <div class="socorro"><b>Não deu certo?</b><dl><dt>Não lembro a senha</dt><dd>Chame o professor. Não crie conta nova: os seus jogos estão na antiga.</dd><dt>A lista está vazia</dt><dd>Confira se entrou com a mesma conta das outras aulas.</dd></dl></div>
+    </div></div></section>
+<section class="passo" id="passo2">
+  <div class="cab"><div class="bolha">2</div><h2>Escolha o jogo-BASE</h2>
+  <label class="risca"><input type="checkbox" data-passo="2"> feito</label></div>
+  <div class="corpo"><figure class="midia"><div class="moldura"><img class="foto" src="fotos/p01_lista.jpg" alt="Tela do Flowlab no passo 2" loading="lazy"></div><p class="legenda">Foto da tela.</p></figure>
+    <div class="texto"><p>Todos os cartões se chamam <span class=ui>New Game</span> e ainda não têm figura (<span class=ui>No Screenshot Yet</span>). O que ajuda: o <b>primeiro cartão</b>, no alto à esquerda, é o jogo que você <b>mexeu por último</b>.<br><br>Para partir do jogo da Aula 11 (a estrela que gira), o cartão certo é o primeiro. Se você mexeu em outro jogo depois dela, o cartão da Aula 11 desceu uma casa. Na dúvida, abra o cartão e jogue: o professor ajuda.<br><br>(Você também pode partir de <b>qualquer outro</b> jogo do curso.)</p>
+      <div class="certo"><b>Está certo se</b>Você sabe qual cartão é o jogo-base: o da <b>estrela que gira</b>.</div>
+      <div class="socorro"><b>Não deu certo?</b><dl><dt>Não sei qual é o jogo da Aula 11</dt><dd>Clique em <span class=ui>Edit</span> num cartão: se aparecer a noite azul com a estrela, é ele. Volte para <span class=ui>My Games</span> e siga.</dd><dt>Quero partir de outro jogo</dt><dd>Pode. O caminho é o mesmo para qualquer cartão.</dd></dl></div>
+    </div></div></section>
+<section class="passo" id="passo3">
+  <div class="cab"><div class="bolha">3</div><h2>Abra o menu do cartão</h2>
+  <label class="risca"><input type="checkbox" data-passo="3"> feito</label></div>
+  <div class="corpo"><figure class="midia"><div class="abas"><button class="aba" data-ver="clipe0" aria-pressed="true" data-legenda="O clipe repete sozinho. Repare onde o cursor vai antes de clicar.">▶ Clipe</button><button class="aba" data-ver="foto" aria-pressed="false" data-legenda="Foto da tela.">Foto</button></div><div class="moldura"><img class="gif clipe0" src="clipes/abrir_o_menu.gif" alt="Animação do passo 3: Clipe" loading="lazy"><img hidden class="foto" src="fotos/p02_menu.jpg" alt="Tela do Flowlab no passo 3" loading="lazy"></div><p class="legenda">O clipe repete sozinho. Repare onde o cursor vai antes de clicar.</p><p class="legenda so-papel">Foto da tela.</p></figure>
+    <div class="texto"><p>No cartão do jogo-base, clique nos <b>três pontinhos</b> (⋮), no canto de cima à direita do cartão.<br><br>Abre um menu pequeno com quatro opções: <span class=ui>Add Tag</span>, <span class=ui>Clone</span>, <span class=ui>Lock Version</span> e <span class=ui>Delete</span>.<br><br>⚠️ <b>Não</b> clique no <span class=ui>Delete</span> (em vermelho): ele apaga o jogo.</p>
+      <div class="certo"><b>Está certo se</b>Apareceu o menu com <span class=ui>Add Tag</span>, <span class=ui>Clone</span>, <span class=ui>Lock Version</span> e <span class=ui>Delete</span>.</div>
+      <div class="socorro"><b>Não deu certo?</b><dl><dt>Não acho os três pontinhos</dt><dd>Eles ficam no canto de cima, à direita do <b>nome</b> do jogo, dentro do cartão.</dd><dt>O menu fechou</dt><dd>Clique nos pontinhos de novo.</dd></dl></div>
+    </div></div></section>
+<section class="passo" id="passo4">
+  <div class="cab"><div class="bolha">4</div><h2>CLONE o jogo</h2>
+  <label class="risca"><input type="checkbox" data-passo="4"> feito</label></div>
+  <div class="corpo"><figure class="midia"><div class="abas"><button class="aba" data-ver="clipe0" aria-pressed="true" data-legenda="O clipe repete sozinho. Repare onde o cursor vai antes de clicar.">▶ Clipe</button><button class="aba" data-ver="foto" aria-pressed="false" data-legenda="Foto da tela.">Foto</button></div><div class="moldura"><img class="gif clipe0" src="clipes/clonar_o_jogo.gif" alt="Animação do passo 4: Clipe" loading="lazy"><img hidden class="foto" src="fotos/p03_dialogo.jpg" alt="Tela do Flowlab no passo 4" loading="lazy"></div><p class="legenda">O clipe repete sozinho. Repare onde o cursor vai antes de clicar.</p><p class="legenda so-papel">Foto da tela.</p></figure>
+    <div class="texto"><p>No menu, clique em <span class=ui>Clone</span>. Abre uma janela: <span class=ui>Clone New Game?</span> — <i>Cloning will create a copy of this game</i> (clonar vai criar uma cópia deste jogo).<br><br>Clique no botão azul <span class=ui>Clone Game</span>. Espere alguns segundos.</p>
+      <div class="certo"><b>Está certo se</b>A janela fechou e a lista de jogos tem <b>um cartão a mais</b>.</div>
+      <div class="socorro"><b>Não deu certo?</b><dl><dt>Cliquei em Cancel</dt><dd>Faça de novo: pontinhos, <span class=ui>Clone</span>, e agora o botão azul <span class=ui>Clone Game</span>.</dd><dt>Clonei duas vezes</dt><dd>Sem problema: ficam duas cópias. Use a primeira e deixe a outra quieta.</dd></dl></div>
+    </div></div></section>
+<section class="passo" id="passo5">
+  <div class="cab"><div class="bolha">5</div><h2>Abra o CLONE</h2>
+  <label class="risca"><input type="checkbox" data-passo="5"> feito</label></div>
+  <div class="corpo"><figure class="midia"><div class="abas"><button class="aba" data-ver="clipe0" aria-pressed="true" data-legenda="O clipe repete sozinho. Repare onde o cursor vai antes de clicar.">▶ Clipe</button><button class="aba" data-ver="foto" aria-pressed="false" data-legenda="Foto da tela.">Foto</button></div><div class="moldura"><img class="gif clipe0" src="clipes/editar_o_clone.gif" alt="Animação do passo 5: Clipe" loading="lazy"><img hidden class="foto" src="fotos/p04_lista_clone.jpg" alt="Tela do Flowlab no passo 5" loading="lazy"></div><p class="legenda">O clipe repete sozinho. Repare onde o cursor vai antes de clicar.</p><p class="legenda so-papel">Foto da tela.</p></figure>
+    <div class="texto"><p>A cópia aparece no <b>primeiro cartão</b>, com o nome <span class=ui>Copy of New Game</span> (cópia de New Game). O jogo antigo desceu uma casa.<br><br>Clique em <span class=ui>Edit</span>, embaixo da figura do cartão <span class=ui>Copy of New Game</span>.</p>
+      <div class="certo"><b>Está certo se</b>O editor abriu e o endereço do navegador tem um <b>número diferente</b> do jogo-base.</div>
+      <div class="socorro"><b>Não deu certo?</b><dl><dt>Abriu o jogo antigo</dt><dd>Você clicou no cartão errado. Volte para <span class=ui>My Games</span> e abra o <b>primeiro</b>.</dd><dt>A lista não mudou</dt><dd>Espere uns segundos e aperte <b>F5</b> para recarregar a página.</dd></dl></div>
+    </div></div></section>
+<section class="passo" id="passo6">
+  <div class="cab"><div class="bolha">6</div><h2>O clone é o MESMO jogo</h2>
+  <label class="risca"><input type="checkbox" data-passo="6"> feito</label></div>
+  <div class="corpo"><figure class="midia"><div class="moldura"><img class="foto" src="fotos/p05_editor.jpg" alt="Tela do Flowlab no passo 6" loading="lazy"></div><p class="legenda">Foto da tela.</p></figure>
+    <div class="texto"><p>Olhe o editor: a noite azul, o chão, o boneco e a estrela — tudo igual ao jogo da Aula 11. Os <b>blocos</b> também vieram junto com os objetos: você vai ver a estrela girar, brilhar e sumir quando o boneco encostar (e dá para ouvir o som de moeda).<br><br>É uma cópia <b>só sua</b>: a partir daqui, tudo o que você mudar acontece nela.</p>
+      <div class="certo"><b>Está certo se</b>O editor mostra o chão, o boneco e a estrela do jogo da Aula 11.</div>
+      <div class="socorro"><b>Não deu certo?</b><dl><dt>O editor está vazio</dt><dd>Você abriu um jogo novo, e não o clone. Volte para <span class=ui>My Games</span> e clique em <span class=ui>Edit</span> no primeiro cartão.</dd></dl></div>
+    </div></div></section>
+<section class="passo" id="passo7">
+  <div class="cab"><div class="bolha">7</div><h2>Abra o SETTINGS</h2>
+  <label class="risca"><input type="checkbox" data-passo="7"> feito</label></div>
+  <div class="corpo"><figure class="midia"><div class="abas"><button class="aba" data-ver="clipe0" aria-pressed="true" data-legenda="O clipe repete sozinho. Repare onde o cursor vai antes de clicar.">▶ Clipe</button><button class="aba" data-ver="foto" aria-pressed="false" data-legenda="Foto da tela.">Foto</button></div><div class="moldura"><img class="gif clipe0" src="clipes/abrir_settings.gif" alt="Animação do passo 7: Clipe" loading="lazy"><img hidden class="foto" src="fotos/p06_settings.jpg" alt="Tela do Flowlab no passo 7" loading="lazy"></div><p class="legenda">O clipe repete sozinho. Repare onde o cursor vai antes de clicar.</p><p class="legenda so-papel">Foto da tela.</p></figure>
+    <div class="texto"><p>Na barra de baixo, clique em <span class=ui>Settings</span> (o último botão, à direita).<br><br>Abre o painel <span class=ui>GAME SETTINGS</span>, com os campos <span class=ui>Name</span> (o nome do jogo), <span class=ui>Gravity</span>, <span class=ui>Drag</span>, <span class=ui>Width</span> e <span class=ui>Height</span>.<br><br>Hoje só o <span class=ui>Name</span> interessa.</p>
+      <div class="certo"><b>Está certo se</b>O painel <span class=ui>GAME SETTINGS</span> está aberto e o <span class=ui>Name</span> diz <span class=ui>Copy of New Game</span>.</div>
+      <div class="socorro"><b>Não deu certo?</b><dl><dt>Não acho o Settings</dt><dd>É o último botão da barra de baixo, com o desenho de barrinhas e bolinhas.</dd></dl></div>
+    </div></div></section>
+<section class="passo" id="passo8">
+  <div class="cab"><div class="bolha">8</div><h2>Dê um NOME ao seu jogo</h2>
+  <label class="risca"><input type="checkbox" data-passo="8"> feito</label></div>
+  <div class="corpo"><figure class="midia"><div class="abas"><button class="aba" data-ver="clipe0" aria-pressed="true" data-legenda="O clipe repete sozinho. Repare onde o cursor vai antes de clicar.">▶ Clipe</button><button class="aba" data-ver="foto" aria-pressed="false" data-legenda="Foto da tela.">Foto</button></div><div class="moldura"><img class="gif clipe0" src="clipes/escrever_o_nome.gif" alt="Animação do passo 8: Clipe" loading="lazy"><img hidden class="foto" src="fotos/p07_nome.jpg" alt="Tela do Flowlab no passo 8" loading="lazy"></div><p class="legenda">O clipe repete sozinho. Repare onde o cursor vai antes de clicar.</p><p class="legenda so-papel">Foto da tela.</p></figure>
+    <div class="texto"><p>Clique no campo <span class=ui>Name</span>. Aperte <b>Cmd+A</b> (no Windows, <b>Ctrl+A</b>) para selecionar o nome antigo e escreva o seu: <b>Estrelas da Noite</b> (ou o nome que você preferir).<br><br>Clique no botão azul <span class=ui>OK</span>.<br><br>É esse nome que aparece na página do jogo e na lista de jogos.</p>
+      <div class="certo"><b>Está certo se</b>O campo <span class=ui>Name</span> mostra o nome novo (e não mais <span class=ui>Copy of New Game</span>), antes de você apertar o <span class=ui>OK</span>.</div>
+      <div class="socorro"><b>Não deu certo?</b><dl><dt>O nome ficou emendado no antigo</dt><dd>Faltou selecionar tudo antes de escrever. Aperte Cmd+A (ou Ctrl+A) no campo e escreva de novo.</dd><dt>Apertei Cancel</dt><dd>O nome volta a ser <span class=ui>Copy of New Game</span>. Abra o <span class=ui>Settings</span> de novo e escreva.</dd></dl></div>
+    </div></div></section>
+<section class="passo" id="passo9">
+  <div class="cab"><div class="bolha">9</div><h2>Pinte um céu NOVO</h2>
+  <label class="risca"><input type="checkbox" data-passo="9"> feito</label></div>
+  <div class="corpo"><figure class="midia"><div class="abas"><button class="aba" data-ver="clipe0" aria-pressed="true" data-legenda="O clipe repete sozinho. Repare onde o cursor vai antes de clicar.">▶ Abrir os níveis</button><button class="aba" data-ver="clipe1" aria-pressed="false" data-legenda="O clipe repete sozinho. Repare onde o cursor vai antes de clicar.">▶ Pintar o céu</button><button class="aba" data-ver="foto" aria-pressed="false" data-legenda="Foto da tela.">Foto</button></div><div class="moldura"><img class="gif clipe0" src="clipes/abrir_niveis.gif" alt="Animação do passo 9: Abrir os níveis" loading="lazy"><img class="gif clipe1" hidden src="clipes/pintar_o_ceu.gif" alt="Animação do passo 9: Pintar o céu" loading="lazy"><img hidden class="foto" src="fotos/p08_ceu.jpg" alt="Tela do Flowlab no passo 9" loading="lazy"></div><p class="legenda">O clipe repete sozinho. Repare onde o cursor vai antes de clicar.</p><p class="legenda so-papel">Foto da tela.</p></figure>
+    <div class="texto"><p>Clique em <span class=ui>Game Levels</span>, na barra de baixo. No campo da cor (o que mostra <span class=ui>1B2A4A</span>), apague, escreva <b>2B1055</b> e aperte Enter.<br><br>Um <b>roxo</b> de noite. Escolha a cor que quiser: são seis letras e números (de 0 a F).</p>
+      <div class="certo"><b>Está certo se</b>A folha ficou <b>roxa</b>.</div>
+      <div class="socorro"><b>Não deu certo?</b><dl><dt>Digitei e não mudou</dt><dd>Aperte Enter depois da cor.</dd><dt>Quero outra cor</dt><dd>Escreva outras seis letras e números no mesmo campo. Se o céu ficar branco, a estrela deixa de brilhar: o brilho é uma <b>soma</b> de cores (Aula 11).</dd></dl></div>
+    </div></div></section>
+<section class="passo" id="passo10">
+  <div class="cab"><div class="bolha">10</div><h2>Troque o JOGADOR: o desenho</h2>
+  <label class="risca"><input type="checkbox" data-passo="10"> feito</label></div>
+  <div class="corpo"><figure class="midia"><div class="moldura"><img class="foto" src="fotos/p09_grade.jpg" alt="Tela do Flowlab no passo 10" loading="lazy"></div><p class="legenda">Foto da tela.</p></figure>
+    <div class="texto"><p>Clique no <b>boneco</b> e, no painel dele, no quadrado <span class=ui>edit sprite</span>, à esquerda.<br><br>Se não aparecer a grade de bonecos à direita, clique em <span class=ui>Browse</span>, depois em <span class=ui>Flowlab Sprites</span> e na faixa azul <span class=ui>Characters</span>.<br><br>A grade tem uma fileira de cada personagem: cada linha é um boneco diferente (as figuras da linha são variações do mesmo personagem).</p>
+      <div class="certo"><b>Está certo se</b>À direita aparece a grade de personagens, com os bonecos, os cachorros, os morcegos…</div>
+      <div class="socorro"><b>Não deu certo?</b><dl><dt>Não acho o Browse</dt><dd>Ele fica embaixo da paleta de cores, na coluna da direita.</dd><dt>Apareceu o botão azul < Menu</dt><dd>Ele serve para <b>voltar</b> aos pacotes. Se você já está na grade de personagens, não precisa dele.</dd></dl></div>
+    </div></div></section>
+<section class="passo" id="passo11">
+  <div class="cab"><div class="bolha">11</div><h2>Escolha OUTRO boneco</h2>
+  <label class="risca"><input type="checkbox" data-passo="11"> feito</label></div>
+  <div class="corpo"><figure class="midia"><div class="abas"><button class="aba" data-ver="clipe0" aria-pressed="true" data-legenda="O clipe repete sozinho. Repare onde o cursor vai antes de clicar.">▶ Clipe</button><button class="aba" data-ver="foto" aria-pressed="false" data-legenda="Foto da tela.">Foto</button></div><div class="moldura"><img class="gif clipe0" src="clipes/escolher_sprite.gif" alt="Animação do passo 11: Clipe" loading="lazy"><img hidden class="foto" src="fotos/p10_jogador.jpg" alt="Tela do Flowlab no passo 11" loading="lazy"></div><p class="legenda">O clipe repete sozinho. Repare onde o cursor vai antes de clicar.</p><p class="legenda so-papel">Foto da tela.</p></figure>
+    <div class="texto"><p>Na grade, clique no <b>segundo boneco de cima para baixo</b>, na primeira coluna (uma menina de roupa rosa e verde). Feche no <span class=ui>OK</span>, no canto de baixo à esquerda, e feche também o painel do boneco.<br><br>O boneco novo entra no lugar do antigo. <b>Nenhum bloco muda</b>: eles ficam no <b>objeto</b>, e só o desenho trocou.</p>
+      <div class="certo"><b>Está certo se</b>O boneco da folha roxa é <b>outro</b> (uma menina de roupa rosa e verde) e o quadrado <span class=ui>edit sprite</span> mostra o desenho novo.</div>
+      <div class="socorro"><b>Não deu certo?</b><dl><dt>Troquei por um cachorro</dt><dd>Sem problema: ele corre igual. Se quiser o boneco, abra o <span class=ui>edit sprite</span> de novo e clique no segundo da primeira coluna.</dd><dt>O boneco ficou do tamanho errado</dt><dd>Todos os da grade têm o mesmo tamanho. Confira se você apertou o <span class=ui>OK</span>.</dd></dl></div>
+    </div></div></section>
+<section class="passo" id="passo12">
+  <div class="cab"><div class="bolha">12</div><h2>Prepare MAIS ESTRELAS</h2>
+  <label class="risca"><input type="checkbox" data-passo="12"> feito</label></div>
+  <div class="corpo"><figure class="midia"><div class="moldura"><img class="foto" src="fotos/p11_menu_da_estrela.jpg" alt="Tela do Flowlab no passo 12" loading="lazy"></div><p class="legenda">Foto da tela.</p></figure>
+    <div class="texto"><p>Clique na <b>estrela</b>. Abre a roda do objeto, com <span class=ui>Clone</span>, <span class=ui>Edit</span>, <span class=ui>Delete</span> e <span class=ui>Cancel</span>. (Cuidado: <span class=ui>Delete</span> apaga o objeto.)<br><br>A estrela é um <b>tipo</b>, e os blocos dela (girar, brilhar, fazer barulho, sumir quando o boneco encosta) pertencem ao tipo. Cada estrela nova que você clonar <b>já nasce sabendo tudo isso</b>.</p>
+      <div class="certo"><b>Está certo se</b>Apareceu a roda do objeto com <span class=ui>Clone</span>, <span class=ui>Edit</span>, <span class=ui>Delete</span> e <span class=ui>Cancel</span>.</div>
+      <div class="socorro"><b>Não deu certo?</b><dl><dt>Abriu o painel do objeto, e não a roda</dt><dd>Feche o painel e clique na estrela de novo, uma vez só.</dd><dt>Cliquei no chão</dt><dd>Clique <b>em cima</b> da estrela, na ponta direita da fileira.</dd></dl></div>
+    </div></div></section>
+<section class="passo" id="passo13">
+  <div class="cab"><div class="bolha">13</div><h2>CLONE a estrela</h2>
+  <label class="risca"><input type="checkbox" data-passo="13"> feito</label></div>
+  <div class="corpo"><figure class="midia"><div class="abas"><button class="aba" data-ver="clipe0" aria-pressed="true" data-legenda="O clipe repete sozinho. Repare onde o cursor vai antes de clicar.">▶ Clipe</button><button class="aba" data-ver="foto" aria-pressed="false" data-legenda="Foto da tela.">Foto</button></div><div class="moldura"><img class="gif clipe0" src="clipes/clonar_a_estrela.gif" alt="Animação do passo 13: Clipe" loading="lazy"><img hidden class="foto" src="fotos/p12_estrelas.jpg" alt="Tela do Flowlab no passo 13" loading="lazy"></div><p class="legenda">O clipe repete sozinho. Repare onde o cursor vai antes de clicar.</p><p class="legenda so-papel">Foto da tela.</p></figure>
+    <div class="texto"><p>Clique em <span class=ui>Clone</span> e, depois, clique em <b>três casas vazias</b> da mesma fileira, à esquerda da estrela: a <b>sexta</b>, a <b>nona</b> e a <b>décima segunda</b> casa, contando da esquerda (a estrela está na 14ª). Termine em <span class=ui>done cloning</span>.<br><br>Fica com <b>quatro estrelas</b> em cima do chão.</p>
+      <div class="certo"><b>Está certo se</b>Quatro estrelas estão em cima do chão, espaçadas.</div>
+      <div class="socorro"><b>Não deu certo?</b><dl><dt>Clonei em cima de outra casa</dt><dd>Aperte <span class=ui>Undo</span> ou clique na estrela repetida e use <span class=ui>Delete</span> (só nessa estrela).</dd><dt>Esqueci o done cloning</dt><dd>Clique em <span class=ui>done cloning</span>, no alto, para sair do modo de clonar. Se não sair, as próximas cliques viram estrelas.</dd></dl></div>
+    </div></div></section>
+<section class="passo" id="passo14">
+  <div class="cab"><div class="bolha">14</div><h2>JOGUE o seu jogo</h2>
+  <label class="risca"><input type="checkbox" data-passo="14"> feito</label></div>
+  <div class="corpo"><figure class="midia"><div class="abas"><button class="aba" data-ver="clipe0" aria-pressed="true" data-legenda="O clipe repete sozinho. Repare onde o cursor vai antes de clicar.">▶ Clipe</button><button class="aba" data-ver="foto" aria-pressed="false" data-legenda="Foto da tela.">Foto</button></div><div class="moldura"><img class="gif clipe0" src="clipes/jogar.gif" alt="Animação do passo 14: Clipe" loading="lazy"><img hidden class="foto" src="fotos/p13_jogo.jpg" alt="Tela do Flowlab no passo 14" loading="lazy"></div><p class="legenda">O clipe repete sozinho. Repare onde o cursor vai antes de clicar.</p><p class="legenda so-papel">Foto da tela.</p></figure>
+    <div class="texto"><p>Clique em <span class=ui>Play</span>.<br><br>Olhe: o <b>nome</b> do jogo aparece embaixo da tela, o céu é <b>roxo</b>, o boneco é o novo e as <b>quatro estrelas</b> giram e brilham.</p>
+      <div class="certo"><b>Está certo se</b>A página do jogo mostra <b>Estrelas da Noite</b> (ou o seu nome), a noite roxa, o boneco novo e quatro estrelas.</div>
+      <div class="socorro"><b>Não deu certo?</b><dl><dt>O nome ainda é Copy of New Game</dt><dd>Volte ao editor (aperte <span class=ui>Esc</span>), abra o <span class=ui>Settings</span> e escreva o nome. Aperte o <span class=ui>OK</span> no fim.</dd><dt>O jogo abre sem as estrelas novas</dt><dd>Confira se você terminou o <span class=ui>done cloning</span>.</dd></dl></div>
+    </div></div></section>
+<section class="passo" id="passo15">
+  <div class="cab"><div class="bolha">15</div><h2>Pegue as estrelas</h2>
+  <label class="risca"><input type="checkbox" data-passo="15"> feito</label></div>
+  <div class="corpo"><figure class="midia"><div class="moldura"><img class="foto" src="fotos/p14_prova.jpg" alt="Tela do Flowlab no passo 15" loading="lazy"></div><p class="legenda">Foto da tela.</p></figure>
+    <div class="texto"><p>Clique dentro da tela do jogo (para o teclado valer), <b>corra</b> com a seta para a direita e <b>pule</b> com a seta para cima.<br><br>Quando o boneco encosta numa estrela, ela <b>some</b> e faz o barulho de moeda. Pegar as quatro é o desafio: se pular na hora errada, o boneco passa por cima da estrela.</p>
+      <div class="certo"><b>Está certo se</b>Pelo menos <b>duas</b> estrelas sumiram quando o boneco encostou.</div>
+      <div class="socorro"><b>Não deu certo?</b><dl><dt>O boneco não anda</dt><dd>Clique dentro da tela do jogo antes de apertar as setas.</dd><dt>O boneco passa direto pelas estrelas</dt><dd>Ele pulou alto demais. Corra <b>sem pular</b> perto de cada estrela.</dd><dt>O boneco saiu da fase</dt><dd>Ele passou do fim do chão. Aperte <span class=ui>Esc</span> para voltar ao editor e jogue de novo.</dd></dl></div>
+    </div></div></section>
+<section class="passo" id="passo16">
+  <div class="cab"><div class="bolha">16</div><h2>Veja o jogo com o NOME na lista</h2>
+  <label class="risca"><input type="checkbox" data-passo="16"> feito</label></div>
+  <div class="corpo"><figure class="midia"><div class="moldura"><img class="foto" src="fotos/p15_lista_nome.jpg" alt="Tela do Flowlab no passo 16" loading="lazy"></div><p class="legenda">Foto da tela.</p></figure>
+    <div class="texto"><p>Volte para <span class=ui>My Games</span> (no alto da página). O primeiro cartão agora tem o <b>seu nome</b> no lugar de <span class=ui>Copy of New Game</span>.</p>
+      <div class="certo"><b>Está certo se</b>O primeiro cartão mostra <b>Estrelas da Noite</b> (ou o nome que você escolheu).</div>
+      <div class="socorro"><b>Não deu certo?</b><dl><dt>O cartão ainda diz Copy of New Game</dt><dd>Aperte <b>F5</b> para recarregar a lista. Se continuar, o <span class=ui>OK</span> do <span class=ui>Settings</span> não foi apertado: volte ao editor e refaça o passo 8.</dd></dl></div>
+    </div></div></section>
+<section class="passo" id="passo17">
+  <div class="cab"><div class="bolha">17</div><h2>Abra o COMPARTILHAR</h2>
+  <label class="risca"><input type="checkbox" data-passo="17"> feito</label></div>
+  <div class="corpo"><figure class="midia"><div class="moldura"><img class="foto" src="fotos/p16_share.jpg" alt="Tela do Flowlab no passo 17" loading="lazy"></div><p class="legenda">Foto da tela.</p></figure>
+    <div class="texto"><p>No primeiro cartão, clique no <b>botão redondo com a seta para cima</b>, embaixo à esquerda (o primeiro de dois botões redondos).<br><br>Abre a janela <span class=ui>Share</span>, com três partes: <span class=ui>Share Game Link</span> (o endereço do jogo), <span class=ui>Game Embed Code</span> (para colocar o jogo numa página da internet) e <span class=ui>Download Game HTML File</span>.<br><br>O que você usa hoje é o <b>link</b>.</p>
+      <div class="certo"><b>Está certo se</b>A janela <span class=ui>Share</span> está aberta e mostra um endereço que termina com o <b>número do seu jogo</b>.</div>
+      <div class="socorro"><b>Não deu certo?</b><dl><dt>Abriu o gráfico em vez do compartilhar</dt><dd>Você clicou no segundo botão redondo (o gráfico). O compartilhar é o <b>primeiro</b>, o da seta para cima.</dd><dt>O número do link é do jogo antigo</dt><dd>Você abriu o compartilhar do cartão errado. Feche no <span class=ui>OK</span> e confira qual cartão tem o seu nome.</dd></dl></div>
+    </div></div></section>
+<section class="passo" id="passo18">
+  <div class="cab"><div class="bolha">18</div><h2>COPIE o link</h2>
+  <label class="risca"><input type="checkbox" data-passo="18"> feito</label></div>
+  <div class="corpo"><figure class="midia"><div class="abas"><button class="aba" data-ver="clipe0" aria-pressed="true" data-legenda="O clipe repete sozinho. Repare onde o cursor vai antes de clicar.">▶ Clipe</button><button class="aba" data-ver="foto" aria-pressed="false" data-legenda="Foto da tela.">Foto</button></div><div class="moldura"><img class="gif clipe0" src="clipes/copiar_o_link.gif" alt="Animação do passo 18: Clipe" loading="lazy"><img hidden class="foto" src="fotos/p17_copiado.jpg" alt="Tela do Flowlab no passo 18" loading="lazy"></div><p class="legenda">O clipe repete sozinho. Repare onde o cursor vai antes de clicar.</p><p class="legenda so-papel">Foto da tela.</p></figure>
+    <div class="texto"><p>Clique em <span class=ui>Copy Link</span>, ao lado do endereço. O endereço fica <b>selecionado em azul</b> e o link é <b>copiado</b> — como se você tivesse apertado Cmd+C (ou Ctrl+C).<br><br>Agora é só <b>colar</b> (Cmd+V, ou Ctrl+V) numa mensagem: no WhatsApp do professor, no e-mail, onde o professor e a sua família combinarem.<br><br>Feche a janela no <span class=ui>OK</span>.</p>
+      <div class="certo"><b>Está certo se</b>O link foi copiado: ao colar (Cmd+V ou Ctrl+V) numa mensagem, aparece <b>https://flowlab.io/game/play/</b> e o número do seu jogo.</div>
+      <div class="socorro"><b>Não deu certo?</b><dl><dt>Colei e apareceu outra coisa</dt><dd>Você copiou outra coisa depois. Volte e clique em <span class=ui>Copy Link</span> de novo.</dd><dt>Não achei o Copy Link</dt><dd>É o botão ao lado direito do endereço, na primeira parte da janela.</dd></dl></div>
+    </div></div></section>
+<section class="passo" id="passo19">
+  <div class="cab"><div class="bolha">19</div><h2>ABRA o link e mostre</h2>
+  <label class="risca"><input type="checkbox" data-passo="19"> feito</label></div>
+  <div class="corpo"><figure class="midia"><div class="moldura"><img class="foto" src="fotos/p18_link.jpg" alt="Tela do Flowlab no passo 19" loading="lazy"></div><p class="legenda">Foto da tela.</p></figure>
+    <div class="texto"><p>Abra uma <b>aba nova</b> do navegador, cole o link na barra de cima e aperte Enter.<br><br>Abre a página do jogo, com o <b>nome</b> e o botão de jogar. É o que a sua família vai ver.<br><br>Mostre o seu jogo, e conte o que foi mais difícil e o que foi mais divertido de fazer.</p>
+      <div class="certo"><b>Está certo se</b>A aba nova mostra a página do jogo, com o nome <b>Estrelas da Noite</b> (ou o seu).</div>
+      <div class="socorro"><b>Não deu certo?</b><dl><dt>Abriu a página do Flowlab, mas sem o jogo</dt><dd>Confira se você colou o endereço <b>inteiro</b>, até o último número.</dd><dt>O endereço não abre</dt><dd>Confira se ele começa com <b>https://flowlab.io/game/play/</b> e termina com o número do seu jogo.</dd></dl></div>
+    </div></div></section>
+</main>
+
+<p class="fim"><strong>Acabou a Aula 12 — e acabou o curso. Em doze aulas você fez <b>jogos de verdade</b>: um boneco que pega moedas, pula, foge da lava, atira, voa, abre portas, empurra caixas, corre contra o relógio, é perseguido, tem menu e fases, e uma estrela que gira, brilha e faz barulho. Hoje você viu o que vem depois: <b>clonar</b> um jogo, <b>mexer nele</b> até ficar seu, e <b>mostrar</b> pelo link. Daqui para a frente, a regra é a mesma de todas as aulas: <i>quando isto acontecer, faça aquilo</i> — e agora a ideia de jogo é sua.</strong></p>
+<div class="navega"><a href="../">⌂ Todas as aulas</a><a href="../aula11/">← Aula 11</a></div>
+<script>
+(function(){
+  var chave = "robotomia-roblox-" + (document.body.dataset.aula || "x");
+  function ler(){ try{ return JSON.parse(localStorage.getItem(chave)||"[]"); }catch(e){ return []; } }
+  function gravar(v){ try{ localStorage.setItem(chave, JSON.stringify(v)); }catch(e){} }
+  var caixas = [].slice.call(document.querySelectorAll(".risca input"));
+  var conta  = document.getElementById("conta");
+  var trilho = document.getElementById("trilho");
+  if (!caixas.length) return;
+  var feitos = ler();
+  function pinta(){
+    var n = 0;
+    caixas.forEach(function(c){
+      var p = c.closest(".passo");
+      if (c.checked){ n++; p.classList.add("feito"); } else { p.classList.remove("feito"); }
+    });
+    if (conta)  conta.textContent = n + " de " + caixas.length + " passos prontos";
+    if (trilho) trilho.style.width = (100*n/caixas.length) + "%";
+  }
+  caixas.forEach(function(c){
+    c.checked = feitos.indexOf(c.dataset.passo) >= 0;
+    c.addEventListener("change", function(){
+      var v = ler().filter(function(x){ return x !== c.dataset.passo; });
+      if (c.checked) v.push(c.dataset.passo);
+      gravar(v); pinta();
+    });
+  });
+  pinta();
+  [].slice.call(document.querySelectorAll(".abas")).forEach(function(g){
+    g.addEventListener("click", function(e){
+      var b = e.target.closest(".aba"); if(!b) return;
+      var caixa = g.parentNode;
+      [].slice.call(g.children).forEach(function(x){ x.setAttribute("aria-pressed", x===b ? "true":"false"); });
+      caixa.querySelectorAll(".gif").forEach(function(g){
+        g.hidden = !g.classList.contains(b.dataset.ver);
+      });
+      caixa.querySelector(".foto").hidden = (b.dataset.ver !== "foto");
+      caixa.querySelector(".legenda").textContent = b.dataset.legenda;
+    });
+  });
+})();
+</script>
+</body></html>

@@ -942,6 +942,28 @@ E uma de desenho de fase: **`Any Type` também deixa um objeto comer o outro**
   painel e o fio `hit → play`; que ele TOCA é conferência de ouvido — e a aula
   avisa a criança disso (aviso «Use fones…»).
 
+## 2an. Aula 12 — projeto livre e mostra: o que a captura ensinou
+
+- **Os cartões de `My Games` não têm nome nem figura** (todos `New Game`, `No
+  Screenshot Yet`): o jogo-base se acha pelo ID, lido no `Share Game Link` de
+  cada cartão (`_ids_da_lista`). O cartão do alto é o último mexido — e depois
+  de clonar, o clone sobe e o original desce um lugar, então toda etapa que
+  volta à lista procura de novo, e não presume «o primeiro».
+- **O clone nasce `Copy of New Game`**, não `New Game`: o texto do passo do
+  nome, do `Settings` e da lista tinha o nome errado até a engenharia reversa
+  olhar a foto.
+- **Provar o link é ler a área de transferência**, não a foto: `pbcopy` com um
+  valor-isca antes do `Copy Link` e `pbpaste` depois — o que sai tem de
+  terminar em `/game/play/<id do clone>`.
+- **A prova de «pegou as estrelas» conta MANCHAS, não pixels** (`scipy
+  .ndimage.label`) e filtra por ÁREA: o cabelo amarelado do boneco novo passava
+  pelo filtro de cor e fazia seis «estrelas» onde havia quatro.
+- **Só a seta de andar não move o boneco na bancada**: o `_corre` (tecla
+  baixo/cima sem pulo) deu 30 corridas sem mexer um pixel; `rs.corre_e_pula`
+  funciona. Em rajadas curtas, para o boneco não passar por cima das estrelas.
+- ⚠️ **Clonar cria um jogo na conta.** A captura deixa um `Copy of New Game`
+  (renomeado `Estrelas da Noite`) por rodada; não se apaga sem o Julio pedir.
+
 ## 4. A lista de pré-voo (o que já me custou tempo antes)
 
 Antes de dar uma aula por pronta, passe por estas. Cada uma é um erro que já

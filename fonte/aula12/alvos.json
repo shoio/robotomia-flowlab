@@ -1,0 +1,112 @@
+{
+ "abrir_o_menu": {
+  "antes": "g41_a.jpg",
+  "depois": "g41_b.jpg",
+  "alvo": [
+   1370,
+   486
+  ],
+  "botao": "esq",
+  "clicado": true
+ },
+ "clonar_o_jogo": {
+  "antes": "g42_a.jpg",
+  "depois": "g42_b.jpg",
+  "alvo": [
+   1402,
+   649
+  ],
+  "botao": "esq",
+  "clicado": true
+ },
+ "editar_o_clone": {
+  "antes": "g43_a.jpg",
+  "depois": "g43_b.jpg",
+  "alvo": [
+   457,
+   829
+  ],
+  "botao": "esq",
+  "clicado": true
+ },
+ "abrir_settings": {
+  "antes": "g44_a.jpg",
+  "depois": "g44_b.jpg",
+  "alvo": [
+   1890,
+   1586
+  ],
+  "botao": "esq",
+  "clicado": true
+ },
+ "escrever_o_nome": {
+  "antes": "g45_a.jpg",
+  "depois": "g45_b.jpg",
+  "alvo": [
+   1988,
+   692
+  ],
+  "botao": "esq",
+  "clicado": true
+ },
+ "abrir_niveis": {
+  "antes": "g08a_a.jpg",
+  "depois": "g08a_b.jpg",
+  "alvo": [
+   1429,
+   1584
+  ],
+  "botao": "esq",
+  "clicado": true
+ },
+ "pintar_o_ceu": {
+  "antes": "g08_a.jpg",
+  "depois": "g08_b.jpg",
+  "alvo": [
+   1313,
+   1298
+  ],
+  "botao": "esq",
+  "clicado": false
+ },
+ "escolher_sprite": {
+  "antes": "g13_a.jpg",
+  "depois": "g13_b.jpg",
+  "alvo": [
+   2307,
+   272
+  ],
+  "botao": "esq",
+  "clicado": true
+ },
+ "clonar_a_estrela": {
+  "antes": "g46_a.jpg",
+  "depois": "g46_b.jpg",
+  "alvo": [
+   1310,
+   1026
+  ],
+  "botao": "esq",
+  "clicado": true
+ },
+ "jogar": {
+  "antes": "g07_a.jpg",
+  "depois": "g07_b.jpg",
+  "alvo": [
+   1051,
+   1586
+  ],
+  "botao": "esq",
+  "clicado": true
+ },
+ "copiar_o_link": {
+  "antes": "g47_a.jpg",
+  "depois": "g47_b.jpg",
+  "alvo": [
+   1813,
+   511
+  ],
+  "botao": "esq",
+  "clicado": true
+ }
+}

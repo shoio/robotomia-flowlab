@@ -1,6 +1,6 @@
 # Estado do curso de Flowlab — 24-10-2026 (madrugada)
 
-**Onze aulas no ar**, em https://shoio.github.io/robotomia-flowlab/ — conferido
+**Doze aulas no ar — o curso está completo**, em https://shoio.github.io/robotomia-flowlab/ — conferido
 em produção, não só commitado.
 
 O que custou esta madrugada está no `PADRAO.md`, §2ac a §2ag. O que a Aula 8
@@ -38,6 +38,10 @@ editor de animação do sprite + o bloco `Animation`, e o `Blending` (1 = soma).
 O método: soltar bloco com `_livre`/`_livre_fila` (a mesa anda), prova de
 animação por diferença de recorte, e gesto que devolve a seta do clipe.
 
+A Aula 12 (§2an) não tem bloco novo: é o CAMINHO — `Clone` do cartão, `Settings` (nome),
+personalizar, `Share Game Link` e abrir o link. A prova de link lê a área de
+transferência depois do `Copy Link`.
+
 A madrugada anterior (§2n a §2t) continua valendo; o maior de lá é o §2n: o
 remendo da bancada sumia por ordem de import e **todo arrasto ia para a tela de
 verdade**, em silêncio.
@@ -61,7 +65,7 @@ verdade**, em silêncio.
 
 | 11 | som, animação e brilho | noite; estrela que **gira** (animação de 2 quadros), **brilha** (`Blending` em soma) e faz o som de moeda ao ser pega | a pose da estrela alterna sozinha (diferença de recorte 0,0 ↔ 2,0) · com o `Blending` em 1 a cor média da estrela subiu de 536 para 561 · o jogador a alcança e ela **some** (o som não se fotografa: conferido o nome e o fio) |
 
-Aula 12: planejada em `PLANO.md`, não construída.
+| 12 | projeto livre e mostra | clone do jogo da Aula 11 → nome (`Settings`), céu, boneco, quatro estrelas → `Share` → link | das 4 estrelas o jogador pegou 2 correndo · o `Copy Link` copiou `https://flowlab.io/game/play/3166165` (lido com `pbpaste`) · a página do link abre o jogo «Estrelas da Noite» |
 
 ## Pendente para o Julio
 
