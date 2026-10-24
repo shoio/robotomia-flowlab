@@ -1,0 +1,148 @@
+# -*- coding: utf-8 -*-
+"""Aula 11 — Som, animação e brilho."""
+
+AULA = {
+ "n": 11,
+ "slug": "aula11",
+ "titulo": "Som, animação e brilho",
+ "subtitulo": "Uma fase de noite, uma estrela que gira, brilha e faz barulho de moeda quando você a pega.",
+ "tempo": "50 minutos",
+ "etiqueta": "Aula 11 · som, animação e brilho",
+ "fim": "Acabou a Aula 11. Hoje o seu jogo ganhou <b>vida</b>, sem mudar nenhuma regra: a estrela <b>gira</b> (uma animação de dois quadros), <b>brilha</b> (o <span class=ui>Blending</span> em soma) e <b>faz barulho</b> quando é pega (o <span class=ui>SoundEffect</span>). O que a criança vê e ouve é o que faz o jogo parecer <i>pronto</i>. Na próxima aula, o jogo é seu: escolha, monte e mande o link.",
+ "avisos": [
+   ("Jogo novo", "Esta aula começa num jogo novo, do zero. Os das aulas 1 a 10 ficam guardados na sua lista."),
+   ("O que é novo hoje", "O <span class=ui>Animation Editor</span> (dentro do editor de desenho), o bloco <span class=ui>Animation</span>, o <span class=ui>SoundEffect</span> e o <span class=ui>Blending</span>."),
+   ("Você já sabe quase tudo", "O jogador é o <b>mesmo pacote das aulas anteriores</b> (<span class=ui>Run &amp; Jump</span>) e a estrela some pela <span class=ui>Collision</span> + <span class=ui>Destroyer</span> da Aula 1. Hoje só se <b>acrescenta</b> coisas em cima."),
+   ("Use fones ou o volume do computador", "O som <b>não aparece na foto</b>: para saber se ele toca, é preciso ouvir. Se a sala for barulhenta, combine com o professor."),
+   ("Travou?", "Todo passo tem um quadro laranja embaixo com o conserto dos erros mais comuns."),
+ ],
+ "passos": [
+
+  dict(n=1, titulo="Abra o Flowlab e entre em MY GAMES", img="comum_fotos/c02_lista.jpg", clipe="abrir_my_games.gif",
+    corpo="Abra o navegador em <b>flowlab.io</b> e entre com a sua conta.<br><br>No alto da página, clique em <span class=ui>My Games</span>. Aparecem os jogos que você já fez.",
+    ck="Você está na lista <span class=ui>My Games</span> e vê os seus jogos anteriores.",
+    sos=[("Não lembro a senha","Chame o professor. Não crie conta nova: os seus jogos estão na antiga."),
+         ("A lista está vazia","Confira se entrou com a mesma conta das outras aulas.")]),
+
+  dict(n=2, titulo="Crie um jogo novo", img="comum_fotos/c03_escolher.jpg", clipe="novo_jogo.gif",
+    corpo="Clique no botão verde <span class=ui>New Game</span>, no canto de cima à direita da lista.<br><br>Abre uma tela com os tipos de projeto.",
+    ck="Apareceu a tela com os tipos de projeto para escolher.",
+    sos=[("Não acho o New Game","Ele é o único botão verde da página, no alto à direita.")]),
+
+  dict(n=3, titulo="Escolha o PROJETO VAZIO", img="aula11/p01_vazio.jpg", clipe="empty_project.gif",
+    corpo="Na tela dos tipos, clique em <span class=ui>Empty Project</span> — o projeto vazio.<br><br>Abre o editor com a folha branca quadriculada.",
+    ck="O editor abriu com a folha branca quadriculada no meio.",
+    sos=[("Escolhi outro e veio um jogo pronto","Volte em <span class=ui>My Games</span>, apague esse e comece pelo <span class=ui>Empty Project</span>.")]),
+
+  dict(n=4, titulo="Pinte o céu de NOITE", img="aula11/p02_ceu.jpg",
+    clipe=[("Abrir os níveis", "abrir_niveis.gif"), ("Pintar o céu", "pintar_o_ceu.gif")],
+    corpo="Clique em <span class=ui>Game Levels</span>, na fileira de baixo. Aparece uma linha só. No campo da cor (<span class=ui>FFFFFF</span>), apague, escreva <b>1B2A4A</b> e aperte Enter.<br><br>Um azul bem escuro, de noite. Evite o <b>preto puro</b>: o brilho de hoje é uma <b>soma</b> de cores, e somar com preto não muda nada.",
+    ck="A folha ficou <b>azul-escura</b>.",
+    sos=[("Digitei e não mudou","Aperte Enter depois da cor. Sem isso o campo não vale."),
+         ("O painel fechou sozinho","É normal depois do Enter.")]),
+
+  dict(n=5, titulo="Crie o jogador", img="aula11/g01_b.jpg", clipe="criar_objeto.gif",
+    corpo="Clique uma vez na <b>segunda casa da esquerda</b>, na <b>quarta fileira de baixo para cima</b>. (O chão ainda não existe: ele vai ficar na penúltima fileira de baixo, e o jogador vai cair até lá.)<br><br>Abre a roda com <span class=ui>Create</span> e <span class=ui>Cancel</span>.",
+    ck="Apareceu a roda escura com <span class=ui>Create</span> e <span class=ui>Cancel</span>.",
+    sos=[("Cliquei fora da folha","Clique dentro do retângulo escuro. Fora dele não nasce objeto.")]),
+
+  dict(n=6, titulo="Escolha CREATE e escreva JOGADOR", img="aula11/p03_nome.jpg", clipe="escolher_create.gif",
+    corpo="Na roda, clique em <span class=ui>Create</span>, na metade de cima. Abre o painel do objeto novo.<br><br>No campo <span class=ui>Name</span> escreva <b>Jogador</b> e aperte Tab. No campo <span class=ui>Type</span>, escreva <b>Jogador</b> também.",
+    ck="Os dois campos, <span class=ui>Name</span> e <span class=ui>Type</span>, dizem <b>Jogador</b>.",
+    sos=[("Escrevi só no Name","Clique no campo <span class=ui>Type</span> e escreva lá também."),
+         ("Escrevi com acento","Escreva sem acento. Acento em nome de peça dá problema mais para a frente.")]),
+
+  dict(n=7, titulo="O desenho do jogador", img="aula11/p04_jogador.jpg", clipe="escolher_sprite.gif",
+    corpo="Clique no quadrado <span class=ui>edit sprite</span>, à esquerda do painel.<br><br><b>1.</b> Clique em <span class=ui>Browse</span>, embaixo da paleta de cores.<br><b>2.</b> Se aparecer o botão azul <span class=ui>&lt; Menu</span> no alto, clique nele.<br><b>3.</b> Clique em <span class=ui>Flowlab Sprites</span> e depois na faixa azul <span class=ui>Characters</span>.<br><b>4.</b> Clique no <b>primeiro boneco</b>.<br><br>Feche no <span class=ui>OK</span>, no canto de baixo à esquerda.",
+    ck="Um boneco aparece no lugar do quadrado cinza.",
+    sos=[("Não acho o Browse","Ele fica embaixo da paleta de cores, na coluna da direita."),
+         ("Peguei outro boneco","Qualquer um serve. O curso usa o primeiro.")]),
+
+  dict(n=8, titulo="A FÍSICA do jogador", img="aula11/p05_fisica.jpg",
+    clipe=[("Abrir a física", "abrir_physics.gif"), ("Marcar movable", "marcar_movable.gif")],
+    corpo="No painel do objeto, clique em <span class=ui>Physics &gt;</span>.<br><br><span class=ui>movable</span> — <b>marque</b>.<br><span class=ui>affected by gravity</span> — <b>deixe marcada</b>.<br><br>Feche o painel do objeto.",
+    ck="<span class=ui>movable</span> e <span class=ui>affected by gravity</span> estão <b>azuis</b>.",
+    sos=[("O boneco não cai nem anda","<span class=ui>movable</span> ficou desmarcada. Reabra o painel e marque."),
+         ("Não acho a caixinha","Ela fica na lista que abre embaixo de <span class=ui>Physics</span>. Role o painel se precisar.")]),
+
+  dict(n=9, titulo="Faça o jogador correr e pular", img="aula11/p06_correr.jpg",
+    corpo="Clique no jogador e em <span class=ui>Behaviors</span>.<br><br>Na coluna da esquerda, lá embaixo, clique em <span class=ui>Behavior Bundles</span> e <b>arraste</b> o <span class=ui>Run &amp; Jump</span> para o meio da mesa.<br><br>É o mesmo pacote das aulas 2, 6, 7, 8, 9 e 10. Espere uns segundos antes de fechar.",
+    ck="Um bloco <span class=ui>Run &amp; Jump</span> está na mesa de blocos.",
+    sos=[("Arrastei e não caiu nada","Solte no meio da mesa, longe da beirada."),
+         ("Não acho Behavior Bundles","É o último item da coluna da esquerda. Role até o fim.")]),
+
+  dict(n=10, titulo="Faça o chão", img="aula11/p07_chao.jpg", clipe="clonar_o_chao.gif",
+    corpo="Feche as duas telas. Clique na casa do <b>canto esquerdo da penúltima fileira de baixo</b> e escolha <span class=ui>Create</span>. Em <span class=ui>Name</span> e em <span class=ui>Type</span> escreva <b>Chao</b>. Em <span class=ui>edit sprite</span>, pelo <span class=ui>Browse</span>, pegue o <b>primeiro bloco</b> de <span class=ui>Flowlab Sprites</span> &rsaquo; <span class=ui>Blocks</span>. Feche no <span class=ui>OK</span>.<br><br>Agora repita pela fileira toda: clique nela, escolha <span class=ui>Clone</span>, clique nas casas <b>à direita</b> até a ponta, e termine em <span class=ui>done cloning</span>.",
+    ck="Uma fileira de blocos de grama vai de ponta a ponta da folha, sem buraco.",
+    sos=[("Ficou um buraco","Clique na casa vazia, escolha <span class=ui>Clone</span> e preencha."),
+         ("O jogador cai para fora da folha","Exatamente por isso o chão não pode ter falha.")]),
+
+  dict(n=11, titulo="A ESTRELA", img="aula11/p08_estrela.jpg",
+    corpo="Clique numa casa perto da <b>ponta direita</b>, na <b>terceira fileira de baixo para cima</b> (a fileira em cima do chão) e escolha <span class=ui>Create</span>. Em <span class=ui>Name</span> e em <span class=ui>Type</span> escreva <b>Estrela</b>. Em <span class=ui>edit sprite</span>, pelo <span class=ui>Browse</span>, em <span class=ui>Flowlab Sprites</span> &rsaquo; <span class=ui>Objects</span>, pegue a <b>estrela dourada</b>. Feche no <span class=ui>OK</span>.<br><br>Não mexa na física dela: a estrela fica parada, e basta o jogador <b>encostar</b>.",
+    ck="Uma estrela dourada está em cima do chão, na ponta direita.",
+    sos=[("Não acho a estrela","Ela está em <span class=ui>Objects</span>, e é amarela. Role a grade se precisar.")]),
+
+  dict(n=12, titulo="A estrela some quando é PEGA", img="aula11/p09_pega.jpg",
+    corpo="Clique na <b>estrela</b> e depois em <span class=ui>Behaviors</span>.<br><br><b>1.</b> Em <span class=ui>Triggers</span>, arraste o <span class=ui>Collision</span>. Clique devagar nele e, na lista <span class=ui>Any Type</span>, escolha <b>Jogador</b>.<br><b>2.</b> Em <span class=ui>Components</span>, arraste o <span class=ui>Destroyer</span>.<br><br>Um fio: de <span class=ui>hit</span> até <span class=ui>in</span>.<br><br>Lendo em voz alta: <i>quando o Jogador encostar em mim, eu me destruo</i>. É a moeda da Aula 1.",
+    ck="O <span class=ui>Collision</span> mostra <b>Jogador</b>, e há um fio de <span class=ui>hit</span> até <span class=ui>in</span>.",
+    sos=[("A estrela some assim que o jogo começa","O <span class=ui>Collision</span> ficou em <span class=ui>Any Type</span> e está contando o chão. Escolha <b>Jogador</b>."),
+         ("Não acho o Destroyer","Ele fica em <span class=ui>Components</span> e tem um X vermelho.")]),
+
+  dict(n=13, titulo="Escolha o SOM", img="aula11/p10_painel_som.jpg", clipe="escolher_o_som.gif",
+    corpo="Ainda na mesa da estrela, em <span class=ui>Components</span>, arraste o <span class=ui>Sound</span> (na mesa ele se chama <span class=ui>SoundEffect</span>) para um espaço vazio. Clique devagar nele.<br><br><b>1.</b> No painel, clique em <span class=ui>Choose Sound</span>. Abre a janela <span class=ui>SELECT SOUND</span>.<br><b>2.</b> Clique em <span class=ui>Sound Effects</span>.<br><b>3.</b> No campo de busca, escreva <b>coin</b> (moeda, em inglês).<br><b>4.</b> Clique no primeiro da lista, <span class=ui>coins sound effect 1</span>. Dá para ouvir antes: o triângulo ao lado toca o som.<br><b>5.</b> Clique em <span class=ui>OK</span> (o azul), no fim da janela.<br><br>Quando o painel mostrar o nome do som, feche-o no <span class=ui>OK</span> dele.",
+    ck="O botão do painel, que dizia <span class=ui>Choose Sound</span>, agora diz <b>coins sound effect 1</b>, e o bloco mostra <b>coins sound effect</b> embaixo.",
+    sos=[("Não acho a busca","Ela aparece depois que você clica em <span class=ui>Sound Effects</span>, no alto da lista."),
+         ("A lista está em branco","Espere um segundo: ela carrega. Se continuar, apague a palavra da busca e escreva de novo."),
+         ("A janela abriu num lugar estranho","Ela abre ao lado do painel. Procure o título <span class=ui>SELECT SOUND</span>.")]),
+
+  dict(n=14, titulo="Ligue o som na batida", img="aula11/p11_fio_som.jpg",
+    corpo="Um fio novo: de <span class=ui>hit</span> do <span class=ui>Collision</span> até <span class=ui>play</span> do <span class=ui>SoundEffect</span>.<br><br>O <span class=ui>hit</span> agora tem <b>dois</b> fios saindo dele: um vai ao <span class=ui>Destroyer</span> e o outro ao <span class=ui>SoundEffect</span>. A batida faz <b>as duas coisas</b>: toca o som e some com a estrela.<br><br>Se um bloco ficar <b>em cima de um fio</b>, arraste o bloco para o lado.",
+    ck="Do <span class=ui>hit</span> saem <b>dois fios</b>: um para o <span class=ui>Destroyer</span> e outro para o <span class=ui>play</span> do <span class=ui>SoundEffect</span>.",
+    sos=[("O fio não pega no play","Solte na bolinha de <b>cima</b> do <span class=ui>SoundEffect</span>, a do <span class=ui>play</span>. As outras (<span class=ui>pause</span>, <span class=ui>stop</span>, <span class=ui>vol</span>) fazem outras coisas."),
+         ("A estrela some mas não faz barulho","Confira o fio no <span class=ui>play</span> e o volume do computador.")]),
+
+  dict(n=15, titulo="Crie a ANIMAÇÃO", img="aula11/p13_gira.jpg", clipe="criar_animacao.gif",
+    corpo="Feche a mesa (<span class=ui>OK</span>) e o painel. Clique na estrela e, no painel, em <span class=ui>edit sprite</span> — o editor de desenho abre.<br><br><b>1.</b> Embaixo, clique em <span class=ui>Animation Editor</span>.<br><b>2.</b> Clique em <span class=ui>Pick Animation</span> e, na lista, em <span class=ui>Create New...</span>.<br><b>3.</b> No campo do nome escreva <b>gira</b> e clique em <span class=ui>OK</span>.<br><br>Uma <b>animação</b> é uma sequência de desenhos que o jogo troca um depois do outro. Esta começa com <b>um quadro</b>: o desenho da estrela.",
+    ck="Embaixo do editor aparece o nome <b>gira</b> e, ao lado, <b>um</b> quadro com a estrela.",
+    sos=[("Não acho o Animation Editor","Ele fica na faixa escura de <b>baixo</b> do editor de desenho. Clique na setinha ao lado do nome."),
+         ("Escrevi o nome e nada","Depois do nome, clique no <span class=ui>OK</span> da janelinha, e não no do editor.")]),
+
+  dict(n=16, titulo="O SEGUNDO quadro: de cabeça para baixo", img="aula11/p14_dois_quadros.jpg", clipe="inverter_o_quadro.gif",
+    corpo="Ainda no editor de desenho, clique no <b>+</b> (o quadrado com um mais, depois do quadro da estrela). Nasce o <b>quadro 2</b>, que começa como <b>cópia</b> do primeiro.<br><br>Com o <b>quadro 2 selecionado</b> (a borda azul), clique na ferramenta que <b>vira o desenho de cabeça para baixo</b> (<span class=ui>flip vertical</span>: na coluna de ferramentas da esquerda, o <b>terceiro ícone da quarta fileira</b>, com dois triângulos, um para cima e outro para baixo).<br><br>Feche no <span class=ui>OK</span>, no canto de baixo à esquerda. Feche também o painel do objeto.",
+    ck="Embaixo há <b>dois</b> quadros: o primeiro com a estrela em pé e o segundo com ela <b>de cabeça para baixo</b>.",
+    sos=[("Virei o quadro errado","Clique no quadro 2 antes de usar a ferramenta, e confira se a borda azul está nele."),
+         ("Os dois quadros ficaram iguais","Clique no quadro 2 e use o <span class=ui>flip vertical</span> uma vez. Se virar duas vezes, ele volta ao normal."),
+         ("Não vi diferença no desenho","Uma estrela é quase igual de pé e de cabeça para baixo. A diferença é pequena: olhe a ponta de cima.")]),
+
+  dict(n=17, titulo="Mande a estrela GIRAR", img="aula11/p16_gira.jpg", clipe="escolher_a_animacao.gif",
+    corpo="Clique na estrela e em <span class=ui>Behaviors</span>.<br><br><b>1.</b> Em <span class=ui>Triggers</span>, o <span class=ui>Once</span>. Em <span class=ui>Properties</span>, o <span class=ui>Animation</span>.<br><b>2.</b> Clique devagar no <span class=ui>Animation</span>. Em <span class=ui>Pick Animation</span> escolha <b>gira</b> e marque <span class=ui>Loop animation</span> (repetir sem parar).<br><b>3.</b> Um fio: de <span class=ui>out</span> do <span class=ui>Once</span> até <span class=ui>start</span> do <span class=ui>Animation</span>.<br><br>Lendo em voz alta: <i>quando o jogo começar, comece a animação gira, e repita</i>.",
+    ck="O bloco <span class=ui>Animation</span> mostra <b>gira</b> embaixo, e há um fio de <span class=ui>out</span> do <span class=ui>Once</span> até <span class=ui>start</span>.",
+    sos=[("Não aparece gira na lista","Os dois quadros precisam estar salvos: reabra o editor de desenho e confira se o <span class=ui>OK</span> foi apertado."),
+         ("A estrela gira uma vez e para","Faltou marcar <span class=ui>Loop animation</span> no painel do bloco.")]),
+
+  dict(n=18, titulo="Jogue: a estrela GIRA", img="aula11/p17_jogo_gira.jpg", clipe="jogar.gif",
+    corpo="Feche as duas telas e clique em <span class=ui>Play</span>.<br><br>Olhe a estrela: ela <b>vira de pé para cabeça para baixo</b>, sem parar, sem você encostar em nada. É a animação rodando. A diferença é pequena (a estrela é quase igual dos dois lados): olhe a ponta de cima durante alguns segundos.<br><br>Depois corra até ela: a estrela some.",
+    ck="A estrela <b>muda de pose sozinha</b>, vez após vez (de pé, de cabeça para baixo, de pé…), e some quando você encosta.",
+    sos=[("Ela fica parada","Confira o fio do <span class=ui>Once</span> até <span class=ui>start</span> e se o bloco mostra <b>gira</b>."),
+         ("Não vejo a estrela mexer","Olhe a ponta de cima por alguns segundos: é uma mudança pequena. Se ela está <b>mesmo</b> parada, confira o <span class=ui>Loop animation</span>.")]),
+
+  dict(n=19, titulo="Dê BRILHO à estrela", img="aula11/p18_brilho.jpg",
+    corpo="Volte ao editor, clique na estrela e em <span class=ui>Behaviors</span>.<br><br><b>1.</b> Em <span class=ui>Triggers</span>, outro <span class=ui>Once</span>.<br><b>2.</b> Em <span class=ui>Logic &amp; Math</span>, o <span class=ui>Number</span>. Clique devagar nele e escreva <b>1</b>.<br><b>3.</b> Em <span class=ui>Properties</span>, o <span class=ui>Blending</span>.<br><br>Dois fios: de <span class=ui>out</span> do <span class=ui>Once</span> até <span class=ui>get</span> do <span class=ui>Number</span>; e de <span class=ui>out</span> do <span class=ui>Number</span> até <span class=ui>mode</span> do <span class=ui>Blending</span>.<br><br>O <span class=ui>Blending</span> diz <b>como o desenho se mistura com o que está atrás</b>: <b>0</b> é normal, <b>1</b> é <b>somar</b> as cores — a estrela clareia o fundo e <b>brilha</b>.",
+    ck="O <span class=ui>Number</span> mostra <b>1</b>, e a corrente <span class=ui>Once</span> &rarr; <span class=ui>Number</span> &rarr; <span class=ui>Blending</span> está ligada.",
+    sos=[("O fio vai no set do Number","Tem de ser no <span class=ui>get</span>, a bolinha redonda do meio. O <span class=ui>set</span> só guarda o número."),
+         ("O Number ficou com outro valor","Clique devagar nele e escreva <b>1</b> de novo.")]),
+
+  dict(n=20, titulo="Jogue: a estrela BRILHA", img="aula11/p19_jogo_brilho.jpg",
+    corpo="Clique em <span class=ui>Play</span>.<br><br>Compare com o passo 18: a estrela está <b>mais clara</b>, quase branca no meio. Mude o <span class=ui>Number</span> para <b>0</b> e jogue de novo se quiser ver a diferença — com 0 ela volta ao normal.<br><br>O som toca quando você a pega.",
+    ck="A estrela está <b>mais clara e mais viva</b> do que no passo 18, e continua girando.",
+    sos=[("Não vejo diferença","Compare com o passo 18 lado a lado. A estrela fica <b>mais clara</b>, não de outra cor. E o fundo precisa ser escuro: num céu branco a soma não aparece."),
+         ("Não ouço o som","Confira o volume do computador e o fio do <span class=ui>hit</span> no <span class=ui>play</span> do <span class=ui>SoundEffect</span>.")]),
+
+  dict(n=21, titulo="Pegue a estrela e mande o link", img="aula11/p20_final.jpg",
+    corpo="Aperte <span class=ui>Play</span>. Corra com as setas até a estrela: ela some e você <b>ouve o som de moeda</b>.<br><br>Depois de pegar a estrela, o jogador continua correndo e <b>sai da fase pela direita</b> — é normal: aperte <span class=ui>Esc</span> para voltar ao editor. Se você <b>pular alto</b> na hora errada, ele passa por cima da estrela: corra sem pular perto dela.<br><br>Para mandar para alguém: copie o endereço da barra do navegador e mande. Quem abrir vai ver a noite, a estrela girando e brilhando, e vai ouvir o som.",
+    ck="A estrela gira, brilha, faz barulho de moeda ao ser pega e <b>some</b> da fase.",
+    sos=[("Passei por cima da estrela","O jogador pulou alto e passou por cima. Recomece com <span class=ui>Esc</span> e corra <b>sem pular</b> perto dela."),
+         ("O jogador sumiu pela direita","Ele passou da estrela e saiu da fase. Aperte <span class=ui>Esc</span> e tente de novo."),
+         ("Quero mais coisas brilhando","Dê o mesmo <span class=ui>Once</span> &rarr; <span class=ui>Number</span> &rarr; <span class=ui>Blending</span> a outro objeto.")]),
+ ],
+}

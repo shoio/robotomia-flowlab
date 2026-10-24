@@ -1,6 +1,6 @@
 # Estado do curso de Flowlab — 24-10-2026 (madrugada)
 
-**Dez aulas no ar**, em https://shoio.github.io/robotomia-flowlab/ — conferido
+**Onze aulas no ar**, em https://shoio.github.io/robotomia-flowlab/ — conferido
 em produção, não só commitado.
 
 O que custou esta madrugada está no `PADRAO.md`, §2ac a §2ag. O que a Aula 8
@@ -33,6 +33,11 @@ inteira carrega o Título antes), e **o recorte de leitura de `bloco_ou_solta`
 tem de conter o ponto de soltura** — senão `solta` recarrega a página, que
 reabre no PRIMEIRO nível, com a mesa do objeto errado.
 
+A Aula 11 acrescentou (§2am): `SoundEffect` (busca de som no `SELECT SOUND`), o
+editor de animação do sprite + o bloco `Animation`, e o `Blending` (1 = soma).
+O método: soltar bloco com `_livre`/`_livre_fila` (a mesa anda), prova de
+animação por diferença de recorte, e gesto que devolve a seta do clipe.
+
 A madrugada anterior (§2n a §2t) continua valendo; o maior de lá é o §2n: o
 remendo da bancada sumia por ordem de import e **todo arrasto ia para a tela de
 verdade**, em silêncio.
@@ -54,7 +59,9 @@ verdade**, em silêncio.
 
 | 10 | menu, fases e fim | tela de título com botão JOGAR, Fase 1, Fase 2 e tela de Vitória — quatro níveis ligados por um bloco só (`Load Level`) | o clique no JOGAR trocou o céu do Título pelo da Fase 1 · tocar a estrela da Fase 1 carregou a Fase 2 · **Título → Fase 1 → Fase 2 → Vitória, jogado do começo ao fim** |
 
-Aulas 11 e 12: planejadas em `PLANO.md`, não construídas.
+| 11 | som, animação e brilho | noite; estrela que **gira** (animação de 2 quadros), **brilha** (`Blending` em soma) e faz o som de moeda ao ser pega | a pose da estrela alterna sozinha (diferença de recorte 0,0 ↔ 2,0) · com o `Blending` em 1 a cor média da estrela subiu de 536 para 561 · o jogador a alcança e ela **some** (o som não se fotografa: conferido o nome e o fio) |
+
+Aula 12: planejada em `PLANO.md`, não construída.
 
 ## Pendente para o Julio
 

@@ -903,6 +903,45 @@ E uma de desenho de fase: **`Any Type` também deixa um objeto comer o outro**
 
 ---
 
+## 2am. Aula 11 — som, animação e brilho: o que a captura ensinou
+
+- **Mirar bloco em coordenada fixa só vale na mesa VAZIA.** A mesa anda a cada
+  soltura (o `Number` caiu em cima do `Animation`; o `Blending`, em cima do
+  `Number`) e, pior, o PONTO onde se solta não é onde o título cai: medido,
+  o título cai em ~(x − 170, y − 58). `cap11._livre` e `_livre_fila`
+  olham a tela, somam o que é corpo de bloco ou branco (título, pino, fio)
+  numa imagem integral e devolvem um vazio. `_livre_fila(3)` planeja os TRÊS
+  blocos da corrente antes da primeira soltura.
+- **`bloco_ou_solta` devolve o bloco que JÁ existe.** Para um SEGUNDO `Once` na
+  mesma mesa é `blocos.solta`; com `bloco_ou_solta` a etapa jurava ter soltado
+  e a mesa continuava com um só.
+- **Janela que abre ao lado do painel não tem coordenada fixa.** O `SELECT
+  SOUND` abre por cima ou por baixo conforme o espaço; medi o clique de cada
+  linha num dia e ele errou no seguinte. Tudo nele se mede a partir do TÍTULO
+  (`_titulo_do_dialogo`): a distância título → OK é constante. E
+  `acha_texto("sound effects")` casava com o rótulo `sound effect mode` do
+  painel de trás — âncora é o título da janela, não a frase.
+- **Animação de dois quadros quase simétricos não mexe o centro.** A estrela de
+  cabeça para baixo tem o MESMO centroide (y 830 ↔ 831), e a prova por posição
+  reprovava uma animação que funcionava. A prova é a diferença entre
+  RECORTES: sem animação os quadros saem idênticos (0,0 em todos), com ela
+  alterna 0,0 ↔ 2,0. O mesmo vale para o `Blending`: mede-se a cor média da
+  estrela antes e depois (536 → 561), não «a estrela está brilhando».
+- **`+` na timeline cria o quadro como CÓPIA** do anterior; a ferramenta
+  `flip vertical` (3º ícone da 4ª fileira) vira a cópia. O nome da animação
+  vai num diálogo próprio, com seu OK.
+- **A seta do clipe é o valor de retorno do gesto.** Gesto que devolve `None`
+  grava a seta no canto (0,0) e o `confere_alvos` reprova; os quatro gestos
+  novos devolvem o ponto onde a mudança acontece (o botão `Choose Sound`, o
+  `Animation Editor`, o `+`, a caixinha `Loop animation`).
+- **A prova de «a estrela some» corre em rajadas de 0,25 s**, conferindo a
+  estrela a cada uma. Numa corrida longa o jogador pula por cima da estrela e
+  sai da fase pela direita: a estrela fica, o jogador some, e a prova
+  reprovava um jogo certo.
+- ⚠️ **O som não se fotografa.** O curso confere o NOME do som escolhido no
+  painel e o fio `hit → play`; que ele TOCA é conferência de ouvido — e a aula
+  avisa a criança disso (aviso «Use fones…»).
+
 ## 4. A lista de pré-voo (o que já me custou tempo antes)
 
 Antes de dar uma aula por pronta, passe por estas. Cada uma é um erro que já

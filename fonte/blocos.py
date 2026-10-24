@@ -444,6 +444,11 @@ PORTAS = {
     "Expression": {"esq": ["A", "B", "eval"], "dir": ["out"]},
     "Bar":       {"esq": ["value"],         "dir": ["out"]},
     "Switch":    {"esq": ["off", "on", "in"],      "dir": ["out"]},
+    # Aula 11, MEDIDOS com `mede_pinos` no prototipo 3166105.
+    "SoundEffect": {"esq": ["play", "pause", "stop", "vol"],
+                    "dir": ["playing", "pause", "stop", "vol", "done"]},
+    "Animation": {"esq": ["start", "stop", "goto"], "dir": ["play", "done", "goto"]},
+    "Blending":  {"esq": ["mode"], "dir": ["out"]},
     # ⚠️ `Once`, `Impulse` e `Label` ESTAVAM REPETIDOS AQUI, e em Python a
     # segunda chave apaga a primeira sem avisar. As que venciam eram as
     # escritas de cabeca: o `Label` ficava com `text/show/hide`, quando na tela
@@ -986,6 +991,16 @@ DESLOC = {
     "Switch":   {"esq": {"off": (-26, 42), "on": (-26, 80), "in": (-26, 118)},
                  "dir": {"out": (245, 78)}},
     "Destroyer": {"esq": {"in": (-28, 57)}, "dir": {"out": (248, 57)}},
+    # Aula 11. `Animation` e `Blending` saem do `mede_pinos`; o `SoundEffect`
+    # tem cinco saidas e foi medido na foto da mesa (titulo -> bolinha).
+    "SoundEffect": {"esq": {"play": (-26, 43), "pause": (-26, 83),
+                            "stop": (-26, 123), "vol": (-26, 163)},
+                    "dir": {"playing": (247, 37), "pause": (247, 71),
+                            "stop": (247, 104), "vol": (247, 138),
+                            "done": (247, 174)}},
+    "Animation": {"esq": {"start": (-26, 41), "stop": (-26, 79), "goto": (-26, 117)},
+                  "dir": {"play": (245, 41), "done": (245, 79), "goto": (245, 117)}},
+    "Blending":  {"esq": {"mode": (-27, 55)}, "dir": {"out": (244, 55)}},
     # o titulo no canvas e 'RestartGame' (sem espaco), mas na palheta ele
     # aparece como 'Restart Game' — por isso solta() aceita titulo diferente
     "RestartGame": {"esq": {"go": (-28, 57)}, "dir": {"out": (248, 57)}},
