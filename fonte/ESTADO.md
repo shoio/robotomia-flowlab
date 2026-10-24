@@ -1,6 +1,6 @@
 # Estado do curso de Flowlab — 24-10-2026 (madrugada)
 
-**Nove aulas no ar**, em https://shoio.github.io/robotomia-flowlab/ — conferido
+**Dez aulas no ar**, em https://shoio.github.io/robotomia-flowlab/ — conferido
 em produção, não só commitado.
 
 O que custou esta madrugada está no `PADRAO.md`, §2ac a §2ag. O que a Aula 8
@@ -25,6 +25,14 @@ morcego cruza a fase em 8,5 s); o `Collision` dispara **uma vez** por batida
 (o dano contínuo é `Timer → Proximity`); e um clipe copiado de outra aula
 mostra o céu e o chão da aula errada.
 
+A Aula 10 acrescentou (§2ak e §2al): o painel `Game Levels` por LINHA, o
+`MouseClick`, o `Load Level`, e a Biblioteca como jeito de levar um tipo (com
+os blocos) de uma fase para a outra. E dois defeitos de método: **o `Play`
+começa na fase aberta no editor, não na primeira** (a prova da corrente
+inteira carrega o Título antes), e **o recorte de leitura de `bloco_ou_solta`
+tem de conter o ponto de soltura** — senão `solta` recarrega a página, que
+reabre no PRIMEIRO nível, com a mesa do objeto errado.
+
 A madrugada anterior (§2n a §2t) continua valendo; o maior de lá é o §2n: o
 remendo da bancada sumia por ordem de import e **todo arrasto ia para a tela de
 verdade**, em silêncio.
@@ -44,7 +52,9 @@ verdade**, em silêncio.
 
 | 9 | inimigo que persegue | morcego que olha, vira e voa atrás do jogador; barra de vida que desce a cada segundo perto dele; sem vida, recomeça | o morcego chegou a 32 px do jogador e, quando ele correu, **virou** e foi atrás (x 1082 → 1599) · a barra desceu de 5096 a 0 px · e o jogo recomeçou com ela **cheia** |
 
-Aulas 10 a 12: planejadas em `PLANO.md`, não construídas.
+| 10 | menu, fases e fim | tela de título com botão JOGAR, Fase 1, Fase 2 e tela de Vitória — quatro níveis ligados por um bloco só (`Load Level`) | o clique no JOGAR trocou o céu do Título pelo da Fase 1 · tocar a estrela da Fase 1 carregou a Fase 2 · **Título → Fase 1 → Fase 2 → Vitória, jogado do começo ao fim** |
+
+Aulas 11 e 12: planejadas em `PLANO.md`, não construídas.
 
 ## Pendente para o Julio
 

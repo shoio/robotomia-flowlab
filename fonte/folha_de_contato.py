@@ -38,7 +38,7 @@ def _ultimo_quadro(cam):
 
 
 def monta(slug, saida=None):
-    mod = __import__(f"conteudo_a{slug[-1]}")
+    mod = __import__("conteudo_a" + slug.replace("aula", ""))   # `slug[-1]` lia so o ultimo digito: aula10 virava a0
     A = mod.AULA
     pecas = []
     for p in A["passos"]:

@@ -437,6 +437,8 @@ PORTAS = {
     "Global Variable": {"esq": ["set", "get", "mais"], "dir": ["out"]},
     # MEDIDOS com `mede_pinos` no prototipo 3166005 (Aula 9).
     "Object Variable": {"esq": ["set", "get", "mais"], "dir": ["out"]},
+    "LoadLevel": {"esq": ["go", "get"], "dir": ["out", "out2"]},
+    "MouseClick": {"esq": [], "dir": ["down", "up", "over", "out"]},
     "Proximity": {"esq": ["dist", "check"], "dir": ["x", "y", "miss"]},
     "PointAt":   {"esq": ["x", "y"],        "dir": ["rot"]},
     "Expression": {"esq": ["A", "B", "eval"], "dir": ["out"]},
@@ -955,7 +957,10 @@ DESLOC = {
                  "dir": {"x": (244, 61), "y": (244, 119)}},
     "Impulse": {"esq": {"x": (-32, 42), "y": (-32, 78), "forward": (-32, 114)},
                 "dir": {"out": (242, 42), "out2": (242, 78), "out3": (242, 114)}},
-    "MouseClick": {"esq": {}, "dir": {"down": (245, 43), "up": (245, 85)}},
+    "MouseClick": {"esq": {}, "dir": {"down": (244, 37), "up": (244, 73),
+                                      "over": (244, 109), "out": (244, 145)}},
+    "LoadLevel": {"esq": {"go": (-27, 45), "get": (-27, 87)},
+                  "dir": {"out": (244, 45), "out2": (244, 87)}},
     "Timer":    {"esq": {"delay": (-28, 39), "reset": (-28, 76), "start": (-28, 114)},
                  "dir": {"out": (247, 50), "done": (247, 103)}},
     "Spawn":    {"esq": {"x": (-25, 41), "y": (-25, 76), "spawn": (-25, 116)},
@@ -1853,6 +1858,57 @@ def campo_acima(rotulo, valor, dy=76):
                            f"mostra {lido!r}")
     print(f"   campo acima de '{rotulo}' = {valor}", flush=True)
     return ponto
+
+
+def escreve_texto_do_label(texto):
+    """Escreve o TEXTO do `Label` no painel dele, e LE DE VOLTA.
+
+       A caixa de texto fica no ALTO do painel, que e comprido (~800 px); o
+       ponto estavel para achar o painel e o rotulo `alignment`, e a caixa fica
+       ~290 px acima dele e ~240 px a direita (medido na Aula 8: caixa em
+       (1195, 80) numa tela de 2000 px; `alignment` em (1031, 278))."""
+    a, _ = nav.captura("/tmp/_bl_lbl.png")
+    p = nav.acha_texto("alignment", arquivo=a)
+    if not p:
+        raise RuntimeError("nao achei o rotulo `alignment` no painel do Label")
+    caixa = (p[0] + 240, p[1] - 290)
+    nav.clique_seguro(*caixa); time.sleep(0.6)
+    rs.tecla(0, cmd=True); time.sleep(0.3)
+    rs.digita_teclas(texto); time.sleep(0.8)
+    b, _ = nav.captura("/tmp/_bl_lbl2.png")
+    # A LEITURA E NA TELA TODA, parte de cima: o texto aparece DUAS vezes — na
+    # caixa do painel e, em letra grande, no canto da fase (o `Label` escreve
+    # o proprio texto la). Ler so a caixa (branco sobre cinza, varias linhas)
+    # devolvia `q` com a palavra certa escrita.
+    if not rs.procura_forte(texto, b, regiao=(0.2, 0.05, 1.0, 0.55), psm="6"):
+        lido = nav.texto_da_tela(regiao=(0.2, 0.05, 1.0, 0.55))
+        raise RuntimeError(f"escrevi {texto!r} no Label e a tela mostra {lido!r}")
+    print(f"   texto do Label = {texto}", flush=True)
+    return caixa
+
+
+def cor_do_texto_do_label(hexa):
+    """Troca a COR do texto do `Label` (campo hex, ao lado de `text`).
+
+       O `Label` nasce com uma cor ALEATORIA (7872A7, AF6A69…): num titulo
+       azul-escuro o roxo some. O campo fica ~172 px acima e ~44 px a direita
+       do rotulo `alignment`. Le de volta com o campo ainda em foco."""
+    a, _ = nav.captura("/tmp/_bl_lblc.png")
+    p = nav.acha_texto("alignment", arquivo=a)
+    if not p:
+        raise RuntimeError("nao achei o rotulo `alignment` no painel do Label")
+    campo = (p[0] + 44, p[1] - 172)
+    nav.clique_seguro(*campo); time.sleep(0.6)
+    rs.tecla(0, cmd=True); time.sleep(0.3)
+    rs.digita_teclas(hexa); time.sleep(0.8)
+    b, _ = nav.captura("/tmp/_bl_lblc2.png")
+    faixa = _regiao_px(campo[0] - 120, campo[1] - 45, campo[0] + 260, campo[1] + 45)
+    lido = nav.texto_da_tela(regiao=faixa).replace(" ", "")
+    if hexa.lower() not in lido.lower():
+        raise RuntimeError(f"escrevi a cor {hexa} no Label e o campo mostra {lido!r}")
+    rs.tecla(48); time.sleep(0.6)
+    print(f"   cor do texto do Label = {hexa}", flush=True)
+    return campo
 
 
 def marca_do_bloco(rotulo, quero=True, folga=150):

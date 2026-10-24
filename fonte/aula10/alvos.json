@@ -1,0 +1,242 @@
+{
+ "abrir_niveis": {
+  "antes": "g08a_a.jpg",
+  "depois": "g08a_b.jpg",
+  "alvo": [
+   1470,
+   1584
+  ],
+  "botao": "esq",
+  "clicado": true
+ },
+ "nome_do_nivel": {
+  "antes": "g08n_a.jpg",
+  "depois": "g08n_b.jpg",
+  "alvo": [
+   1135,
+   1301
+  ],
+  "botao": "esq",
+  "clicado": false
+ },
+ "pintar_o_ceu": {
+  "antes": "g08_a.jpg",
+  "depois": "g08_b.jpg",
+  "alvo": [
+   1295,
+   1301
+  ],
+  "botao": "esq",
+  "clicado": false
+ },
+ "criar_objeto": {
+  "antes": "g01_a.jpg",
+  "depois": "g01_b.jpg",
+  "alvo": [
+   1438,
+   770
+  ],
+  "botao": "esq",
+  "clicado": true
+ },
+ "escolher_create": {
+  "antes": "g02_a.jpg",
+  "depois": "g02_b.jpg",
+  "alvo": [
+   1318,
+   768
+  ],
+  "botao": "esq",
+  "clicado": true
+ },
+ "escolher_sprite": {
+  "antes": "g13_a.jpg",
+  "depois": "g13_b.jpg",
+  "alvo": [
+   2307,
+   536
+  ],
+  "botao": "esq",
+  "clicado": true
+ },
+ "novo_nivel_f1": {
+  "antes": "g17nf1_a.jpg",
+  "depois": "g17nf1_b.jpg",
+  "alvo": [
+   1135,
+   1392
+  ],
+  "botao": "esq",
+  "clicado": true
+ },
+ "nome_da_fase_f1": {
+  "antes": "g17mf1_a.jpg",
+  "depois": "g17mf1_b.jpg",
+  "alvo": [
+   1135,
+   1301
+  ],
+  "botao": "esq",
+  "clicado": false
+ },
+ "cor_da_fase_f1": {
+  "antes": "g17cf1_a.jpg",
+  "depois": "g17cf1_b.jpg",
+  "alvo": [
+   1295,
+   1301
+  ],
+  "botao": "esq",
+  "clicado": false
+ },
+ "escrever_o_texto": {
+  "antes": "g18_a.jpg",
+  "depois": "g18_b.jpg",
+  "alvo": [
+   2041,
+   505
+  ],
+  "botao": "esq",
+  "clicado": false
+ },
+ "cor_do_texto": {
+  "antes": "g18c_a.jpg",
+  "depois": "g18c_b.jpg",
+  "alvo": [
+   1845,
+   623
+  ],
+  "botao": "esq",
+  "clicado": false
+ },
+ "clicar_no_botao": {
+  "antes": "g19_a.jpg",
+  "depois": "g19_b.jpg",
+  "alvo": [
+   1436,
+   574
+  ],
+  "botao": "esq",
+  "clicado": true
+ },
+ "carregar_a_fase_1": {
+  "antes": "g21a_a.jpg",
+  "depois": "g21a_b.jpg",
+  "alvo": [
+   1345,
+   1392
+  ],
+  "botao": "esq",
+  "clicado": true
+ },
+ "clonar_o_chao": {
+  "antes": "g05_a.jpg",
+  "depois": "g05_b.jpg",
+  "alvo": [
+   1054,
+   1090
+  ],
+  "botao": "esq",
+  "clicado": true
+ },
+ "novo_nivel_f2": {
+  "antes": "g17nf2_a.jpg",
+  "depois": "g17nf2_b.jpg",
+  "alvo": [
+   1135,
+   1392
+  ],
+  "botao": "esq",
+  "clicado": true
+ },
+ "nome_da_fase_f2": {
+  "antes": "g17mf2_a.jpg",
+  "depois": "g17mf2_b.jpg",
+  "alvo": [
+   1135,
+   1301
+  ],
+  "botao": "esq",
+  "clicado": false
+ },
+ "cor_da_fase_f2": {
+  "antes": "g17cf2_a.jpg",
+  "depois": "g17cf2_b.jpg",
+  "alvo": [
+   1295,
+   1301
+  ],
+  "botao": "esq",
+  "clicado": false
+ },
+ "carregar_o_titulo": {
+  "antes": "g22_a.jpg",
+  "depois": "g22_b.jpg",
+  "alvo": [
+   1517,
+   1150
+  ],
+  "botao": "esq",
+  "clicado": true
+ },
+ "carregar_a_fase_2": {
+  "antes": "g21b_a.jpg",
+  "depois": "g21b_b.jpg",
+  "alvo": [
+   1345,
+   1392
+  ],
+  "botao": "esq",
+  "clicado": true
+ },
+ "arrastar_da_biblioteca": {
+  "antes": "g20_a.jpg",
+  "depois": "g20_b.jpg",
+  "alvo": [
+   1950,
+   1090
+  ],
+  "botao": "esq",
+  "clicado": false
+ },
+ "novo_nivel_vit": {
+  "antes": "g17nvit_a.jpg",
+  "depois": "g17nvit_b.jpg",
+  "alvo": [
+   1135,
+   1392
+  ],
+  "botao": "esq",
+  "clicado": true
+ },
+ "nome_da_fase_vit": {
+  "antes": "g17mvit_a.jpg",
+  "depois": "g17mvit_b.jpg",
+  "alvo": [
+   1135,
+   1301
+  ],
+  "botao": "esq",
+  "clicado": false
+ },
+ "cor_da_fase_vit": {
+  "antes": "g17cvit_a.jpg",
+  "depois": "g17cvit_b.jpg",
+  "alvo": [
+   1295,
+   1301
+  ],
+  "botao": "esq",
+  "clicado": false
+ },
+ "carregar_a_vitoria": {
+  "antes": "g21c_a.jpg",
+  "depois": "g21c_b.jpg",
+  "alvo": [
+   1345,
+   1392
+  ],
+  "botao": "esq",
+  "clicado": true
+ }
+}

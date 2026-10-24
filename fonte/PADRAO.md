@@ -854,6 +854,37 @@ ESTAVA passaria na primeira fase.
 - O clique no campo do número cai em `centro da frase − 25 px`. Com −60 ele
   caía na borda esquerda do campo, fora dele.
 
+## 2ak. As peças da Aula 10, medidas antes de a aula existir
+
+| peça | medido | o que ficou sabido |
+|---|---|---|
+| painel `Game Levels` | ✅ | uma **linha por fase**: nome, cor (hex + amostra), `Load` (ou `Current`, na fase aberta), ordem `- +`, lixeira. Botões `New Level`, `OK`, `Loading Screen` |
+| `New Level` | ✅ | cria uma fase **vazia**, chamada `New Level`, de céu branco. O painel **cresce para cima**: as linhas se contam a partir do `Loading Screen` (última linha: −91 px; cada anterior, +74) |
+| ⚠️ o nome da 2ª fase | ⛔ | **também nasce `New Level`** — e o OCR achava a linha em vez do botão. Ancore no `Loading Screen` |
+| `Current` | ⚠️ | o botão da fase aberta é branco sobre azul: **o OCR não o lê**. Se a linha pedida não tem `Load`, ela já é a atual |
+| ⛔ o `Play` | ⛔ | **começa na fase que está ABERTA NO EDITOR, não na primeira.** Medido: com a Fase 1 carregada, o jogo abriu nela, sem botão. Quem quer testar a corrente inteira carrega o `Titulo` antes |
+| `MouseClick` | ✅ | saídas `down`, `up`, `over`, `out`; painel `leftClick`/`rightClick` e `capture clicks anywhere`. Sem a caixinha, só dispara **em cima do objeto**. O clique da bancada o dispara |
+| `Load Level` | ✅ | o título na mesa é `LoadLevel` (sem espaço, como `RestartGame`). Entradas `go`, `get`; saídas `out`, `out`. Nasce em `Next Level` — **não precisa mexer no painel** |
+| a Biblioteca | ✅ | lista os **tipos**; clicar no cartão não faz nada, **arrastar** solta uma instância na casa. O painel cobre a faixa de baixo (x 930–1590): solte longe dele |
+| os blocos | ✅ | pertencem ao **TIPO**: a estrela arrastada para a Fase 2 já sabia carregar a próxima fase |
+| `Label` | ⚠️ | nasce com cor **aleatória** (7872A7, AF6A69…); em título azul-escuro o roxo some. A caixa de texto é multilinha e o OCR a lê mal — o texto aparece **também** em letra grande no canto da fase, e é ali que se confere |
+| `Label` + `attach to object` | ✅ | o texto passa a ser desenhado **no objeto**: é o rótulo do botão |
+
+⛔ **`solta` recarrega a página na última tentativa, e a página reabre no
+PRIMEIRO nível.** Um `Label` solto fora do recorte de leitura (y alto demais)
+não foi achado, `solta` recarregou, e a mesa seguinte era a do **Título**, com
+o objeto errado. O erro que sobrou («não achei o bloco») mandava procurar o
+defeito no bloco, não no nível. Regra: em aula com vários níveis, o recorte de
+`bloco_ou_solta` tem de CONTER o ponto de soltura.
+
+## 2al. A conferência de linha de painel é POR LINHA
+
+Ler o painel `Game Levels` inteiro devolvia as linhas de cima e perdia a de
+baixo (`Vitoria` estava escrita e visível, e a conferência dizia que não).
+`editor.confere_nome_do_nivel` lê **só aquela linha**, em duas segmentações. A
+cor do hex nunca se confere por OCR: confere-se **carregando a fase** e lendo o
+céu (`cor_da_folha`), que é o que a criança vê.
+
 ## 3. As três armadilhas de FÍSICA que não aparecem no editor
 
 Todas custaram horas na Aula 3, e nenhuma dá erro em lugar nenhum:

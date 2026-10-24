@@ -36,7 +36,9 @@ def ligada(limite=0.7):
 
 
 def _chama(rota, **kw):
-    dados = json.dumps(kw).encode()
+    # `default=`: coordenada que vem do numpy (`int64`) nao e JSON — uma sonda
+    # que clicava no centro de uma mancha medida por `np.nonzero` morria aqui.
+    dados = json.dumps(kw, default=lambda o: o.item() if hasattr(o, 'item') else str(o)).encode()
     req = urllib.request.Request(BASE + "/" + rota, data=dados,
                                  headers={"content-type": "application/json"})
     try:

@@ -567,3 +567,159 @@ def exige_jogo():
     if not no_jogo():
         raise RuntimeError("estou no EDITOR, nao no jogo: qualquer medida daqui e mentira")
     return True
+
+
+
+# ───────────────────────── o painel Game Levels, por LINHA ─────────────────────────
+#
+# MEDIDO no prototipo 3166077/3166080 (Aula 10). Cada fase e uma LINHA do
+# painel: nome, cor (hex + amostra), botao `Load` (ou `Current`, na fase aberta),
+# ordem, lixeira. O painel nasce ancorado EMBAIXO e cresce para cima, entao as
+# linhas se contam a partir do botao `Loading Screen`:
+#
+#     y da ultima linha = y(Loading Screen) - 91; cada anterior, mais 74 px
+#
+# ⚠️ Nao da para ancorar no `New Level`: o NOME da segunda fase tambem nasce
+# `New Level`, e o OCR achava a linha em vez do botao.
+NIVEL_X = {"nome": 1135, "cor": 1295, "load": 1517, "novo": 1135, "ok": 1345}
+NIVEL_ULTIMA, NIVEL_PASSO = 91, 74
+
+
+def _ancora_dos_niveis():
+    a, _ = nav.captura("/tmp/_ed_niv.png")
+    p = nav.acha_texto("loading screen", arquivo=a)
+    if not p:
+        raise RuntimeError("nao achei o `Loading Screen` — o painel Game Levels "
+                           "esta aberto?")
+    return p, a
+
+
+def y_do_nivel(n, total):
+    """Altura (px) da linha da fase de ordem `n` (0 = a primeira)."""
+    p, _a = _ancora_dos_niveis()
+    return p[1] - NIVEL_ULTIMA - NIVEL_PASSO * (total - 1 - n)
+
+
+def novo_nivel():
+    """Clica `New Level`, com o painel Game Levels ABERTO. Devolve o ponto."""
+    import comum
+    p, _a = _ancora_dos_niveis()
+    ponto = (NIVEL_X["novo"], p[1])
+    comum.clique(*ponto); time.sleep(2.0)
+    return ponto
+
+
+def escreve_no_nivel(n, total, campo, texto, fecha=False):
+    """Escreve o NOME (`campo='nome'`) ou a COR hex (`campo='cor'`) da fase `n`.
+
+       O Enter na cor FECHA o painel (medido na Aula 2), por isso o nome termina
+       em Tab. Devolve o ponto clicado, que e a seta do clipe."""
+    import comum
+    y = y_do_nivel(n, total)
+    ponto = (NIVEL_X[campo], y)
+    nav.clique_seguro(*ponto); time.sleep(0.8)
+    rs.tecla(0, cmd=True); time.sleep(0.3)
+    rs.digita_teclas(texto); time.sleep(0.5)
+    rs.tecla(36 if campo == "cor" else 48); time.sleep(1.6)
+    return ponto
+
+
+def carrega_com_painel_aberto(n, total):
+    """Com o painel Game Levels JA ABERTO: carrega a fase `n`.
+
+       Devolve o PONTO clicado (a seta do clipe). O botao da fase ABERTA diz
+       `Current` (branco sobre azul: o OCR nao le); se a linha pedida nao tem
+       `Load`, ela ja e a atual e so se clica no `OK`."""
+    import comum
+    p, a = _ancora_dos_niveis()
+    y = p[1] - NIVEL_ULTIMA - NIVEL_PASSO * (total - 1 - n)
+    achou = [t for t in rs.ocr_forte(a, regiao=(0.3, 0.55, 0.7, 1.0), psm="6")
+             if t[0].strip().lower() == "load"
+             and abs((t[2] + t[4] // 2) - y) < 30]
+    if achou:
+        t = achou[0]
+        ponto = (t[1] + t[3] // 2, t[2] + t[4] // 2)
+    else:
+        ponto = (NIVEL_X["ok"], p[1])
+    comum.clique(*ponto); time.sleep(2.5 if achou else 1.5)
+    return ponto
+
+
+def carrega_nivel(n, total):
+    """Abre o painel, carrega a fase `n` e volta ao editor dela."""
+    abre_niveis()
+    p, a = _ancora_dos_niveis()
+    y = p[1] - NIVEL_ULTIMA - NIVEL_PASSO * (total - 1 - n)
+    ja_e_a_atual = not any(
+        t[0].strip().lower() == "load" and abs((t[2] + t[4] // 2) - y) < 30
+        for t in rs.ocr_forte(a, regiao=(0.3, 0.55, 0.7, 1.0), psm="6"))
+    carrega_com_painel_aberto(n, total)
+    volta_ao_nivel(); time.sleep(1)
+    return not ja_e_a_atual
+
+
+def confere_nome_do_nivel(n, total, nome):
+    """Le o NOME da linha `n` (painel aberto) SO naquela linha, e compara.
+
+       Ler o painel inteiro devolvia as linhas de cima e perdia a de baixo (o
+       OCR em bloco e instavel numa caixa de varias linhas): `Vitoria` estava
+       escrita e visivel e a conferencia dizia que nao."""
+    y = y_do_nivel(n, total)
+    faixa = (max(0.0, (NIVEL_X["nome"] - 120) / 2940), max(0.0, (y - 30) / 1604),
+             min(1.0, (NIVEL_X["nome"] + 120) / 2940), min(1.0, (y + 30) / 1604))
+    for psm in ("7", "6"):
+        lido = nav.texto_da_tela(regiao=faixa, psm=psm)
+        if nome.lower().replace(" ", "") in lido.lower().replace(" ", ""):
+            return True
+    raise RuntimeError(f"a linha {n + 1} do painel Game Levels deveria dizer "
+                       f"`{nome}` e diz {lido!r}")
+
+
+def le_o_painel_de_niveis():
+    """O texto do painel Game Levels aberto (para conferir nomes e cores)."""
+    return nav.texto_da_tela(regiao=(0.3, 0.5, 0.7, 1.0))
+
+
+# ───────────────────────── a Biblioteca de objetos ─────────────────────────
+BIBLIOTECA = (1260, 1560)       # o botao da barra de baixo (o OCR nao o acha)
+
+
+def abre_biblioteca():
+    import comum
+    comum.clique(*BIBLIOTECA); time.sleep(2.5)
+
+
+def arrasta_da_biblioteca(nome, c, r):
+    """Arrasta o TIPO `nome` da Biblioteca para a casa (c, r) do nivel aberto.
+
+       MEDIDO: o clique no cartao nao faz nada; o ARRASTO solta uma instancia
+       na casa. O painel fica aberto (e cobre a faixa de baixo, de x 930 a
+       1590): por isso a casa de destino tem de estar FORA dele, e quem chama
+       fecha o painel com `fecha_biblioteca`."""
+    import comum, blocos
+    import numpy as _np
+    from PIL import Image as _I
+    abre_biblioteca()
+    a, _ = nav.captura("/tmp/_ed_bib.png")
+    p = nav.acha_texto(nome.lower(), arquivo=a, regiao=(0.3, 0.55, 0.6, 0.95))
+    if not p:
+        raise RuntimeError(f"nao achei o tipo `{nome}` na Biblioteca")
+    x, y = comum.celula(c, r)
+    antes = _np.asarray(_I.open(a).convert("L"), dtype=int)
+    blocos.arrasta_devagar(p[0], p[1] - 45, x, y, passos=60, segura=0.8)
+    time.sleep(1.5)
+    b, _ = nav.captura("/tmp/_ed_bib2.png")
+    depois = _np.asarray(_I.open(b).convert("L"), dtype=int)
+    mudou = int((_np.abs(antes[y - 30:y + 30, x - 30:x + 30]
+                         - depois[y - 30:y + 30, x - 30:x + 30]) > 25).sum())
+    if mudou < 150:
+        raise RuntimeError(f"arrastei `{nome}` para ({c},{r}) e a casa nao mudou "
+                           f"({mudou} px)")
+    return (x, y)
+
+
+def fecha_biblioteca():
+    import comum
+    a, _ = nav.captura("/tmp/_ed_bib3.png")
+    p = nav.acha_texto("ok", arquivo=a, regiao=(0.3, 0.8, 0.5, 0.95))
+    comum.clique(*(p or (1052, 1393))); time.sleep(1.2)
